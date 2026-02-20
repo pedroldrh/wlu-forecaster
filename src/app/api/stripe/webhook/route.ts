@@ -4,10 +4,12 @@ import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
 
 export async function POST(req: NextRequest) {
+  console.log("Webhook received!");
   const body = await req.text();
   const signature = req.headers.get("stripe-signature");
 
   if (!signature) {
+    console.error("No stripe-signature header");
     return NextResponse.json({ error: "No signature" }, { status: 400 });
   }
 
@@ -23,10 +25,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
+  console.log("Webhook event type:", event.type);
+
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     const userId = session.metadata?.userId;
     const seasonId = session.metadata?.seasonId;
+
+    console.log("Checkout completed — userId:", userId, "seasonId:", seasonId);
 
     if (userId && seasonId) {
       const supabase = createClient(
@@ -34,7 +40,7 @@ export async function POST(req: NextRequest) {
         process.env.SUPABASE_SERVICE_ROLE_KEY!
       );
 
-      await supabase
+      const { data, error } = await supabase
         .from("season_entries")
         .update({
           status: "PAID",
@@ -45,9 +51,12 @@ export async function POST(req: NextRequest) {
         })
         .eq("user_id", userId)
         .eq("season_id", seasonId)
-        .eq("status", "PENDING");
+        .eq("status", "PENDING")
+        .select();
 
-      console.log(`Payment completed for user ${userId}, season ${seasonId}`);
+      console.log("Supabase update result:", JSON.stringify({ data, error }));
+    } else {
+      console.error("Missing metadata — userId or seasonId is null");
     }
   }
 

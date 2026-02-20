@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,21 +11,40 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { createQuestion } from "@/actions/questions";
 import { CATEGORIES, CATEGORY_LABELS } from "@/lib/constants";
 import { toast } from "sonner";
+import { createClient } from "@/lib/supabase/client";
 
 export default function NewQuestionPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [category, setCategory] = useState("OTHER");
   const [seasonId, setSeasonId] = useState("");
-  const [seasons, setSeasons] = useState<{id: string; name: string}[]>([]);
+  const [seasons, setSeasons] = useState<{ id: string; name: string }[]>([]);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from("seasons")
+      .select("id, name")
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setSeasons(data);
+          setSeasonId(data[0].id);
+        }
+      });
+  }, []);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!seasonId) {
+      toast.error("Please select a season");
+      return;
+    }
     setLoading(true);
     const form = new FormData(e.currentTarget);
     try {
       await createQuestion({
-        seasonId: form.get("seasonId") as string,
+        seasonId,
         title: form.get("title") as string,
         description: form.get("description") as string,
         category: category as any,
@@ -34,8 +53,8 @@ export default function NewQuestionPage() {
       });
       toast.success("Question created!");
       router.push("/admin/questions");
-    } catch (error) {
-      toast.error("Failed to create question");
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to create question");
     } finally {
       setLoading(false);
     }
@@ -50,8 +69,17 @@ export default function NewQuestionPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="seasonId">Season ID</Label>
-              <Input id="seasonId" name="seasonId" placeholder="spring-2026" required />
+              <Label>Season</Label>
+              <Select value={seasonId} onValueChange={setSeasonId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a season..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {seasons.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="title">Title</Label>

@@ -23,7 +23,7 @@ export async function createQuestion(data: {
   resolveTime: string;
 }) {
   const { supabase } = await requireAdmin();
-  await supabase.from("questions").insert({
+  const { error } = await supabase.from("questions").insert({
     season_id: data.seasonId,
     title: data.title,
     description: data.description,
@@ -32,6 +32,7 @@ export async function createQuestion(data: {
     resolve_time: data.resolveTime,
     status: "OPEN",
   });
+  if (error) throw new Error(error.message);
   revalidatePath("/admin/questions");
   revalidatePath("/questions");
 }
