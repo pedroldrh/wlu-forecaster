@@ -17,7 +17,21 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Forecaster — W&L Campus Predictions",
   description:
-    "A campus forecasting tournament at Washington and Lee University. Predict campus events, compete on the leaderboard, and win prizes.",
+    "Free campus forecasting tournament at Washington & Lee. Predict campus events, compete on the leaderboard, and win from a $1,050 prize pool.",
+  metadataBase: new URL("https://wluforcaster.com"),
+  openGraph: {
+    title: "Forecaster — W&L Campus Predictions",
+    description:
+      "Free campus forecasting tournament at Washington & Lee. Predict campus events, compete on the leaderboard, and win from a $1,050 prize pool.",
+    siteName: "Forecaster",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Forecaster — W&L Campus Predictions",
+    description:
+      "Free campus forecasting tournament at W&L. Predict campus events and win from a $1,050 prize pool.",
+  },
 };
 
 export default function RootLayout({

@@ -48,7 +48,7 @@ export function SeasonBanner({
                 {SEASON_STATUS_LABELS[status] || status}
               </Badge>
             </div>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Calendar className="h-3.5 w-3.5" />
                 {formatDate(startDate)} — {formatDate(endDate)}

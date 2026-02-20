@@ -2,10 +2,11 @@ import { createClient } from "@/lib/supabase/server";
 import { SeasonBanner } from "@/components/season-banner";
 import { QuestionCard } from "@/components/question-card";
 import { LeaderboardTable } from "@/components/leaderboard-table";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { seasonScore, rankUsers, UserScore } from "@/lib/scoring";
 import Link from "next/link";
+import { BarChart3, Trophy, ShieldCheck, Target } from "lucide-react";
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -168,6 +169,46 @@ export default async function HomePage() {
         <Card>
           <CardContent className="py-8 text-center text-muted-foreground">
             No active season right now. Check back soon!
+          </CardContent>
+        </Card>
+      )}
+
+      {!isJoined && season && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">How It Works</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="flex gap-3">
+                <Target className="h-5 w-5 mt-0.5 shrink-0 text-muted-foreground" />
+                <div>
+                  <p className="font-medium text-sm">Make Predictions</p>
+                  <p className="text-sm text-muted-foreground">Assign probabilities (0-100%) to campus questions. Think it&apos;ll rain at formal? Say 70%.</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <BarChart3 className="h-5 w-5 mt-0.5 shrink-0 text-muted-foreground" />
+                <div>
+                  <p className="font-medium text-sm">Brier Scoring</p>
+                  <p className="text-sm text-muted-foreground">You&apos;re scored on accuracy. Confident and correct? Big points. Wrong? You lose points.</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <ShieldCheck className="h-5 w-5 mt-0.5 shrink-0 text-muted-foreground" />
+                <div>
+                  <p className="font-medium text-sm">Stay Active</p>
+                  <p className="text-sm text-muted-foreground">Forecast on at least 70% of questions to qualify for prizes.</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <Trophy className="h-5 w-5 mt-0.5 shrink-0 text-muted-foreground" />
+                <div>
+                  <p className="font-medium text-sm">Win Prizes</p>
+                  <p className="text-sm text-muted-foreground">$600 for 1st, $250 for 2nd, $150 for 3rd, plus a $50 bonus prize.</p>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}

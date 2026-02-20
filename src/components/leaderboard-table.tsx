@@ -46,8 +46,8 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
           <TableHead className="w-16">Rank</TableHead>
           <TableHead>Player</TableHead>
           <TableHead className="text-right">Score</TableHead>
-          <TableHead className="text-right">Questions</TableHead>
-          {showParticipation && <TableHead className="text-right">Participation</TableHead>}
+          <TableHead className="text-right hidden sm:table-cell">Questions</TableHead>
+          {showParticipation && <TableHead className="text-right hidden md:table-cell">Participation</TableHead>}
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -109,9 +109,9 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
             <TableCell className="text-right font-mono">
               {formatPercent(entry.score)}
             </TableCell>
-            <TableCell className="text-right">{entry.questionsPlayed}</TableCell>
+            <TableCell className="text-right hidden sm:table-cell">{entry.questionsPlayed}</TableCell>
             {showParticipation && (
-              <TableCell className="text-right text-sm">
+              <TableCell className="text-right text-sm hidden md:table-cell">
                 {entry.participationPct !== undefined ? `${entry.participationPct.toFixed(0)}%` : "—"}
               </TableCell>
             )}
