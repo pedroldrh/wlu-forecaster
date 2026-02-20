@@ -9,8 +9,7 @@ export async function joinSeason(seasonId: string) {
   if (!user) throw new Error("Not authenticated");
 
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
-  // TODO: Re-enable WLU restriction once email deliverability is resolved
-  // if (!profile?.is_wlu_verified) throw new Error("W&L verification required");
+  if (!profile?.is_wlu_verified) throw new Error("W&L verification required");
 
   const { data: season } = await supabase.from("seasons").select("*").eq("id", seasonId).single();
   if (!season) throw new Error("Season not found");

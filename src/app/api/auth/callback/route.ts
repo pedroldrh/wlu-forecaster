@@ -28,6 +28,56 @@ export async function GET(request: Request) {
 
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      // Get the authenticated user
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user?.email) {
+        const isWlu = user.email.endsWith("@mail.wlu.edu");
+        const meta = user.user_metadata;
+        const name = meta?.full_name || meta?.name || null;
+        const avatarUrl = meta?.avatar_url || null;
+
+        // Use service role client to update profile
+        const admin = createServerClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!,
+          {
+            cookies: {
+              getAll() {
+                return cookieStore.getAll();
+              },
+              setAll(cookiesToSet) {
+                cookiesToSet.forEach(({ name, value, options }) =>
+                  cookieStore.set(name, value, options)
+                );
+              },
+            },
+          }
+        );
+
+        // Set is_wlu_verified, and fill in name/avatar if not already set
+        const updates: Record<string, unknown> = { is_wlu_verified: isWlu };
+
+        const { data: profile } = await admin
+          .from("profiles")
+          .select("name, avatar_url")
+          .eq("id", user.id)
+          .single();
+
+        if (profile && !profile.name && name) {
+          updates.name = name;
+          updates.display_name = name;
+        }
+        if (profile && !profile.avatar_url && avatarUrl) {
+          updates.avatar_url = avatarUrl;
+        }
+
+        await admin
+          .from("profiles")
+          .update(updates)
+          .eq("id", user.id);
+      }
+
       return NextResponse.redirect(`${origin}${next}`);
     }
   }

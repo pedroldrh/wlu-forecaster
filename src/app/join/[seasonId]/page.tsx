@@ -94,7 +94,15 @@ export default async function JoinPage({ params }: { params: Promise<{ seasonId:
             </div>
           </div>
 
-          <JoinButton seasonId={seasonId} />
+          {profile?.is_wlu_verified ? (
+            <JoinButton seasonId={seasonId} />
+          ) : (
+            <div className="text-center space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Only W&L students can join seasons. Sign in with your <strong>@mail.wlu.edu</strong> Microsoft account to participate.
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
