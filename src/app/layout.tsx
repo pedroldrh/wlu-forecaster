@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
@@ -14,11 +14,23 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#0a0a0a",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export const metadata: Metadata = {
   title: "Forecaster — W&L Campus Predictions",
   description:
     "Free campus forecasting tournament at Washington & Lee. Predict campus events, compete on the leaderboard, and win from a $1,050 prize pool.",
   metadataBase: new URL("https://wluforcaster.com"),
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Forecaster",
+  },
   openGraph: {
     title: "Forecaster — W&L Campus Predictions",
     description:
