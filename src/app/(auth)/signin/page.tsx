@@ -20,10 +20,11 @@ export default function SignInPage() {
 
   async function handleSendOtp(e: React.FormEvent) {
     e.preventDefault();
-    if (!email.endsWith("@mail.wlu.edu")) {
-      toast.error("Please use your @mail.wlu.edu email");
-      return;
-    }
+    // TODO: Re-enable WLU restriction once email deliverability is resolved
+    // if (!email.endsWith("@mail.wlu.edu")) {
+    //   toast.error("Please use your @mail.wlu.edu email");
+    //   return;
+    // }
     setLoading(true);
     const { error } = await supabase.auth.signInWithOtp({ email });
     setLoading(false);
@@ -65,11 +66,11 @@ export default function SignInPage() {
         {step === "email" ? (
           <form onSubmit={handleSendOtp} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">W&L Email</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="yourname@mail.wlu.edu"
+                placeholder="your@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
