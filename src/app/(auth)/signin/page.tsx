@@ -57,6 +57,10 @@ export default function SignInPage() {
         <p className="text-xs text-muted-foreground text-center">
           Use any Google or Microsoft account to sign in
         </p>
+
+        <p className="text-sm font-medium text-center pt-2">
+          No spam, ever. We only email you if you win a prize.
+        </p>
       </CardContent>
     </Card>
   );
