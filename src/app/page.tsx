@@ -205,7 +205,7 @@ export default async function HomePage() {
                 <Trophy className="h-5 w-5 mt-0.5 shrink-0 text-muted-foreground" />
                 <div>
                   <p className="font-medium text-sm">Win Prizes</p>
-                  <p className="text-sm text-muted-foreground">$600 for 1st, $250 for 2nd, $150 for 3rd, plus a $50 bonus prize.</p>
+                  <p className="text-sm text-muted-foreground">$1,000 prize pool across top 5, plus a $100 bonus prize.</p>
                 </div>
               </div>
             </div>

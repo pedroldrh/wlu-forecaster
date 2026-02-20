@@ -25,7 +25,7 @@ export default function HowItWorksPage() {
         <CardContent className="space-y-3 text-sm text-muted-foreground">
           <p>
             Each question asks whether something will happen — like{" "}
-            <strong className="text-foreground">&quot;Will W&L beat VMI in basketball?&quot;</strong>
+            <strong className="text-foreground">&quot;Will W&L baseball win 10+ games this season?&quot;</strong>
           </p>
           <p>
             Instead of just picking Yes or No, you set a{" "}
@@ -72,6 +72,13 @@ export default function HowItWorksPage() {
             Your <strong className="text-foreground">season score</strong> is the average of your
             points across all questions you forecast on. Higher is better. Perfect score is 1.00.
           </p>
+          <p>
+            This is the same type of probability-based forecasting used by platforms like{" "}
+            <strong className="text-foreground">Kalshi</strong> and{" "}
+            <strong className="text-foreground">Polymarket</strong>, where traders assign
+            probabilities to real-world events. The Brier score is the standard way to measure
+            how good a forecaster you actually are.
+          </p>
         </CardContent>
       </Card>
 
@@ -104,13 +111,17 @@ export default function HowItWorksPage() {
         <CardContent className="space-y-3 text-sm text-muted-foreground">
           <div className="grid grid-cols-2 gap-2">
             <span>1st Place</span>
-            <span className="font-mono text-foreground text-right">$600</span>
+            <span className="font-mono text-foreground text-right">$350</span>
             <span>2nd Place</span>
-            <span className="font-mono text-foreground text-right">$250</span>
+            <span className="font-mono text-foreground text-right">$225</span>
             <span>3rd Place</span>
             <span className="font-mono text-foreground text-right">$150</span>
+            <span>4th Place</span>
+            <span className="font-mono text-foreground text-right">$100</span>
+            <span>5th Place</span>
+            <span className="font-mono text-foreground text-right">$75</span>
             <span>Bonus Prize</span>
-            <span className="font-mono text-foreground text-right">$50</span>
+            <span className="font-mono text-foreground text-right">$100</span>
           </div>
           <p>
             The <strong className="text-foreground">bonus prize</strong> goes to the player with the

@@ -24,7 +24,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "Forecaster — W&L Campus Predictions",
   description:
-    "Free campus forecasting tournament at Washington & Lee. Predict campus events, compete on the leaderboard, and win from a $1,050 prize pool.",
+    "Free campus forecasting tournament at Washington & Lee. Predict campus events, compete on the leaderboard, and win from a $1,000 prize pool.",
   metadataBase: new URL("https://wluforcaster.com"),
   appleWebApp: {
     capable: true,
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Forecaster — W&L Campus Predictions",
     description:
-      "Free campus forecasting tournament at Washington & Lee. Predict campus events, compete on the leaderboard, and win from a $1,050 prize pool.",
+      "Free campus forecasting tournament at Washington & Lee. Predict campus events, compete on the leaderboard, and win from a $1,000 prize pool.",
     siteName: "Forecaster",
     type: "website",
   },
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Forecaster — W&L Campus Predictions",
     description:
-      "Free campus forecasting tournament at W&L. Predict campus events and win from a $1,050 prize pool.",
+      "Free campus forecasting tournament at W&L. Predict campus events and win from a $1,000 prize pool.",
   },
 };
 
