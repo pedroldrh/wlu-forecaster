@@ -10,8 +10,9 @@ export async function submitForecast(questionId: string, probability: number) {
 
   if (probability < 0 || probability > 1) throw new Error("Probability must be between 0 and 1");
 
-  const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
-  if (!profile?.is_wlu_verified) throw new Error("W&L verification required");
+  // TODO: Re-enable once Microsoft OAuth is approved by W&L IT
+  // const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+  // if (!profile?.is_wlu_verified) throw new Error("W&L verification required");
 
   // Check question is open
   const { data: question } = await supabase.from("questions").select("*").eq("id", questionId).single();
