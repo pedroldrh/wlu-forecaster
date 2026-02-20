@@ -72,8 +72,8 @@ export default async function Image() {
             <span>Prize Pool</span>
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <span style={{ fontSize: 36, fontWeight: 700, color: "white" }}>10</span>
-            <span>Questions</span>
+            <span style={{ fontSize: 36, fontWeight: 700, color: "white" }}>W&L</span>
+            <span>Students</span>
           </div>
         </div>
       </div>
