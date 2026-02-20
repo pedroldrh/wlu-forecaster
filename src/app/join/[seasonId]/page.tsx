@@ -94,15 +94,7 @@ export default async function JoinPage({ params }: { params: Promise<{ seasonId:
             </div>
           </div>
 
-          {!profile?.is_wlu_verified ? (
-            <div className="text-center p-4 border rounded-lg">
-              <p className="text-sm text-muted-foreground">
-                You must sign in with a @mail.wlu.edu email to participate.
-              </p>
-            </div>
-          ) : (
-            <JoinButton seasonId={seasonId} />
-          )}
+          <JoinButton seasonId={seasonId} />
         </CardContent>
       </Card>
     </div>
