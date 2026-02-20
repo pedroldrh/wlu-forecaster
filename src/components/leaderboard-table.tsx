@@ -1,0 +1,99 @@
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { cn, formatPercent } from "@/lib/utils";
+import Link from "next/link";
+import { Trophy } from "lucide-react";
+
+interface LeaderboardEntry {
+  rank: number;
+  userId: string;
+  name: string;
+  image?: string | null;
+  score: number;
+  questionsPlayed: number;
+  isCurrentUser?: boolean;
+}
+
+interface LeaderboardTableProps {
+  entries: LeaderboardEntry[];
+}
+
+export function LeaderboardTable({ entries }: LeaderboardTableProps) {
+  if (entries.length === 0) {
+    return (
+      <p className="text-center text-muted-foreground py-8">
+        No entries yet. Join the season to compete!
+      </p>
+    );
+  }
+
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead className="w-16">Rank</TableHead>
+          <TableHead>Player</TableHead>
+          <TableHead className="text-right">Score</TableHead>
+          <TableHead className="text-right">Questions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {entries.map((entry) => (
+          <TableRow
+            key={entry.userId}
+            className={cn(entry.isCurrentUser && "bg-muted/50")}
+          >
+            <TableCell className="font-mono">
+              {entry.rank <= 3 ? (
+                <span className="flex items-center gap-1">
+                  <Trophy
+                    className={cn(
+                      "h-4 w-4",
+                      entry.rank === 1 && "text-yellow-500",
+                      entry.rank === 2 && "text-gray-400",
+                      entry.rank === 3 && "text-amber-700"
+                    )}
+                  />
+                  {entry.rank}
+                </span>
+              ) : (
+                entry.rank
+              )}
+            </TableCell>
+            <TableCell>
+              <Link
+                href={`/u/${entry.userId}`}
+                className="flex items-center gap-2 hover:underline"
+              >
+                {entry.image && (
+                  <img
+                    src={entry.image}
+                    alt=""
+                    className="h-6 w-6 rounded-full"
+                  />
+                )}
+                <span className="font-medium">{entry.name}</span>
+                {entry.isCurrentUser && (
+                  <Badge variant="outline" className="text-xs">
+                    You
+                  </Badge>
+                )}
+              </Link>
+            </TableCell>
+            <TableCell className="text-right font-mono">
+              {formatPercent(entry.score)}
+            </TableCell>
+            <TableCell className="text-right">{entry.questionsPlayed}</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+}
