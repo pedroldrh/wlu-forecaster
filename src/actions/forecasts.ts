@@ -10,24 +10,33 @@ export async function submitForecast(questionId: string, probability: number) {
 
   if (probability < 0 || probability > 1) throw new Error("Probability must be between 0 and 1");
 
-  // TODO: Re-enable once Microsoft OAuth is approved by W&L IT
-  // const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
-  // if (!profile?.is_wlu_verified) throw new Error("W&L verification required");
-
   // Check question is open
   const { data: question } = await supabase.from("questions").select("*").eq("id", questionId).single();
   if (!question) throw new Error("Question not found");
   if (question.status !== "OPEN") throw new Error("Question is not open");
   if (new Date() > new Date(question.close_time)) throw new Error("Question has closed");
 
-  // Check paid entry
+  // Auto-join season if not already joined
   const { data: entry } = await supabase
     .from("season_entries")
     .select("*")
     .eq("user_id", user.id)
     .eq("season_id", question.season_id)
     .single();
-  if (!entry || !["PAID", "JOINED"].includes(entry.status)) throw new Error("Season entry required. Join the season first.");
+
+  if (!entry) {
+    await supabase.from("season_entries").insert({
+      user_id: user.id,
+      season_id: question.season_id,
+      status: "JOINED",
+    });
+  } else if (entry.status === "PENDING") {
+    await supabase
+      .from("season_entries")
+      .update({ status: "JOINED" })
+      .eq("user_id", user.id)
+      .eq("season_id", question.season_id);
+  }
 
   // Upsert forecast
   const { data: existing } = await supabase

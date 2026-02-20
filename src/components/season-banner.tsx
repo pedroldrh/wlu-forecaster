@@ -1,9 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { formatDate, formatDollars } from "@/lib/utils";
 import { SEASON_STATUS_LABELS } from "@/lib/constants";
-import Link from "next/link";
 import { Calendar, Trophy } from "lucide-react";
 
 interface SeasonBannerProps {
@@ -16,12 +14,9 @@ interface SeasonBannerProps {
   prize3rdCents: number;
   prizeBonusCents: number;
   status: string;
-  isJoined?: boolean;
-  isAuthenticated?: boolean;
 }
 
 export function SeasonBanner({
-  id,
   name,
   startDate,
   endDate,
@@ -30,8 +25,6 @@ export function SeasonBanner({
   prize3rdCents,
   prizeBonusCents,
   status,
-  isJoined = false,
-  isAuthenticated = false,
 }: SeasonBannerProps) {
   const totalPrize = prize1stCents + prize2ndCents + prize3rdCents + prizeBonusCents;
 
@@ -55,23 +48,10 @@ export function SeasonBanner({
               </span>
               <span className="flex items-center gap-1">
                 <Trophy className="h-3.5 w-3.5" />
-                FREE Entry | Prize Pool: {formatDollars(totalPrize)}
+                Prize Pool: {formatDollars(totalPrize)}
               </span>
             </div>
           </div>
-          {status === "LIVE" && (
-            <div>
-              {isJoined ? (
-                <Badge variant="outline" className="text-green-600 border-green-600">
-                  Entered
-                </Badge>
-              ) : isAuthenticated ? (
-                <Button asChild>
-                  <Link href={`/join/${id}`}>Join Free</Link>
-                </Button>
-              ) : null}
-            </div>
-          )}
         </div>
       </CardContent>
     </Card>

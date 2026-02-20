@@ -8,7 +8,6 @@ import { CATEGORY_LABELS } from "@/lib/constants";
 import { ForecastForm } from "./forecast-form";
 import { Users, CheckCircle, XCircle } from "lucide-react";
 import { brierPoints } from "@/lib/scoring";
-import Link from "next/link";
 
 export default async function QuestionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -30,17 +29,8 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
     .select("probability")
     .eq("question_id", id);
 
-  let isJoined = false;
   let userForecast = null;
   if (user) {
-    const { data: entry } = await supabase
-      .from("season_entries")
-      .select("*")
-      .eq("user_id", user.id)
-      .eq("season_id", question.season_id)
-      .single();
-    isJoined = entry?.status === "PAID" || entry?.status === "JOINED";
-
     const { data: forecast } = await supabase
       .from("forecasts")
       .select("*")
@@ -83,22 +73,11 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
 
       <Separator />
 
-      {isOpen && user && isJoined && (
+      {isOpen && user && (
         <Card>
           <CardHeader><CardTitle className="text-lg">Your Forecast</CardTitle></CardHeader>
           <CardContent>
             <ForecastForm questionId={id} currentProbability={userForecast?.probability ?? null} />
-          </CardContent>
-        </Card>
-      )}
-
-      {isOpen && user && !isJoined && (
-        <Card>
-          <CardContent className="py-6 text-center text-muted-foreground">
-            <Link href={`/join/${question.season_id}`} className="underline text-primary">
-              Join the season (free)
-            </Link>{" "}
-            to start forecasting.
           </CardContent>
         </Card>
       )}

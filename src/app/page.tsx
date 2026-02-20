@@ -19,18 +19,6 @@ export default async function HomePage() {
     .eq("status", "LIVE")
     .single();
 
-  // Check if user has joined (PAID or JOINED)
-  let isJoined = false;
-  if (user && season) {
-    const { data: entry } = await supabase
-      .from("season_entries")
-      .select("*")
-      .eq("user_id", user.id)
-      .eq("season_id", season.id)
-      .single();
-    isJoined = entry?.status === "PAID" || entry?.status === "JOINED";
-  }
-
   // Get upcoming questions
   let upcomingQuestions: any[] = [];
   if (season) {
@@ -44,7 +32,6 @@ export default async function HomePage() {
       .limit(3);
 
     if (data) {
-      // Get forecast counts and user forecasts for these questions
       for (const q of data) {
         const { count } = await supabase
           .from("forecasts")
@@ -67,12 +54,12 @@ export default async function HomePage() {
     }
   }
 
-  // Get top 5 leaderboard
+  // Get top 5 leaderboard from season entries
   let leaderboardEntries: any[] = [];
   if (season) {
     const { data: entries } = await supabase
       .from("season_entries")
-      .select("user_id, paid_at, created_at, profiles(id, name, email, avatar_url, display_name)")
+      .select("user_id, created_at, profiles(id, name, email, avatar_url, display_name)")
       .eq("season_id", season.id)
       .in("status", ["PAID", "JOINED"]);
 
@@ -144,6 +131,16 @@ export default async function HomePage() {
     }
   }
 
+  // Show How It Works to users who haven't forecasted yet
+  let hasForecasted = false;
+  if (user && season) {
+    const { count } = await supabase
+      .from("forecasts")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id);
+    hasForecasted = (count ?? 0) > 0;
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -162,8 +159,6 @@ export default async function HomePage() {
           prize3rdCents={season.prize_3rd_cents}
           prizeBonusCents={season.prize_bonus_cents}
           status={season.status}
-          isJoined={isJoined}
-          isAuthenticated={!!user}
         />
       ) : (
         <Card>
@@ -173,7 +168,7 @@ export default async function HomePage() {
         </Card>
       )}
 
-      {!isJoined && season && (
+      {!hasForecasted && season && (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">How It Works</CardTitle>
