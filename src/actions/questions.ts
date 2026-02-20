@@ -1,80 +1,72 @@
 "use server";
 
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { Category } from "@prisma/client";
 
 async function requireAdmin() {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Not authenticated");
-  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
-  if (user?.role !== "ADMIN") throw new Error("Admin access required");
-  return session.user;
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+  const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+  if (profile?.role !== "ADMIN") throw new Error("Admin access required");
+  return { user, supabase };
 }
+
+type Category = "SPORTS" | "CAMPUS" | "ACADEMICS" | "GREEK" | "OTHER";
 
 export async function createQuestion(data: {
   seasonId: string;
   title: string;
   description: string;
-  category: Category;
+  category: string;
   closeTime: string;
   resolveTime: string;
 }) {
-  await requireAdmin();
-  const question = await prisma.question.create({
-    data: {
-      seasonId: data.seasonId,
-      title: data.title,
-      description: data.description,
-      category: data.category,
-      closeTime: new Date(data.closeTime),
-      resolveTime: new Date(data.resolveTime),
-      status: "OPEN",
-    },
+  const { supabase } = await requireAdmin();
+  await supabase.from("questions").insert({
+    season_id: data.seasonId,
+    title: data.title,
+    description: data.description,
+    category: data.category as Category,
+    close_time: data.closeTime,
+    resolve_time: data.resolveTime,
+    status: "OPEN",
   });
   revalidatePath("/admin/questions");
   revalidatePath("/questions");
-  return question;
 }
 
 export async function updateQuestion(id: string, data: {
   title?: string;
   description?: string;
-  category?: Category;
+  category?: string;
   closeTime?: string;
   resolveTime?: string;
 }) {
-  await requireAdmin();
-  const question = await prisma.question.update({
-    where: { id },
-    data: {
-      ...(data.title && { title: data.title }),
-      ...(data.description && { description: data.description }),
-      ...(data.category && { category: data.category }),
-      ...(data.closeTime && { closeTime: new Date(data.closeTime) }),
-      ...(data.resolveTime && { resolveTime: new Date(data.resolveTime) }),
-    },
-  });
+  const { supabase } = await requireAdmin();
+  const updateData: Record<string, any> = {};
+  if (data.title) updateData.title = data.title;
+  if (data.description) updateData.description = data.description;
+  if (data.category) updateData.category = data.category;
+  if (data.closeTime) updateData.close_time = data.closeTime;
+  if (data.resolveTime) updateData.resolve_time = data.resolveTime;
+
+  await supabase.from("questions").update(updateData as any).eq("id", id);
   revalidatePath("/admin/questions");
   revalidatePath("/questions");
-  return question;
 }
 
 export async function resolveQuestion(id: string, outcome: boolean) {
-  await requireAdmin();
-  const question = await prisma.question.findUnique({ where: { id } });
+  const { supabase } = await requireAdmin();
+  const { data: question } = await supabase.from("questions").select("*").eq("id", id).single();
   if (!question) throw new Error("Question not found");
-  if (question.status === "RESOLVED") throw new Error("Question already resolved");
+  if (question.status === "RESOLVED") throw new Error("Already resolved");
 
-  await prisma.question.update({
-    where: { id },
-    data: {
-      status: "RESOLVED",
-      resolvedOutcome: outcome,
-      resolvedAt: new Date(),
-    },
-  });
+  await supabase.from("questions").update({
+    status: "RESOLVED",
+    resolved_outcome: outcome,
+    resolved_at: new Date().toISOString(),
+  }).eq("id", id);
 
   revalidatePath("/admin/questions");
   revalidatePath("/questions");

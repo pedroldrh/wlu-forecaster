@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useSession, signIn, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,11 +10,48 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { BarChart3, Menu, X, User, LogOut, Shield } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 
 export function Nav() {
-  const { data: session } = useSession();
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const router = useRouter();
+  const supabase = createClient();
+
+  useEffect(() => {
+    async function getUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      if (user) {
+        const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+        setProfile(data);
+      }
+    }
+    getUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser(session.user);
+        supabase.from("profiles").select("*").eq("id", session.user.id).single().then(({ data }) => setProfile(data));
+      } else {
+        setUser(null);
+        setProfile(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setProfile(null);
+    router.push("/");
+    router.refresh();
+  };
 
   const links = [
     { href: "/", label: "Home" },
@@ -41,11 +77,8 @@ export function Nav() {
                 {link.label}
               </Link>
             ))}
-            {session?.user?.role === "ADMIN" && (
-              <Link
-                href="/admin"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
+            {profile?.role === "ADMIN" && (
+              <Link href="/admin" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Admin
               </Link>
             )}
@@ -53,32 +86,26 @@ export function Nav() {
         </div>
 
         <div className="flex items-center gap-2">
-          {session?.user ? (
+          {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="gap-2">
-                  {session.user.image ? (
-                    <img
-                      src={session.user.image}
-                      alt=""
-                      className="h-6 w-6 rounded-full"
-                    />
+                  {profile?.avatar_url ? (
+                    <img src={profile.avatar_url} alt="" className="h-6 w-6 rounded-full" />
                   ) : (
                     <User className="h-4 w-4" />
                   )}
-                  <span className="hidden sm:inline">
-                    {session.user.name || "Account"}
-                  </span>
+                  <span className="hidden sm:inline">{profile?.name || "Account"}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>
-                  <Link href={`/u/${session.user.id}`}>
+                  <Link href={`/u/${user.id}`}>
                     <User className="mr-2 h-4 w-4" />
                     Profile
                   </Link>
                 </DropdownMenuItem>
-                {session.user.role === "ADMIN" && (
+                {profile?.role === "ADMIN" && (
                   <DropdownMenuItem asChild>
                     <Link href="/admin">
                       <Shield className="mr-2 h-4 w-4" />
@@ -87,24 +114,19 @@ export function Nav() {
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => signOut()}>
+                <DropdownMenuItem onClick={handleSignOut}>
                   <LogOut className="mr-2 h-4 w-4" />
                   Sign out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button size="sm" onClick={() => signIn("github")}>
-              Sign in
+            <Button size="sm" asChild>
+              <Link href="/signin">Sign in</Link>
             </Button>
           )}
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={() => setMobileOpen(!mobileOpen)}
-          >
+          <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
         </div>
@@ -113,21 +135,12 @@ export function Nav() {
       {mobileOpen && (
         <div className="md:hidden border-t px-4 py-3 space-y-2">
           {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setMobileOpen(false)}
-              className="block text-sm py-1 text-muted-foreground hover:text-foreground"
-            >
+            <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)} className="block text-sm py-1 text-muted-foreground hover:text-foreground">
               {link.label}
             </Link>
           ))}
-          {session?.user?.role === "ADMIN" && (
-            <Link
-              href="/admin"
-              onClick={() => setMobileOpen(false)}
-              className="block text-sm py-1 text-muted-foreground hover:text-foreground"
-            >
+          {profile?.role === "ADMIN" && (
+            <Link href="/admin" onClick={() => setMobileOpen(false)} className="block text-sm py-1 text-muted-foreground hover:text-foreground">
               Admin
             </Link>
           )}

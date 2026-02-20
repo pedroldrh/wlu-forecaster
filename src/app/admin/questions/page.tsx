@@ -1,5 +1,4 @@
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,16 +8,29 @@ import { formatDateTime } from "@/lib/utils";
 import Link from "next/link";
 
 export default async function AdminQuestionsPage() {
-  const session = await auth();
-  if (session?.user?.role !== "ADMIN") redirect("/");
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/signin");
+  const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+  if (profile?.role !== "ADMIN") redirect("/");
 
-  const questions = await prisma.question.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      season: { select: { name: true } },
-      _count: { select: { forecasts: true } },
-    },
-  });
+  const { data: questions } = await supabase
+    .from("questions")
+    .select("*, seasons(name)")
+    .order("created_at", { ascending: false });
+
+  // Fetch forecast counts for each question in parallel
+  const questionIds = (questions ?? []).map((q) => q.id);
+  const forecastCounts = await Promise.all(
+    questionIds.map((id) =>
+      supabase
+        .from("forecasts")
+        .select("*", { count: "exact", head: true })
+        .eq("question_id", id)
+        .then((res) => ({ id, count: res.count ?? 0 }))
+    )
+  );
+  const forecastCountMap = Object.fromEntries(forecastCounts.map((f) => [f.id, f.count]));
 
   return (
     <div className="space-y-6">
@@ -29,11 +41,11 @@ export default async function AdminQuestionsPage() {
         </Button>
       </div>
 
-      {questions.length === 0 ? (
+      {(questions ?? []).length === 0 ? (
         <p className="text-center text-muted-foreground py-8">No questions yet.</p>
       ) : (
         <div className="space-y-3">
-          {questions.map((q) => (
+          {(questions ?? []).map((q) => (
             <Card key={q.id}>
               <CardContent className="pt-4">
                 <div className="flex items-start justify-between gap-3">
@@ -43,13 +55,13 @@ export default async function AdminQuestionsPage() {
                       <Badge variant={q.status === "OPEN" ? "default" : "secondary"}>
                         {QUESTION_STATUS_LABELS[q.status]}
                       </Badge>
-                      {q.resolvedOutcome !== null && (
-                        <Badge>{q.resolvedOutcome ? "YES" : "NO"}</Badge>
+                      {q.resolved_outcome !== null && (
+                        <Badge>{q.resolved_outcome ? "YES" : "NO"}</Badge>
                       )}
                     </div>
                     <p className="font-medium">{q.title}</p>
                     <p className="text-xs text-muted-foreground">
-                      {q.season.name} · {q._count.forecasts} forecasts · Closes {formatDateTime(q.closeTime)}
+                      {q.seasons?.name} · {forecastCountMap[q.id] ?? 0} forecasts · Closes {formatDateTime(q.close_time)}
                     </p>
                   </div>
                   <div className="flex gap-2 shrink-0">

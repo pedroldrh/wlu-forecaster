@@ -1,5 +1,4 @@
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCents, formatDate } from "@/lib/utils";
@@ -8,16 +7,33 @@ import { JoinButton } from "./join-button";
 
 export default async function JoinPage({ params }: { params: Promise<{ seasonId: string }> }) {
   const { seasonId } = await params;
-  const session = await auth();
-  if (!session) redirect("/signin");
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/signin");
 
-  const season = await prisma.season.findUnique({ where: { id: seasonId } });
+  // Get profile for is_wlu_verified check
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single();
+
+  const { data: season } = await supabase
+    .from("seasons")
+    .select("*")
+    .eq("id", seasonId)
+    .single();
+
   if (!season || season.status !== "LIVE") redirect("/");
 
   // Check if already paid
-  const existing = await prisma.seasonEntry.findUnique({
-    where: { userId_seasonId: { userId: session.user.id, seasonId } },
-  });
+  const { data: existing } = await supabase
+    .from("season_entries")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("season_id", seasonId)
+    .single();
+
   if (existing?.status === "PAID") redirect("/");
 
   return (
@@ -26,12 +42,12 @@ export default async function JoinPage({ params }: { params: Promise<{ seasonId:
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">{season.name}</CardTitle>
           <CardDescription>
-            {formatDate(season.startDate)} — {formatDate(season.endDate)}
+            {formatDate(new Date(season.start_date))} — {formatDate(new Date(season.end_date))}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="text-center">
-            <div className="text-4xl font-bold">{formatCents(season.entryFeeCents)}</div>
+            <div className="text-4xl font-bold">{formatCents(season.entry_fee_cents)}</div>
             <p className="text-sm text-muted-foreground mt-1">One-time entry fee</p>
           </div>
 
@@ -59,10 +75,10 @@ export default async function JoinPage({ params }: { params: Promise<{ seasonId:
             </div>
           </div>
 
-          {!session.user.isWluVerified ? (
+          {!profile?.is_wlu_verified ? (
             <div className="text-center p-4 border rounded-lg">
               <p className="text-sm text-muted-foreground">
-                Your GitHub account must be linked to a @mail.wlu.edu email to participate.
+                You must sign in with a @mail.wlu.edu email to participate.
               </p>
             </div>
           ) : (

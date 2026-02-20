@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,13 +18,6 @@ export default function NewQuestionPage() {
   const [category, setCategory] = useState("OTHER");
   const [seasonId, setSeasonId] = useState("");
   const [seasons, setSeasons] = useState<{id: string; name: string}[]>([]);
-
-  useEffect(() => {
-    fetch("/api/auth/session").then(() => {
-      // We'd normally fetch seasons via a server action, but for simplicity
-      // we'll use the first LIVE season. For the admin form we need a seasonId.
-    });
-  }, []);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();

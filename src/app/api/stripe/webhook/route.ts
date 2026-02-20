@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
-import { prisma } from "@/lib/prisma";
+import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
 
 export async function POST(req: NextRequest) {
@@ -29,20 +29,24 @@ export async function POST(req: NextRequest) {
     const seasonId = session.metadata?.seasonId;
 
     if (userId && seasonId) {
-      await prisma.seasonEntry.updateMany({
-        where: {
-          userId,
-          seasonId,
-          status: "PENDING",
-        },
-        data: {
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+
+      await supabase
+        .from("season_entries")
+        .update({
           status: "PAID",
-          stripeSessionId: session.id,
-          stripeCustomerId: session.customer as string | null,
-          stripePaymentIntent: session.payment_intent as string | null,
-          paidAt: new Date(),
-        },
-      });
+          stripe_session_id: session.id,
+          stripe_customer_id: (session.customer as string) || null,
+          stripe_payment_intent: (session.payment_intent as string) || null,
+          paid_at: new Date().toISOString(),
+        })
+        .eq("user_id", userId)
+        .eq("season_id", seasonId)
+        .eq("status", "PENDING");
+
       console.log(`Payment completed for user ${userId}, season ${seasonId}`);
     }
   }

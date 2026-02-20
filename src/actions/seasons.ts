@@ -1,16 +1,15 @@
 "use server";
 
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { SeasonStatus } from "@prisma/client";
 
 async function requireAdmin() {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Not authenticated");
-  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
-  if (user?.role !== "ADMIN") throw new Error("Admin access required");
-  return session.user;
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+  const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+  if (profile?.role !== "ADMIN") throw new Error("Admin access required");
+  return { user, supabase };
 }
 
 export async function createSeason(data: {
@@ -19,18 +18,16 @@ export async function createSeason(data: {
   endDate: string;
   entryFeeCents: number;
 }) {
-  await requireAdmin();
-  const season = await prisma.season.create({
-    data: {
-      name: data.name,
-      startDate: new Date(data.startDate),
-      endDate: new Date(data.endDate),
-      entryFeeCents: data.entryFeeCents,
-      status: "DRAFT",
-    },
+  const { supabase } = await requireAdmin();
+  const { error } = await supabase.from("seasons").insert({
+    name: data.name,
+    start_date: data.startDate,
+    end_date: data.endDate,
+    entry_fee_cents: data.entryFeeCents,
+    status: "DRAFT",
   });
+  if (error) throw new Error(error.message);
   revalidatePath("/admin/seasons");
-  return season;
 }
 
 export async function updateSeason(id: string, data: {
@@ -38,20 +35,17 @@ export async function updateSeason(id: string, data: {
   startDate?: string;
   endDate?: string;
   entryFeeCents?: number;
-  status?: SeasonStatus;
+  status?: string;
 }) {
-  await requireAdmin();
-  const season = await prisma.season.update({
-    where: { id },
-    data: {
-      ...(data.name && { name: data.name }),
-      ...(data.startDate && { startDate: new Date(data.startDate) }),
-      ...(data.endDate && { endDate: new Date(data.endDate) }),
-      ...(data.entryFeeCents !== undefined && { entryFeeCents: data.entryFeeCents }),
-      ...(data.status && { status: data.status }),
-    },
-  });
+  const { supabase } = await requireAdmin();
+  const updateData: Record<string, any> = {};
+  if (data.name) updateData.name = data.name;
+  if (data.startDate) updateData.start_date = data.startDate;
+  if (data.endDate) updateData.end_date = data.endDate;
+  if (data.entryFeeCents !== undefined) updateData.entry_fee_cents = data.entryFeeCents;
+  if (data.status) updateData.status = data.status;
+
+  await supabase.from("seasons").update(updateData as any).eq("id", id);
   revalidatePath("/admin/seasons");
   revalidatePath("/");
-  return season;
 }

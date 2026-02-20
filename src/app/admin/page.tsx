@@ -1,5 +1,4 @@
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,15 +6,23 @@ import Link from "next/link";
 import { Users, HelpCircle, Calendar, DollarSign } from "lucide-react";
 
 export default async function AdminPage() {
-  const session = await auth();
-  if (session?.user?.role !== "ADMIN") redirect("/");
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/signin");
+  const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+  if (profile?.role !== "ADMIN") redirect("/");
 
-  const [userCount, paidEntries, openQuestions, seasons] = await Promise.all([
-    prisma.user.count(),
-    prisma.seasonEntry.count({ where: { status: "PAID" } }),
-    prisma.question.count({ where: { status: "OPEN" } }),
-    prisma.season.count(),
+  const [userResult, paidResult, openResult, seasonResult] = await Promise.all([
+    supabase.from("profiles").select("*", { count: "exact", head: true }),
+    supabase.from("season_entries").select("*", { count: "exact", head: true }).eq("status", "PAID"),
+    supabase.from("questions").select("*", { count: "exact", head: true }).eq("status", "OPEN"),
+    supabase.from("seasons").select("*", { count: "exact", head: true }),
   ]);
+
+  const userCount = userResult.count ?? 0;
+  const paidEntries = paidResult.count ?? 0;
+  const openQuestions = openResult.count ?? 0;
+  const seasons = seasonResult.count ?? 0;
 
   return (
     <div className="space-y-6">

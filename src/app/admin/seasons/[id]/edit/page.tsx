@@ -1,15 +1,26 @@
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { createClient } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
 import { EditSeasonForm } from "./edit-form";
 
 export default async function EditSeasonPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const session = await auth();
-  if (session?.user?.role !== "ADMIN") redirect("/");
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/signin");
+  const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+  if (profile?.role !== "ADMIN") redirect("/");
 
-  const season = await prisma.season.findUnique({ where: { id } });
+  const { data: season } = await supabase.from("seasons").select("*").eq("id", id).single();
   if (!season) notFound();
 
-  return <EditSeasonForm season={JSON.parse(JSON.stringify(season))} />;
+  const formSeason = {
+    id: season.id,
+    name: season.name,
+    startDate: season.start_date,
+    endDate: season.end_date,
+    entryFeeCents: season.entry_fee_cents,
+    status: season.status,
+  };
+
+  return <EditSeasonForm season={formSeason} />;
 }

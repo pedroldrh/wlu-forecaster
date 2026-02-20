@@ -1,9 +1,7 @@
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { CalibrationChart } from "@/components/calibration-chart";
 import { seasonScore, brierPoints } from "@/lib/scoring";
 import { formatPercent, formatDate } from "@/lib/utils";
@@ -11,25 +9,35 @@ import { User, Trophy, Target, Flame } from "lucide-react";
 
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const session = await auth();
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  const user = await prisma.user.findUnique({
-    where: { id },
-    include: {
-      entries: {
-        include: { season: true },
-        where: { status: "PAID" },
-      },
-    },
-  });
+  // Fetch the profile
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", id)
+    .single();
 
-  if (!user) notFound();
+  if (!profile) notFound();
+
+  // Get season entries
+  const { data: entriesRaw } = await supabase
+    .from("season_entries")
+    .select("*, seasons(*)")
+    .eq("user_id", id)
+    .eq("status", "PAID");
+
+  const entries = entriesRaw ?? [];
 
   // Get current/latest season
-  const season = await prisma.season.findFirst({
-    where: { status: { in: ["LIVE", "ENDED"] } },
-    orderBy: { createdAt: "desc" },
-  });
+  const { data: season } = await supabase
+    .from("seasons")
+    .select("*")
+    .in("status", ["LIVE", "ENDED"])
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .single();
 
   let score = 0;
   let questionsPlayed = 0;
@@ -37,71 +45,119 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   let calibrationData: { probability: number; outcome: boolean }[] = [];
 
   if (season) {
-    const forecasts = await prisma.forecast.findMany({
-      where: {
-        userId: id,
-        question: { seasonId: season.id, status: "RESOLVED" },
-      },
-      include: { question: true },
-      orderBy: { submittedAt: "desc" },
-    });
+    // Get resolved question IDs for this season
+    const { data: resolvedQuestions } = await supabase
+      .from("questions")
+      .select("id, title, resolved_outcome")
+      .eq("season_id", season.id)
+      .eq("status", "RESOLVED");
 
-    const forCalc = forecasts.map((f) => ({
-      probability: f.probability,
-      outcome: f.question.resolvedOutcome!,
-    }));
+    const resolvedQs = resolvedQuestions ?? [];
+    const resolvedQuestionIds = resolvedQs.map((q) => q.id);
 
-    score = seasonScore(forCalc);
-    questionsPlayed = forecasts.length;
-    calibrationData = forCalc;
+    // Get forecasts for this user on resolved questions
+    if (resolvedQuestionIds.length > 0) {
+      const { data: forecasts } = await supabase
+        .from("forecasts")
+        .select("id, probability, question_id, submitted_at")
+        .eq("user_id", id)
+        .in("question_id", resolvedQuestionIds)
+        .order("submitted_at", { ascending: false });
 
-    resolvedForecasts = forecasts.map((f) => ({
-      probability: f.probability,
-      outcome: f.question.resolvedOutcome!,
-      title: f.question.title,
-      points: brierPoints(f.probability, f.question.resolvedOutcome!),
-    }));
+      const questionMap = new Map(resolvedQs.map((q) => [q.id, q]));
+
+      const forCalc = (forecasts ?? []).map((f) => {
+        const q = questionMap.get(f.question_id)!;
+        return {
+          probability: f.probability,
+          outcome: q.resolved_outcome as boolean,
+        };
+      });
+
+      score = seasonScore(forCalc);
+      questionsPlayed = (forecasts ?? []).length;
+      calibrationData = forCalc;
+
+      resolvedForecasts = (forecasts ?? []).map((f) => {
+        const q = questionMap.get(f.question_id)!;
+        return {
+          probability: f.probability,
+          outcome: q.resolved_outcome as boolean,
+          title: q.title,
+          points: brierPoints(f.probability, q.resolved_outcome as boolean),
+        };
+      });
+    }
   }
 
-  // Get all forecasts including unresolved
-  const allForecasts = season
-    ? await prisma.forecast.findMany({
-        where: { userId: id, question: { seasonId: season.id } },
-        include: { question: true },
-        orderBy: { submittedAt: "desc" },
-      })
-    : [];
+  // Get all forecasts including unresolved for this season
+  let allForecasts: { id: string; probability: number; question_id: string; submitted_at: string; question: { title: string; status: string; resolved_outcome: boolean | null } }[] = [];
+  if (season) {
+    // Get all question IDs for this season
+    const { data: allQuestions } = await supabase
+      .from("questions")
+      .select("id, title, status, resolved_outcome")
+      .eq("season_id", season.id);
+
+    const allQs = allQuestions ?? [];
+    const allQuestionIds = allQs.map((q) => q.id);
+
+    if (allQuestionIds.length > 0) {
+      const { data: forecasts } = await supabase
+        .from("forecasts")
+        .select("id, probability, question_id, submitted_at")
+        .eq("user_id", id)
+        .in("question_id", allQuestionIds)
+        .order("submitted_at", { ascending: false });
+
+      const questionMap = new Map(allQs.map((q) => [q.id, q]));
+      allForecasts = (forecasts ?? []).map((f) => {
+        const q = questionMap.get(f.question_id)!;
+        return {
+          ...f,
+          question: {
+            title: q.title,
+            status: q.status,
+            resolved_outcome: q.resolved_outcome,
+          },
+        };
+      });
+    }
+  }
 
   // Badges
   const badges: string[] = [];
-  if (user.isWluVerified) badges.push("W&L Verified");
+  if (profile.is_wlu_verified) badges.push("W&L Verified");
 
   // Check total resolved questions in season
   if (season) {
-    const totalResolved = await prisma.question.count({
-      where: { seasonId: season.id, status: "RESOLVED" },
-    });
-    if (totalResolved > 0 && questionsPlayed >= totalResolved * 0.9) {
+    const { count: totalResolved } = await supabase
+      .from("questions")
+      .select("*", { count: "exact", head: true })
+      .eq("season_id", season.id)
+      .eq("status", "RESOLVED");
+
+    if (totalResolved && totalResolved > 0 && questionsPlayed >= totalResolved * 0.9) {
       badges.push("Most Active");
     }
   }
 
-  const isOwnProfile = session?.user?.id === id;
+  const isOwnProfile = user?.id === id;
 
   return (
     <div className="space-y-6">
       <div className="flex items-start gap-4">
-        {user.image ? (
-          <img src={user.image} alt="" className="h-16 w-16 rounded-full" />
+        {profile.avatar_url ? (
+          <img src={profile.avatar_url} alt="" className="h-16 w-16 rounded-full" />
         ) : (
           <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
             <User className="h-8 w-8 text-muted-foreground" />
           </div>
         )}
         <div>
-          <h1 className="text-2xl font-bold">{user.name || "Anonymous"}</h1>
+          <h1 className="text-2xl font-bold">{profile.name || "Anonymous"}</h1>
           <p className="text-sm text-muted-foreground">
-            Joined {formatDate(user.createdAt)}
+            Joined {formatDate(new Date(profile.created_at))}
           </p>
           <div className="flex gap-2 mt-1">
             {badges.map((b) => (
@@ -160,7 +216,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                     <p className="text-sm font-medium truncate">{f.question.title}</p>
                     <p className="text-xs text-muted-foreground">
                       {f.question.status === "RESOLVED"
-                        ? `Resolved ${f.question.resolvedOutcome ? "YES" : "NO"}`
+                        ? `Resolved ${f.question.resolved_outcome ? "YES" : "NO"}`
                         : f.question.status}
                     </p>
                   </div>
@@ -168,7 +224,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                     <div className="font-mono text-sm">{Math.round(f.probability * 100)}%</div>
                     {f.question.status === "RESOLVED" && (
                       <div className="text-xs font-mono text-muted-foreground">
-                        {(brierPoints(f.probability, f.question.resolvedOutcome!) * 100).toFixed(1)} pts
+                        {(brierPoints(f.probability, f.question.resolved_outcome!) * 100).toFixed(1)} pts
                       </div>
                     )}
                   </div>

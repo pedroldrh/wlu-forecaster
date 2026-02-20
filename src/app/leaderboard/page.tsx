@@ -1,16 +1,19 @@
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { createClient } from "@/lib/supabase/server";
 import { LeaderboardTable } from "@/components/leaderboard-table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { seasonScore, rankUsers, UserScore } from "@/lib/scoring";
 
 export default async function LeaderboardPage() {
-  const session = await auth();
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  const season = await prisma.season.findFirst({
-    where: { status: { in: ["LIVE", "ENDED"] } },
-    orderBy: { createdAt: "desc" },
-  });
+  const { data: season } = await supabase
+    .from("seasons")
+    .select("*")
+    .in("status", ["LIVE", "ENDED"])
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .single();
 
   if (!season) {
     return (
@@ -20,50 +23,71 @@ export default async function LeaderboardPage() {
     );
   }
 
-  const entries = await prisma.seasonEntry.findMany({
-    where: { seasonId: season.id, status: "PAID" },
-    include: {
-      user: {
-        include: {
-          forecasts: {
-            where: {
-              question: { seasonId: season.id, status: "RESOLVED" },
-            },
-            include: { question: true },
-          },
-        },
-      },
-    },
-  });
+  // Get paid entries with profile data
+  const { data: entries } = await supabase
+    .from("season_entries")
+    .select("user_id, paid_at, profiles(id, name, email, avatar_url)")
+    .eq("season_id", season.id)
+    .eq("status", "PAID");
 
-  const users: UserScore[] = entries.map((entry) => ({
-    userId: entry.userId,
-    name: entry.user.name || entry.user.email,
-    score: seasonScore(
-      entry.user.forecasts.map((f) => ({
-        probability: f.probability,
-        outcome: f.question.resolvedOutcome!,
-      }))
-    ),
-    questionsPlayed: entry.user.forecasts.length,
-    paidAt: entry.paidAt,
-  }));
+  // Get resolved questions for this season
+  const { data: resolvedQuestions } = await supabase
+    .from("questions")
+    .select("id, resolved_outcome")
+    .eq("season_id", season.id)
+    .eq("status", "RESOLVED");
+
+  const resolvedQuestionIds = (resolvedQuestions ?? []).map((q) => q.id);
+  const resolvedCount = resolvedQuestionIds.length;
+
+  // Get all forecasts for resolved questions
+  const { data: forecasts } = resolvedQuestionIds.length > 0
+    ? await supabase
+        .from("forecasts")
+        .select("user_id, question_id, probability")
+        .in("question_id", resolvedQuestionIds)
+    : { data: [] as { user_id: string; question_id: string; probability: number }[] };
+
+  // Build a map of question_id -> resolved_outcome
+  const outcomeMap = new Map(
+    (resolvedQuestions ?? []).map((q) => [q.id, q.resolved_outcome as boolean])
+  );
+
+  // Build a map of user_id -> forecasts
+  const forecastsByUser = new Map<string, { probability: number; outcome: boolean }[]>();
+  for (const f of forecasts ?? []) {
+    const outcome = outcomeMap.get(f.question_id);
+    if (outcome === undefined) continue;
+    if (!forecastsByUser.has(f.user_id)) forecastsByUser.set(f.user_id, []);
+    forecastsByUser.get(f.user_id)!.push({ probability: f.probability, outcome });
+  }
+
+  const users: UserScore[] = (entries ?? []).map((entry) => {
+    const profile = entry.profiles as unknown as { id: string; name: string | null; email: string; avatar_url: string | null } | null;
+    const userForecasts = forecastsByUser.get(entry.user_id) ?? [];
+    return {
+      userId: entry.user_id,
+      name: profile?.name || profile?.email || "Anonymous",
+      score: seasonScore(userForecasts),
+      questionsPlayed: userForecasts.length,
+      paidAt: entry.paid_at ? new Date(entry.paid_at) : null,
+    };
+  });
 
   const ranked = rankUsers(users);
 
-  const leaderboardEntries = ranked.map((u, i) => ({
-    rank: i + 1,
-    userId: u.userId,
-    name: u.name,
-    image: entries.find((e) => e.userId === u.userId)?.user.image,
-    score: u.score,
-    questionsPlayed: u.questionsPlayed,
-    isCurrentUser: u.userId === session?.user?.id,
-  }));
-
-  // Count resolved questions
-  const resolvedCount = await prisma.question.count({
-    where: { seasonId: season.id, status: "RESOLVED" },
+  const leaderboardEntries = ranked.map((u, i) => {
+    const entry = (entries ?? []).find((e) => e.user_id === u.userId);
+    const profile = entry?.profiles as unknown as { id: string; name: string | null; email: string; avatar_url: string | null } | null;
+    return {
+      rank: i + 1,
+      userId: u.userId,
+      name: u.name,
+      image: profile?.avatar_url,
+      score: u.score,
+      questionsPlayed: u.questionsPlayed,
+      isCurrentUser: u.userId === user?.id,
+    };
   });
 
   return (

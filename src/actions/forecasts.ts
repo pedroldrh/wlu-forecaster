@@ -1,53 +1,54 @@
 "use server";
 
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
 export async function submitForecast(questionId: string, probability: number) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Not authenticated");
-  if (!session.user.isWluVerified) throw new Error("W&L verification required");
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
   if (probability < 0 || probability > 1) throw new Error("Probability must be between 0 and 1");
 
+  // Check WLU verified
+  const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+  if (!profile?.is_wlu_verified) throw new Error("W&L verification required");
+
   // Check question is open
-  const question = await prisma.question.findUnique({
-    where: { id: questionId },
-    include: { season: true },
-  });
+  const { data: question } = await supabase.from("questions").select("*").eq("id", questionId).single();
   if (!question) throw new Error("Question not found");
   if (question.status !== "OPEN") throw new Error("Question is not open");
-  if (new Date() > question.closeTime) throw new Error("Question has closed");
+  if (new Date() > new Date(question.close_time)) throw new Error("Question has closed");
 
-  // Check user has paid entry for this season
-  const entry = await prisma.seasonEntry.findUnique({
-    where: {
-      userId_seasonId: {
-        userId: session.user.id,
-        seasonId: question.seasonId,
-      },
-    },
-  });
+  // Check paid entry
+  const { data: entry } = await supabase
+    .from("season_entries")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("season_id", question.season_id)
+    .single();
   if (!entry || entry.status !== "PAID") throw new Error("Paid season entry required");
 
   // Upsert forecast
-  await prisma.forecast.upsert({
-    where: {
-      userId_questionId: {
-        userId: session.user.id,
-        questionId,
-      },
-    },
-    update: {
+  const { data: existing } = await supabase
+    .from("forecasts")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("question_id", questionId)
+    .single();
+
+  if (existing) {
+    await supabase
+      .from("forecasts")
+      .update({ probability, submitted_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+      .eq("id", existing.id);
+  } else {
+    await supabase.from("forecasts").insert({
+      user_id: user.id,
+      question_id: questionId,
       probability,
-      submittedAt: new Date(),
-    },
-    create: {
-      userId: session.user.id,
-      questionId,
-      probability,
-    },
-  });
+    });
+  }
 
   revalidatePath(`/questions/${questionId}`);
   revalidatePath("/questions");

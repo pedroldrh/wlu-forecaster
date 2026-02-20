@@ -1,5 +1,4 @@
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,13 +8,44 @@ import { formatDate, formatCents } from "@/lib/utils";
 import Link from "next/link";
 
 export default async function AdminSeasonsPage() {
-  const session = await auth();
-  if (session?.user?.role !== "ADMIN") redirect("/");
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/signin");
+  const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+  if (profile?.role !== "ADMIN") redirect("/");
 
-  const seasons = await prisma.season.findMany({
-    orderBy: { createdAt: "desc" },
-    include: { _count: { select: { entries: { where: { status: "PAID" } }, questions: true } } },
-  });
+  const { data: seasons } = await supabase
+    .from("seasons")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  // Fetch paid entry counts and question counts for each season in parallel
+  const seasonIds = (seasons ?? []).map((s) => s.id);
+
+  const [entryCounts, questionCounts] = await Promise.all([
+    Promise.all(
+      seasonIds.map((id) =>
+        supabase
+          .from("season_entries")
+          .select("*", { count: "exact", head: true })
+          .eq("season_id", id)
+          .eq("status", "PAID")
+          .then((res) => ({ id, count: res.count ?? 0 }))
+      )
+    ),
+    Promise.all(
+      seasonIds.map((id) =>
+        supabase
+          .from("questions")
+          .select("*", { count: "exact", head: true })
+          .eq("season_id", id)
+          .then((res) => ({ id, count: res.count ?? 0 }))
+      )
+    ),
+  ]);
+
+  const entryCountMap = Object.fromEntries(entryCounts.map((e) => [e.id, e.count]));
+  const questionCountMap = Object.fromEntries(questionCounts.map((q) => [q.id, q.count]));
 
   return (
     <div className="space-y-6">
@@ -26,11 +56,11 @@ export default async function AdminSeasonsPage() {
         </Button>
       </div>
 
-      {seasons.length === 0 ? (
+      {(seasons ?? []).length === 0 ? (
         <p className="text-center text-muted-foreground py-8">No seasons yet.</p>
       ) : (
         <div className="space-y-3">
-          {seasons.map((s) => (
+          {(seasons ?? []).map((s) => (
             <Card key={s.id}>
               <CardContent className="pt-4 flex items-center justify-between">
                 <div>
@@ -41,7 +71,7 @@ export default async function AdminSeasonsPage() {
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {formatDate(s.startDate)} — {formatDate(s.endDate)} · {formatCents(s.entryFeeCents)} · {s._count.entries} entries · {s._count.questions} questions
+                    {formatDate(s.start_date)} — {formatDate(s.end_date)} · {formatCents(s.entry_fee_cents)} · {entryCountMap[s.id] ?? 0} entries · {questionCountMap[s.id] ?? 0} questions
                   </p>
                 </div>
                 <div className="flex gap-2">

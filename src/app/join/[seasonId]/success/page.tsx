@@ -1,5 +1,4 @@
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,12 +7,16 @@ import Link from "next/link";
 
 export default async function SuccessPage({ params }: { params: Promise<{ seasonId: string }> }) {
   const { seasonId } = await params;
-  const session = await auth();
-  if (!session) redirect("/signin");
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/signin");
 
-  const entry = await prisma.seasonEntry.findUnique({
-    where: { userId_seasonId: { userId: session.user.id, seasonId } },
-  });
+  const { data: entry } = await supabase
+    .from("season_entries")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("season_id", seasonId)
+    .single();
 
   return (
     <div className="max-w-md mx-auto">
