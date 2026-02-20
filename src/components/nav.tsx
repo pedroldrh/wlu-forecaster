@@ -57,6 +57,7 @@ export function Nav() {
     { href: "/", label: "Home" },
     { href: "/questions", label: "Questions" },
     { href: "/leaderboard", label: "Leaderboard" },
+    { href: "/how-it-works", label: "How It Works" },
   ];
 
   return (
