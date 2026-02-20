@@ -15,7 +15,11 @@ interface Season {
   name: string;
   startDate: string;
   endDate: string;
-  entryFeeCents: number;
+  prize1stCents: number;
+  prize2ndCents: number;
+  prize3rdCents: number;
+  prizeBonusCents: number;
+  minParticipationPct: number;
   status: string;
 }
 
@@ -33,7 +37,11 @@ export function EditSeasonForm({ season }: { season: Season }) {
         name: form.get("name") as string,
         startDate: form.get("startDate") as string,
         endDate: form.get("endDate") as string,
-        entryFeeCents: Math.round(parseFloat(form.get("entryFee") as string) * 100),
+        prize1stCents: Math.round(parseFloat(form.get("prize1st") as string) * 100),
+        prize2ndCents: Math.round(parseFloat(form.get("prize2nd") as string) * 100),
+        prize3rdCents: Math.round(parseFloat(form.get("prize3rd") as string) * 100),
+        prizeBonusCents: Math.round(parseFloat(form.get("prizeBonus") as string) * 100),
+        minParticipationPct: parseInt(form.get("minParticipation") as string),
         status: status as any,
       });
       toast.success("Season updated!");
@@ -66,8 +74,24 @@ export function EditSeasonForm({ season }: { season: Season }) {
               <Input id="endDate" name="endDate" type="date" defaultValue={season.endDate.split("T")[0]} required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="entryFee">Entry Fee ($)</Label>
-              <Input id="entryFee" name="entryFee" type="number" step="0.01" defaultValue={(season.entryFeeCents / 100).toFixed(2)} required />
+              <Label htmlFor="prize1st">1st Prize ($)</Label>
+              <Input id="prize1st" name="prize1st" type="number" step="1" min="0" defaultValue={Math.round(season.prize1stCents / 100)} required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="prize2nd">2nd Prize ($)</Label>
+              <Input id="prize2nd" name="prize2nd" type="number" step="1" min="0" defaultValue={Math.round(season.prize2ndCents / 100)} required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="prize3rd">3rd Prize ($)</Label>
+              <Input id="prize3rd" name="prize3rd" type="number" step="1" min="0" defaultValue={Math.round(season.prize3rdCents / 100)} required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="prizeBonus">Bonus Prize ($)</Label>
+              <Input id="prizeBonus" name="prizeBonus" type="number" step="1" min="0" defaultValue={Math.round(season.prizeBonusCents / 100)} required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="minParticipation">Min Participation (%)</Label>
+              <Input id="minParticipation" name="minParticipation" type="number" min="0" max="100" defaultValue={season.minParticipationPct} required />
             </div>
             <div className="space-y-2">
               <Label>Status</Label>

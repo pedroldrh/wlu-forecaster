@@ -28,3 +28,18 @@ export const QUESTION_STATUS_LABELS: Record<string, string> = {
 };
 
 export const TIMEZONE = "America/New_York";
+
+export const PRIZE_TYPE_LABELS: Record<string, string> = {
+  "1ST": "1st Place",
+  "2ND": "2nd Place",
+  "3RD": "3rd Place",
+  BONUS: "Single-Question Bonus",
+};
+
+export const DEFAULT_PRIZES = {
+  prize1stCents: 60000,
+  prize2ndCents: 25000,
+  prize3rdCents: 15000,
+  prizeBonusCents: 5000,
+  minParticipationPct: 70,
+};

@@ -16,14 +16,23 @@ export async function createSeason(data: {
   name: string;
   startDate: string;
   endDate: string;
-  entryFeeCents: number;
+  prize1stCents: number;
+  prize2ndCents: number;
+  prize3rdCents: number;
+  prizeBonusCents: number;
+  minParticipationPct: number;
 }) {
   const { supabase } = await requireAdmin();
   const { error } = await supabase.from("seasons").insert({
     name: data.name,
     start_date: data.startDate,
     end_date: data.endDate,
-    entry_fee_cents: data.entryFeeCents,
+    entry_fee_cents: 0,
+    prize_1st_cents: data.prize1stCents,
+    prize_2nd_cents: data.prize2ndCents,
+    prize_3rd_cents: data.prize3rdCents,
+    prize_bonus_cents: data.prizeBonusCents,
+    min_participation_pct: data.minParticipationPct,
     status: "DRAFT",
   });
   if (error) throw new Error(error.message);
@@ -34,17 +43,26 @@ export async function updateSeason(id: string, data: {
   name?: string;
   startDate?: string;
   endDate?: string;
-  entryFeeCents?: number;
+  prize1stCents?: number;
+  prize2ndCents?: number;
+  prize3rdCents?: number;
+  prizeBonusCents?: number;
+  minParticipationPct?: number;
   status?: string;
 }) {
   const { supabase } = await requireAdmin();
-  const updateData: Record<string, any> = {};
+  const updateData: Record<string, unknown> = {};
   if (data.name) updateData.name = data.name;
   if (data.startDate) updateData.start_date = data.startDate;
   if (data.endDate) updateData.end_date = data.endDate;
-  if (data.entryFeeCents !== undefined) updateData.entry_fee_cents = data.entryFeeCents;
+  if (data.prize1stCents !== undefined) updateData.prize_1st_cents = data.prize1stCents;
+  if (data.prize2ndCents !== undefined) updateData.prize_2nd_cents = data.prize2ndCents;
+  if (data.prize3rdCents !== undefined) updateData.prize_3rd_cents = data.prize3rdCents;
+  if (data.prizeBonusCents !== undefined) updateData.prize_bonus_cents = data.prizeBonusCents;
+  if (data.minParticipationPct !== undefined) updateData.min_participation_pct = data.minParticipationPct;
   if (data.status) updateData.status = data.status;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await supabase.from("seasons").update(updateData as any).eq("id", id);
   revalidatePath("/admin/seasons");
   revalidatePath("/");

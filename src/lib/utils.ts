@@ -27,6 +27,10 @@ export function formatCents(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
+export function formatDollars(cents: number): string {
+  return `$${Math.round(cents / 100)}`;
+}
+
 export function formatPercent(value: number): string {
   return `${(value * 100).toFixed(1)}%`;
 }

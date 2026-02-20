@@ -8,6 +8,7 @@ import { CATEGORY_LABELS } from "@/lib/constants";
 import { ForecastForm } from "./forecast-form";
 import { Users, CheckCircle, XCircle } from "lucide-react";
 import { brierPoints } from "@/lib/scoring";
+import Link from "next/link";
 
 export default async function QuestionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -29,7 +30,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
     .select("probability")
     .eq("question_id", id);
 
-  let isPaid = false;
+  let isJoined = false;
   let userForecast = null;
   if (user) {
     const { data: entry } = await supabase
@@ -38,7 +39,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
       .eq("user_id", user.id)
       .eq("season_id", question.season_id)
       .single();
-    isPaid = entry?.status === "PAID";
+    isJoined = entry?.status === "PAID" || entry?.status === "JOINED";
 
     const { data: forecast } = await supabase
       .from("forecasts")
@@ -82,7 +83,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
 
       <Separator />
 
-      {isOpen && user && isPaid && (
+      {isOpen && user && isJoined && (
         <Card>
           <CardHeader><CardTitle className="text-lg">Your Forecast</CardTitle></CardHeader>
           <CardContent>
@@ -91,10 +92,13 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
         </Card>
       )}
 
-      {isOpen && user && !isPaid && (
+      {isOpen && user && !isJoined && (
         <Card>
           <CardContent className="py-6 text-center text-muted-foreground">
-            You need a paid season entry to submit forecasts.
+            <Link href={`/join/${question.season_id}`} className="underline text-primary">
+              Join the season (free)
+            </Link>{" "}
+            to start forecasting.
           </CardContent>
         </Card>
       )}

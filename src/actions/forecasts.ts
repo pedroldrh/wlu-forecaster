@@ -27,7 +27,7 @@ export async function submitForecast(questionId: string, probability: number) {
     .eq("user_id", user.id)
     .eq("season_id", question.season_id)
     .single();
-  if (!entry || entry.status !== "PAID") throw new Error("Paid season entry required");
+  if (!entry || !["PAID", "JOINED"].includes(entry.status)) throw new Error("Season entry required. Join the season first.");
 
   // Upsert forecast
   const { data: existing } = await supabase

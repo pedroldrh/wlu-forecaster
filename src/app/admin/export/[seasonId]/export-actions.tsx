@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { exportSeasonCSV, finalizeSeason } from "@/actions/export";
+import { exportSeasonCSV, finalizeSeason, createPrizeClaims } from "@/actions/export";
 import { toast } from "sonner";
-import { Download, Lock } from "lucide-react";
+import { Download, Lock, Trophy } from "lucide-react";
 
 export function ExportActions({ seasonId, status }: { seasonId: string; status: string }) {
   const [loading, setLoading] = useState(false);
@@ -41,12 +41,30 @@ export function ExportActions({ seasonId, status }: { seasonId: string; status: 
     }
   }
 
+  async function handleGeneratePrizes() {
+    setLoading(true);
+    try {
+      const result = await createPrizeClaims(seasonId);
+      toast.success(`Generated ${result.claims} prize claims!`);
+    } catch (error) {
+      toast.error("Failed to generate prize claims");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="flex gap-3">
       {status === "LIVE" && (
         <Button variant="outline" onClick={handleFinalize} disabled={loading}>
           <Lock className="mr-2 h-4 w-4" />
           Finalize Season
+        </Button>
+      )}
+      {status === "ENDED" && (
+        <Button variant="outline" onClick={handleGeneratePrizes} disabled={loading}>
+          <Trophy className="mr-2 h-4 w-4" />
+          Generate Prize Claims
         </Button>
       )}
       <Button onClick={handleExport} disabled={loading}>

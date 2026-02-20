@@ -5,7 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { CalibrationChart } from "@/components/calibration-chart";
 import { seasonScore, brierPoints } from "@/lib/scoring";
 import { formatPercent, formatDate } from "@/lib/utils";
-import { User, Trophy, Target, Flame } from "lucide-react";
+import { User } from "lucide-react";
+import { DisplayNameForm } from "./display-name-form";
 
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -21,12 +22,12 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
   if (!profile) notFound();
 
-  // Get season entries
+  // Get season entries (PAID or JOINED)
   const { data: entriesRaw } = await supabase
     .from("season_entries")
     .select("*, seasons(*)")
     .eq("user_id", id)
-    .eq("status", "PAID");
+    .in("status", ["PAID", "JOINED"]);
 
   const entries = entriesRaw ?? [];
 
@@ -93,7 +94,6 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   // Get all forecasts including unresolved for this season
   let allForecasts: { id: string; probability: number; question_id: string; submitted_at: string; question: { title: string; status: string; resolved_outcome: boolean | null } }[] = [];
   if (season) {
-    // Get all question IDs for this season
     const { data: allQuestions } = await supabase
       .from("questions")
       .select("id, title, status, resolved_outcome")
@@ -129,7 +129,6 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   const badges: string[] = [];
   if (profile.is_wlu_verified) badges.push("W&L Verified");
 
-  // Check total resolved questions in season
   if (season) {
     const { count: totalResolved } = await supabase
       .from("questions")
@@ -143,6 +142,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   }
 
   const isOwnProfile = user?.id === id;
+  const displayName = profile.display_name || profile.name || "Anonymous";
 
   return (
     <div className="space-y-6">
@@ -155,7 +155,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           </div>
         )}
         <div>
-          <h1 className="text-2xl font-bold">{profile.name || "Anonymous"}</h1>
+          <h1 className="text-2xl font-bold">{displayName}</h1>
           <p className="text-sm text-muted-foreground">
             Joined {formatDate(new Date(profile.created_at))}
           </p>
@@ -166,6 +166,10 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           </div>
         </div>
       </div>
+
+      {isOwnProfile && (
+        <DisplayNameForm currentDisplayName={profile.display_name || ""} />
+      )}
 
       {season && (
         <div className="grid grid-cols-3 gap-4">
@@ -199,6 +203,33 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           </CardHeader>
           <CardContent>
             <CalibrationChart forecasts={calibrationData} />
+          </CardContent>
+        </Card>
+      )}
+
+      {resolvedForecasts.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Brier Score Breakdown</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {resolvedForecasts.map((f, i) => (
+                <div key={i} className="flex items-center justify-between py-2 border-b last:border-0">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{f.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Resolved {f.outcome ? "YES" : "NO"} · Your forecast: {Math.round(f.probability * 100)}%
+                    </p>
+                  </div>
+                  <div className="text-right ml-4 shrink-0">
+                    <div className="font-mono text-sm font-bold">
+                      {(f.points * 100).toFixed(1)} pts
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       )}

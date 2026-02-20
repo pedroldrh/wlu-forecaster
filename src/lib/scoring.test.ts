@@ -4,8 +4,22 @@ import {
   brierPoints,
   seasonScore,
   rankUsers,
+  findBonusWinner,
   UserScore,
 } from "./scoring";
+
+function makeUser(overrides: Partial<UserScore> & { userId: string; name: string }): UserScore {
+  return {
+    score: 0,
+    questionsPlayed: 0,
+    joinedAt: new Date("2026-01-01"),
+    totalResolvedQuestions: 10,
+    participationPct: 100,
+    qualifiesForPrize: true,
+    avgSubmissionTime: 0,
+    ...overrides,
+  };
+}
 
 describe("brierScore", () => {
   it("returns 0 for perfect prediction (p=1, outcome=true)", () => {
@@ -99,8 +113,8 @@ describe("seasonScore", () => {
 describe("rankUsers", () => {
   it("ranks by score descending", () => {
     const users: UserScore[] = [
-      { userId: "a", name: "A", score: 0.5, questionsPlayed: 5, paidAt: new Date("2026-01-01") },
-      { userId: "b", name: "B", score: 0.8, questionsPlayed: 5, paidAt: new Date("2026-01-01") },
+      makeUser({ userId: "a", name: "A", score: 0.5, questionsPlayed: 5 }),
+      makeUser({ userId: "b", name: "B", score: 0.8, questionsPlayed: 5 }),
     ];
     const ranked = rankUsers(users);
     expect(ranked[0].userId).toBe("b");
@@ -109,17 +123,17 @@ describe("rankUsers", () => {
 
   it("breaks ties by questions played", () => {
     const users: UserScore[] = [
-      { userId: "a", name: "A", score: 0.8, questionsPlayed: 3, paidAt: new Date("2026-01-01") },
-      { userId: "b", name: "B", score: 0.8, questionsPlayed: 5, paidAt: new Date("2026-01-01") },
+      makeUser({ userId: "a", name: "A", score: 0.8, questionsPlayed: 3 }),
+      makeUser({ userId: "b", name: "B", score: 0.8, questionsPlayed: 5 }),
     ];
     const ranked = rankUsers(users);
     expect(ranked[0].userId).toBe("b");
   });
 
-  it("breaks further ties by earlier payment", () => {
+  it("breaks further ties by earlier avg submission time", () => {
     const users: UserScore[] = [
-      { userId: "a", name: "A", score: 0.8, questionsPlayed: 5, paidAt: new Date("2026-01-15") },
-      { userId: "b", name: "B", score: 0.8, questionsPlayed: 5, paidAt: new Date("2026-01-01") },
+      makeUser({ userId: "a", name: "A", score: 0.8, questionsPlayed: 5, avgSubmissionTime: 5000 }),
+      makeUser({ userId: "b", name: "B", score: 0.8, questionsPlayed: 5, avgSubmissionTime: 1000 }),
     ];
     const ranked = rankUsers(users);
     expect(ranked[0].userId).toBe("b");
@@ -127,10 +141,30 @@ describe("rankUsers", () => {
 
   it("does not mutate original array", () => {
     const users: UserScore[] = [
-      { userId: "a", name: "A", score: 0.5, questionsPlayed: 5, paidAt: new Date() },
-      { userId: "b", name: "B", score: 0.8, questionsPlayed: 5, paidAt: new Date() },
+      makeUser({ userId: "a", name: "A", score: 0.5, questionsPlayed: 5 }),
+      makeUser({ userId: "b", name: "B", score: 0.8, questionsPlayed: 5 }),
     ];
     rankUsers(users);
     expect(users[0].userId).toBe("a");
+  });
+});
+
+describe("findBonusWinner", () => {
+  it("returns null for empty map", () => {
+    expect(findBonusWinner(new Map())).toBe(null);
+  });
+
+  it("returns the user with the highest single-question score", () => {
+    const map = new Map<string, { probability: number; outcome: boolean; questionId: string }[]>();
+    map.set("a", [
+      { probability: 0.9, outcome: true, questionId: "q1" },  // 0.99 points
+      { probability: 0.5, outcome: true, questionId: "q2" },  // 0.75 points
+    ]);
+    map.set("b", [
+      { probability: 0.95, outcome: true, questionId: "q1" }, // 0.9975 points
+    ]);
+    const winner = findBonusWinner(map);
+    expect(winner?.userId).toBe("b");
+    expect(winner?.questionId).toBe("q1");
   });
 });

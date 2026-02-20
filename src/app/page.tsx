@@ -18,8 +18,8 @@ export default async function HomePage() {
     .eq("status", "LIVE")
     .single();
 
-  // Check if user has paid entry
-  let isPaid = false;
+  // Check if user has joined (PAID or JOINED)
+  let isJoined = false;
   if (user && season) {
     const { data: entry } = await supabase
       .from("season_entries")
@@ -27,7 +27,7 @@ export default async function HomePage() {
       .eq("user_id", user.id)
       .eq("season_id", season.id)
       .single();
-    isPaid = entry?.status === "PAID";
+    isJoined = entry?.status === "PAID" || entry?.status === "JOINED";
   }
 
   // Get upcoming questions
@@ -71,9 +71,9 @@ export default async function HomePage() {
   if (season) {
     const { data: entries } = await supabase
       .from("season_entries")
-      .select("user_id, paid_at, profiles(id, name, email, avatar_url)")
+      .select("user_id, paid_at, created_at, profiles(id, name, email, avatar_url, display_name)")
       .eq("season_id", season.id)
-      .eq("status", "PAID");
+      .in("status", ["PAID", "JOINED"]);
 
     if (entries && entries.length > 0) {
       const { data: resolvedQuestions } = await supabase
@@ -89,26 +89,41 @@ export default async function HomePage() {
       if (resolvedIds.length > 0) {
         const { data } = await supabase
           .from("forecasts")
-          .select("user_id, question_id, probability")
+          .select("user_id, question_id, probability, submitted_at")
           .in("question_id", resolvedIds);
         allForecasts = data || [];
       }
 
+      const totalResolved = resolvedIds.length;
+
       const users: UserScore[] = entries.map((entry) => {
         const userForecasts = allForecasts
-          .filter((f) => f.user_id === entry.user_id)
-          .map((f) => ({ probability: f.probability, outcome: resolvedMap.get(f.question_id)! }));
-        const profile = entry.profiles as unknown as { id: string; name: string; email: string; avatar_url: string };
+          .filter((f) => f.user_id === entry.user_id);
+        const scoringForecasts = userForecasts.map((f: any) => ({
+          probability: f.probability,
+          outcome: resolvedMap.get(f.question_id)!,
+        }));
+        const profile = entry.profiles as unknown as { id: string; name: string; email: string; avatar_url: string; display_name: string | null };
+        const participationPct = totalResolved > 0 ? (userForecasts.length / totalResolved) * 100 : 0;
+        const avgSubmissionTime = userForecasts.length > 0
+          ? userForecasts.reduce((sum: number, f: any) => sum + new Date(f.submitted_at).getTime(), 0) / userForecasts.length
+          : Infinity;
         return {
           userId: entry.user_id,
-          name: profile?.name || profile?.email || "Unknown",
-          score: seasonScore(userForecasts),
+          name: profile?.display_name || profile?.name || profile?.email || "Unknown",
+          score: seasonScore(scoringForecasts),
           questionsPlayed: userForecasts.length,
-          paidAt: entry.paid_at ? new Date(entry.paid_at) : null,
+          joinedAt: entry.created_at ? new Date(entry.created_at) : null,
+          totalResolvedQuestions: totalResolved,
+          participationPct,
+          qualifiesForPrize: participationPct >= (season.min_participation_pct ?? 70),
+          avgSubmissionTime,
         };
       });
 
       const ranked = rankUsers(users);
+      const prizeAmounts = [season.prize_1st_cents, season.prize_2nd_cents, season.prize_3rd_cents];
+
       leaderboardEntries = ranked.slice(0, 5).map((u, i) => {
         const entry = entries.find((e) => e.user_id === u.userId);
         const profile = entry?.profiles as unknown as { avatar_url: string };
@@ -120,16 +135,12 @@ export default async function HomePage() {
           score: u.score,
           questionsPlayed: u.questionsPlayed,
           isCurrentUser: u.userId === user?.id,
+          participationPct: u.participationPct,
+          qualifiesForPrize: u.qualifiesForPrize,
+          prizeCents: u.qualifiesForPrize && i < 3 ? prizeAmounts[i] : undefined,
         };
       });
     }
-  }
-
-  // Get user profile for auth check
-  let profile = null;
-  if (user) {
-    const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
-    profile = data;
   }
 
   return (
@@ -145,9 +156,12 @@ export default async function HomePage() {
           name={season.name}
           startDate={season.start_date}
           endDate={season.end_date}
-          entryFeeCents={season.entry_fee_cents}
+          prize1stCents={season.prize_1st_cents}
+          prize2ndCents={season.prize_2nd_cents}
+          prize3rdCents={season.prize_3rd_cents}
+          prizeBonusCents={season.prize_bonus_cents}
           status={season.status}
-          isPaid={isPaid}
+          isJoined={isJoined}
           isAuthenticated={!!user}
         />
       ) : (

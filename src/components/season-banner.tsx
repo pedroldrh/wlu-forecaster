@@ -1,19 +1,22 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { formatDate, formatCents } from "@/lib/utils";
+import { formatDate, formatDollars } from "@/lib/utils";
 import { SEASON_STATUS_LABELS } from "@/lib/constants";
 import Link from "next/link";
-import { Calendar, DollarSign } from "lucide-react";
+import { Calendar, Trophy } from "lucide-react";
 
 interface SeasonBannerProps {
   id: string;
   name: string;
   startDate: Date | string;
   endDate: Date | string;
-  entryFeeCents: number;
+  prize1stCents: number;
+  prize2ndCents: number;
+  prize3rdCents: number;
+  prizeBonusCents: number;
   status: string;
-  isPaid?: boolean;
+  isJoined?: boolean;
   isAuthenticated?: boolean;
 }
 
@@ -22,11 +25,16 @@ export function SeasonBanner({
   name,
   startDate,
   endDate,
-  entryFeeCents,
+  prize1stCents,
+  prize2ndCents,
+  prize3rdCents,
+  prizeBonusCents,
   status,
-  isPaid = false,
+  isJoined = false,
   isAuthenticated = false,
 }: SeasonBannerProps) {
+  const totalPrize = prize1stCents + prize2ndCents + prize3rdCents + prizeBonusCents;
+
   return (
     <Card>
       <CardContent className="pt-4 pb-4">
@@ -46,20 +54,20 @@ export function SeasonBanner({
                 {formatDate(startDate)} — {formatDate(endDate)}
               </span>
               <span className="flex items-center gap-1">
-                <DollarSign className="h-3.5 w-3.5" />
-                {formatCents(entryFeeCents)} entry
+                <Trophy className="h-3.5 w-3.5" />
+                FREE Entry | Prize Pool: {formatDollars(totalPrize)}
               </span>
             </div>
           </div>
           {status === "LIVE" && (
             <div>
-              {isPaid ? (
+              {isJoined ? (
                 <Badge variant="outline" className="text-green-600 border-green-600">
                   Entered
                 </Badge>
               ) : isAuthenticated ? (
                 <Button asChild>
-                  <Link href={`/join/${id}`}>Join Season</Link>
+                  <Link href={`/join/${id}`}>Join Free</Link>
                 </Button>
               ) : null}
             </div>

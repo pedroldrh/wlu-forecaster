@@ -1,8 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCents, formatDate } from "@/lib/utils";
-import { CheckCircle, Trophy, BarChart3, Users } from "lucide-react";
+import { formatDate, formatDollars } from "@/lib/utils";
+import { Trophy, BarChart3, Users, ShieldCheck } from "lucide-react";
 import { JoinButton } from "./join-button";
 
 export default async function JoinPage({ params }: { params: Promise<{ seasonId: string }> }) {
@@ -11,7 +11,6 @@ export default async function JoinPage({ params }: { params: Promise<{ seasonId:
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/signin");
 
-  // Get profile for is_wlu_verified check
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
@@ -26,7 +25,7 @@ export default async function JoinPage({ params }: { params: Promise<{ seasonId:
 
   if (!season || season.status !== "LIVE") redirect("/");
 
-  // Check if already paid
+  // Check if already joined
   const { data: existing } = await supabase
     .from("season_entries")
     .select("*")
@@ -34,7 +33,9 @@ export default async function JoinPage({ params }: { params: Promise<{ seasonId:
     .eq("season_id", seasonId)
     .single();
 
-  if (existing?.status === "PAID") redirect("/");
+  if (existing?.status === "PAID" || existing?.status === "JOINED") redirect("/");
+
+  const totalPrize = season.prize_1st_cents + season.prize_2nd_cents + season.prize_3rd_cents + season.prize_bonus_cents;
 
   return (
     <div className="max-w-md mx-auto space-y-6">
@@ -47,8 +48,24 @@ export default async function JoinPage({ params }: { params: Promise<{ seasonId:
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="text-center">
-            <div className="text-4xl font-bold">{formatCents(season.entry_fee_cents)}</div>
-            <p className="text-sm text-muted-foreground mt-1">One-time entry fee</p>
+            <div className="text-4xl font-bold text-green-600">FREE</div>
+            <p className="text-sm text-muted-foreground mt-1">
+              Prize Pool: {formatDollars(totalPrize)}
+            </p>
+          </div>
+
+          <div className="border rounded-lg p-4 space-y-2">
+            <p className="font-semibold text-sm">Prize Breakdown</p>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <span className="text-muted-foreground">1st Place</span>
+              <span className="font-mono text-right">{formatDollars(season.prize_1st_cents)}</span>
+              <span className="text-muted-foreground">2nd Place</span>
+              <span className="font-mono text-right">{formatDollars(season.prize_2nd_cents)}</span>
+              <span className="text-muted-foreground">3rd Place</span>
+              <span className="font-mono text-right">{formatDollars(season.prize_3rd_cents)}</span>
+              <span className="text-muted-foreground">Bonus Prize</span>
+              <span className="font-mono text-right">{formatDollars(season.prize_bonus_cents)}</span>
+            </div>
           </div>
 
           <div className="space-y-3">
@@ -67,10 +84,12 @@ export default async function JoinPage({ params }: { params: Promise<{ seasonId:
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Users className="h-5 w-5 mt-0.5 text-muted-foreground" />
+              <ShieldCheck className="h-5 w-5 mt-0.5 text-muted-foreground" />
               <div>
-                <p className="font-medium">Win Prizes</p>
-                <p className="text-sm text-muted-foreground">Top forecasters split the prize pool at season end</p>
+                <p className="font-medium">Participation Required</p>
+                <p className="text-sm text-muted-foreground">
+                  Forecast on at least {season.min_participation_pct}% of questions to qualify for prizes
+                </p>
               </div>
             </div>
           </div>

@@ -22,7 +22,11 @@ export default function NewSeasonPage() {
         name: form.get("name") as string,
         startDate: form.get("startDate") as string,
         endDate: form.get("endDate") as string,
-        entryFeeCents: Math.round(parseFloat(form.get("entryFee") as string) * 100),
+        prize1stCents: Math.round(parseFloat(form.get("prize1st") as string) * 100),
+        prize2ndCents: Math.round(parseFloat(form.get("prize2nd") as string) * 100),
+        prize3rdCents: Math.round(parseFloat(form.get("prize3rd") as string) * 100),
+        prizeBonusCents: Math.round(parseFloat(form.get("prizeBonus") as string) * 100),
+        minParticipationPct: parseInt(form.get("minParticipation") as string),
       });
       toast.success("Season created!");
       router.push("/admin/seasons");
@@ -54,8 +58,24 @@ export default function NewSeasonPage() {
               <Input id="endDate" name="endDate" type="date" required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="entryFee">Entry Fee ($)</Label>
-              <Input id="entryFee" name="entryFee" type="number" step="0.01" min="0" placeholder="25.00" required />
+              <Label htmlFor="prize1st">1st Prize ($)</Label>
+              <Input id="prize1st" name="prize1st" type="number" step="1" min="0" placeholder="600" defaultValue="600" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="prize2nd">2nd Prize ($)</Label>
+              <Input id="prize2nd" name="prize2nd" type="number" step="1" min="0" placeholder="250" defaultValue="250" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="prize3rd">3rd Prize ($)</Label>
+              <Input id="prize3rd" name="prize3rd" type="number" step="1" min="0" placeholder="150" defaultValue="150" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="prizeBonus">Bonus Prize ($)</Label>
+              <Input id="prizeBonus" name="prizeBonus" type="number" step="1" min="0" placeholder="50" defaultValue="50" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="minParticipation">Min Participation (%)</Label>
+              <Input id="minParticipation" name="minParticipation" type="number" min="0" max="100" placeholder="70" defaultValue="70" required />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Creating..." : "Create Season"}

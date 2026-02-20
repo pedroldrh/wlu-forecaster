@@ -18,17 +18,19 @@ export default async function SuccessPage({ params }: { params: Promise<{ season
     .eq("season_id", seasonId)
     .single();
 
+  const isEntered = entry?.status === "PAID" || entry?.status === "JOINED";
+
   return (
     <div className="max-w-md mx-auto">
       <Card>
         <CardHeader className="text-center">
           <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-2" />
           <CardTitle>
-            {entry?.status === "PAID" ? "You're In!" : "Processing Payment..."}
+            {isEntered ? "You're In!" : "Something went wrong"}
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center space-y-4">
-          {entry?.status === "PAID" ? (
+          {isEntered ? (
             <>
               <p className="text-muted-foreground">
                 Your entry has been confirmed. Start making forecasts!
@@ -40,11 +42,10 @@ export default async function SuccessPage({ params }: { params: Promise<{ season
           ) : (
             <>
               <p className="text-muted-foreground">
-                Your payment is being processed. This usually takes a few seconds.
-                Refresh the page if your status doesn't update.
+                We couldn't confirm your entry. Please try joining again.
               </p>
               <Button variant="outline" asChild>
-                <Link href="/">Go Home</Link>
+                <Link href={`/join/${seasonId}`}>Try Again</Link>
               </Button>
             </>
           )}

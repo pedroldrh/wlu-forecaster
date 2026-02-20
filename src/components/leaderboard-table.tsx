@@ -7,7 +7,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { cn, formatPercent } from "@/lib/utils";
+import { cn, formatPercent, formatDollars } from "@/lib/utils";
 import Link from "next/link";
 import { Trophy } from "lucide-react";
 
@@ -19,6 +19,9 @@ interface LeaderboardEntry {
   score: number;
   questionsPlayed: number;
   isCurrentUser?: boolean;
+  participationPct?: number;
+  qualifiesForPrize?: boolean;
+  prizeCents?: number;
 }
 
 interface LeaderboardTableProps {
@@ -34,6 +37,8 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
     );
   }
 
+  const showParticipation = entries.some((e) => e.participationPct !== undefined);
+
   return (
     <Table>
       <TableHeader>
@@ -42,13 +47,17 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
           <TableHead>Player</TableHead>
           <TableHead className="text-right">Score</TableHead>
           <TableHead className="text-right">Questions</TableHead>
+          {showParticipation && <TableHead className="text-right">Participation</TableHead>}
         </TableRow>
       </TableHeader>
       <TableBody>
         {entries.map((entry) => (
           <TableRow
             key={entry.userId}
-            className={cn(entry.isCurrentUser && "bg-muted/50")}
+            className={cn(
+              entry.isCurrentUser && "bg-muted/50",
+              entry.qualifiesForPrize === false && "opacity-60"
+            )}
           >
             <TableCell className="font-mono">
               {entry.rank <= 3 ? (
@@ -62,6 +71,11 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
                     )}
                   />
                   {entry.rank}
+                  {entry.prizeCents ? (
+                    <span className="text-xs text-green-600 ml-1">
+                      {formatDollars(entry.prizeCents)}
+                    </span>
+                  ) : null}
                 </span>
               ) : (
                 entry.rank
@@ -85,12 +99,22 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
                     You
                   </Badge>
                 )}
+                {entry.qualifiesForPrize === false && (
+                  <Badge variant="secondary" className="text-xs">
+                    Not qualified
+                  </Badge>
+                )}
               </Link>
             </TableCell>
             <TableCell className="text-right font-mono">
               {formatPercent(entry.score)}
             </TableCell>
             <TableCell className="text-right">{entry.questionsPlayed}</TableCell>
+            {showParticipation && (
+              <TableCell className="text-right text-sm">
+                {entry.participationPct !== undefined ? `${entry.participationPct.toFixed(0)}%` : "—"}
+              </TableCell>
+            )}
           </TableRow>
         ))}
       </TableBody>

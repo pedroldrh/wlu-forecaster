@@ -6,6 +6,7 @@ export type Database = {
           id: string;
           email: string;
           name: string | null;
+          display_name: string | null;
           avatar_url: string | null;
           role: "USER" | "ADMIN";
           is_wlu_verified: boolean;
@@ -15,6 +16,7 @@ export type Database = {
           id: string;
           email: string;
           name?: string | null;
+          display_name?: string | null;
           avatar_url?: string | null;
           role?: "USER" | "ADMIN";
           is_wlu_verified?: boolean;
@@ -24,6 +26,7 @@ export type Database = {
           id?: string;
           email?: string;
           name?: string | null;
+          display_name?: string | null;
           avatar_url?: string | null;
           role?: "USER" | "ADMIN";
           is_wlu_verified?: boolean;
@@ -38,6 +41,11 @@ export type Database = {
           start_date: string;
           end_date: string;
           entry_fee_cents: number;
+          prize_1st_cents: number;
+          prize_2nd_cents: number;
+          prize_3rd_cents: number;
+          prize_bonus_cents: number;
+          min_participation_pct: number;
           status: "DRAFT" | "LIVE" | "ENDED" | "PAYOUTS_SENT";
           created_at: string;
         };
@@ -46,7 +54,12 @@ export type Database = {
           name: string;
           start_date: string;
           end_date: string;
-          entry_fee_cents: number;
+          entry_fee_cents?: number;
+          prize_1st_cents?: number;
+          prize_2nd_cents?: number;
+          prize_3rd_cents?: number;
+          prize_bonus_cents?: number;
+          min_participation_pct?: number;
           status?: "DRAFT" | "LIVE" | "ENDED" | "PAYOUTS_SENT";
           created_at?: string;
         };
@@ -56,6 +69,11 @@ export type Database = {
           start_date?: string;
           end_date?: string;
           entry_fee_cents?: number;
+          prize_1st_cents?: number;
+          prize_2nd_cents?: number;
+          prize_3rd_cents?: number;
+          prize_bonus_cents?: number;
+          min_participation_pct?: number;
           status?: "DRAFT" | "LIVE" | "ENDED" | "PAYOUTS_SENT";
           created_at?: string;
         };
@@ -66,7 +84,7 @@ export type Database = {
           id: string;
           user_id: string;
           season_id: string;
-          status: "PENDING" | "PAID";
+          status: "PENDING" | "PAID" | "JOINED";
           stripe_session_id: string | null;
           stripe_customer_id: string | null;
           stripe_payment_intent: string | null;
@@ -77,7 +95,7 @@ export type Database = {
           id?: string;
           user_id: string;
           season_id: string;
-          status?: "PENDING" | "PAID";
+          status?: "PENDING" | "PAID" | "JOINED";
           stripe_session_id?: string | null;
           stripe_customer_id?: string | null;
           stripe_payment_intent?: string | null;
@@ -88,7 +106,7 @@ export type Database = {
           id?: string;
           user_id?: string;
           season_id?: string;
-          status?: "PENDING" | "PAID";
+          status?: "PENDING" | "PAID" | "JOINED";
           stripe_session_id?: string | null;
           stripe_customer_id?: string | null;
           stripe_payment_intent?: string | null;
@@ -203,6 +221,54 @@ export type Database = {
             columns: ["question_id"];
             isOneToOne: false;
             referencedRelation: "questions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      prize_claims: {
+        Row: {
+          id: string;
+          season_id: string;
+          user_id: string;
+          prize_type: "1ST" | "2ND" | "3RD" | "BONUS";
+          amount_cents: number;
+          verified: boolean;
+          claimed_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          season_id: string;
+          user_id: string;
+          prize_type: "1ST" | "2ND" | "3RD" | "BONUS";
+          amount_cents: number;
+          verified?: boolean;
+          claimed_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          season_id?: string;
+          user_id?: string;
+          prize_type?: "1ST" | "2ND" | "3RD" | "BONUS";
+          amount_cents?: number;
+          verified?: boolean;
+          claimed_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "prize_claims_season_id_fkey";
+            columns: ["season_id"];
+            isOneToOne: false;
+            referencedRelation: "seasons";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "prize_claims_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
         ];
