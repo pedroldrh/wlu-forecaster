@@ -18,7 +18,26 @@ export function ForecastSlider({
   disabled = false,
 }: ForecastSliderProps) {
   const [value, setValue] = useState(defaultValue);
+  const [inputText, setInputText] = useState(String(defaultValue));
   const [submitting, setSubmitting] = useState(false);
+
+  const handleSliderChange = ([v]: number[]) => {
+    setValue(v);
+    setInputText(String(v));
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    setInputText(raw);
+    const n = parseInt(raw);
+    if (!isNaN(n) && n >= 0 && n <= 100) {
+      setValue(n);
+    }
+  };
+
+  const handleInputBlur = () => {
+    setInputText(String(value));
+  };
 
   const handleSubmit = async () => {
     setSubmitting(true);
@@ -37,28 +56,27 @@ export function ForecastSlider({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-4">
-        <div className="flex-1">
+      <div className="flex items-center gap-3">
+        <div className="flex-1 min-w-0">
           <Slider
             value={[value]}
-            onValueChange={([v]) => setValue(v)}
+            onValueChange={handleSliderChange}
             min={0}
             max={100}
             step={1}
             disabled={disabled || submitting}
           />
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 shrink-0">
           <Input
             type="number"
+            inputMode="numeric"
             min={0}
             max={100}
-            value={value}
-            onChange={(e) => {
-              const n = parseInt(e.target.value);
-              if (!isNaN(n) && n >= 0 && n <= 100) setValue(n);
-            }}
-            className={cn("w-20 text-center font-mono text-lg", getColor())}
+            value={inputText}
+            onChange={handleInputChange}
+            onBlur={handleInputBlur}
+            className={cn("w-16 sm:w-20 text-center font-mono text-lg", getColor())}
             disabled={disabled || submitting}
           />
           <span className="text-muted-foreground">%</span>

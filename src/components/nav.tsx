@@ -193,16 +193,26 @@ export function Nav() {
       </div>
 
       {mobileOpen && (
-        <div className="md:hidden border-t px-4 py-3 space-y-2">
+        <div className="md:hidden border-t px-4 py-3 space-y-1">
           {links.map((link) => (
-            <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)} className="block text-sm py-1 text-muted-foreground hover:text-foreground">
+            <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)} className="block text-sm py-2 text-muted-foreground hover:text-foreground">
               {link.label}
             </Link>
           ))}
           {profile?.role === "ADMIN" && (
-            <Link href="/admin" onClick={() => setMobileOpen(false)} className="block text-sm py-1 text-muted-foreground hover:text-foreground">
+            <Link href="/admin" onClick={() => setMobileOpen(false)} className="block text-sm py-2 text-muted-foreground hover:text-foreground">
               Admin
             </Link>
+          )}
+          {userStats && (
+            <div className="flex items-center gap-1.5 text-sm font-medium text-primary pt-1 border-t mt-2">
+              <TrendingUp className="h-3.5 w-3.5" />
+              {userStats.resolved > 0 ? (
+                <span>{userStats.score.toFixed(1)} pts</span>
+              ) : (
+                <span>{userStats.forecasts} forecast{userStats.forecasts !== 1 ? "s" : ""}</span>
+              )}
+            </div>
           )}
         </div>
       )}

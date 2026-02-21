@@ -85,17 +85,17 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
             <TableCell>
               <Link
                 href={`/u/${entry.userId}`}
-                className="flex items-center gap-2 hover:underline"
+                className="flex items-center gap-2 hover:underline min-w-0"
               >
-                <UserAvatar avatarUrl={entry.image} userId={entry.userId} size="xs" />
-                <span className="font-medium">{entry.name}</span>
+                <UserAvatar avatarUrl={entry.image} userId={entry.userId} size="xs" className="shrink-0" />
+                <span className="font-medium truncate">{entry.name}</span>
                 {entry.isCurrentUser && (
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline" className="text-xs shrink-0">
                     You
                   </Badge>
                 )}
                 {entry.qualifiesForPrize === false && (
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge variant="secondary" className="text-xs shrink-0 hidden sm:inline-flex">
                     Not qualified
                   </Badge>
                 )}

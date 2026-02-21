@@ -120,7 +120,7 @@ export function CommentSection({ questionId, comments, currentUserId }: CommentS
                     {isOwn && (
                       <button
                         onClick={() => handleDelete(comment.id)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                        className="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
                         disabled={isPending}
                       >
                         <Trash2 className="h-3 w-3" />
