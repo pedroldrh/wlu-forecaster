@@ -68,9 +68,6 @@ export async function GET(request: Request) {
           updates.name = name;
           updates.display_name = name;
         }
-        if (profile && !profile.avatar_url && avatarUrl) {
-          updates.avatar_url = avatarUrl;
-        }
 
         await admin
           .from("profiles")
