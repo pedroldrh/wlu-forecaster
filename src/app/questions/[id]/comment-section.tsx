@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { submitComment, deleteComment } from "@/actions/comments";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
+import { UserAvatar } from "@/components/user-avatar";
 
 interface Comment {
   id: string;
@@ -106,17 +107,12 @@ export function CommentSection({ questionId, comments, currentUserId }: CommentS
 
             return (
               <div key={comment.id} className="flex gap-3 group">
-                {comment.profile?.avatar_url ? (
-                  <img
-                    src={comment.profile.avatar_url}
-                    alt=""
-                    className="h-7 w-7 rounded-full shrink-0 mt-0.5"
-                  />
-                ) : (
-                  <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5 text-xs font-medium">
-                    {name[0]?.toUpperCase()}
-                  </div>
-                )}
+                <UserAvatar
+                  avatarUrl={comment.profile?.avatar_url}
+                  userId={comment.user_id}
+                  size="sm"
+                  className="shrink-0 mt-0.5"
+                />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">{name}</span>

@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { CalibrationChart } from "@/components/calibration-chart";
 import { seasonScore, brierPoints } from "@/lib/scoring";
 import { formatPercent, formatDate } from "@/lib/utils";
-import { User } from "lucide-react";
+import { UserAvatar } from "@/components/user-avatar";
 import { DisplayNameForm } from "./display-name-form";
 
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
@@ -147,13 +147,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   return (
     <div className="space-y-6">
       <div className="flex items-start gap-4">
-        {profile.avatar_url ? (
-          <img src={profile.avatar_url} alt="" className="h-16 w-16 rounded-full" />
-        ) : (
-          <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
-            <User className="h-8 w-8 text-muted-foreground" />
-          </div>
-        )}
+        <UserAvatar avatarUrl={profile.avatar_url} userId={id} size="lg" />
         <div>
           <h1 className="text-2xl font-bold">{displayName}</h1>
           <p className="text-sm text-muted-foreground">

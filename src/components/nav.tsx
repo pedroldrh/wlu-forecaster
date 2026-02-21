@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { BarChart3, Menu, X, User, LogOut, Shield, TrendingUp } from "lucide-react";
+import { UserAvatar } from "@/components/user-avatar";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -153,11 +154,7 @@ export function Nav() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="gap-2">
-                  {profile?.avatar_url ? (
-                    <img src={profile.avatar_url} alt="" className="h-6 w-6 rounded-full" />
-                  ) : (
-                    <User className="h-4 w-4" />
-                  )}
+                  <UserAvatar avatarUrl={profile?.avatar_url} userId={user.id} size="xs" />
                   <span className="hidden sm:inline">{profile?.name || "Account"}</span>
                 </Button>
               </DropdownMenuTrigger>

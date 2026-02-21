@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { cn, formatPercent, formatDollars } from "@/lib/utils";
+import { UserAvatar } from "@/components/user-avatar";
 import Link from "next/link";
 import { Trophy } from "lucide-react";
 
@@ -86,13 +87,7 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
                 href={`/u/${entry.userId}`}
                 className="flex items-center gap-2 hover:underline"
               >
-                {entry.image && (
-                  <img
-                    src={entry.image}
-                    alt=""
-                    className="h-6 w-6 rounded-full"
-                  />
-                )}
+                <UserAvatar avatarUrl={entry.image} userId={entry.userId} size="xs" />
                 <span className="font-medium">{entry.name}</span>
                 {entry.isCurrentUser && (
                   <Badge variant="outline" className="text-xs">
