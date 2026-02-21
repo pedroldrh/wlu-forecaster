@@ -115,37 +115,37 @@ export function Nav() {
 
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center gap-2.5 font-bold text-xl">
-            <BarChart3 className="h-6 w-6 text-primary" />
+      <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
+        <div className="flex items-center gap-8">
+          <Link href="/" className="flex items-center gap-3 font-bold text-2xl">
+            <BarChart3 className="h-8 w-8 text-primary" />
             <span className="bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">Forecaster</span>
           </Link>
-          <div className="hidden md:flex items-center gap-5">
+          <div className="hidden md:flex items-center gap-6">
             {links.map((link) => {
               const isActive = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`text-[15px] transition-colors ${isActive ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"}`}
+                  className={`text-base transition-colors ${isActive ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"}`}
                 >
                   {link.label}
                 </Link>
               );
             })}
             {profile?.role === "ADMIN" && (
-              <Link href="/admin" className={`text-[15px] transition-colors ${pathname.startsWith("/admin") ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"}`}>
+              <Link href="/admin" className={`text-base transition-colors ${pathname.startsWith("/admin") ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"}`}>
                 Admin
               </Link>
             )}
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {userStats && (
-            <div className="hidden sm:flex items-center gap-1.5 text-[15px] font-medium text-primary">
-              <TrendingUp className="h-4 w-4" />
+            <div className="hidden sm:flex items-center gap-2 text-base font-medium text-primary">
+              <TrendingUp className="h-5 w-5" />
               {userStats.resolved > 0 ? (
                 <span>{userStats.score.toFixed(1)} pts</span>
               ) : (
@@ -157,8 +157,8 @@ export function Nav() {
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-2">
-                  <UserAvatar avatarUrl={profile?.avatar_url} userId={user.id} size="xs" />
+                <Button variant="ghost" className="gap-2 text-base h-10 px-3">
+                  <UserAvatar avatarUrl={profile?.avatar_url} userId={user.id} size="sm" />
                   <span className="hidden sm:inline">{profile?.name || "Account"}</span>
                 </Button>
               </DropdownMenuTrigger>
@@ -185,13 +185,13 @@ export function Nav() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button size="sm" asChild>
+            <Button asChild className="text-base h-10 px-5">
               <Link href="/signin">Sign in</Link>
             </Button>
           )}
 
-          <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          <Button variant="ghost" size="icon-lg" className="md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
+            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </Button>
         </div>
       </div>
