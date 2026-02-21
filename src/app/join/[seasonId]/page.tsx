@@ -88,7 +88,7 @@ export default async function JoinPage({ params }: { params: Promise<{ seasonId:
               <div>
                 <p className="font-medium">Participation Required</p>
                 <p className="text-sm text-muted-foreground">
-                  Forecast on at least {season.min_participation_pct}% of questions to qualify for prizes
+                  Forecast on at least 5 markets to qualify for prizes
                 </p>
               </div>
             </div>

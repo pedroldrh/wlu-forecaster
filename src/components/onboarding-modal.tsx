@@ -39,7 +39,7 @@ const steps = [
     iconColor: "text-amber-500",
     title: "Stay Active",
     description:
-      "Forecast on 70%+ of questions to qualify for prizes. Even a 50% guess is better than skipping — consistency matters.",
+      "Forecast on at least 5 markets to qualify for prizes. Even a 50% guess is better than skipping — get in the game.",
   },
   {
     icon: Trophy,

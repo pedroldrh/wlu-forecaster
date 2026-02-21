@@ -105,12 +105,12 @@ export default function HowItWorksPage() {
         <CardContent className="space-y-3 text-sm text-muted-foreground">
           <p>
             To qualify for prizes, you must forecast on at least{" "}
-            <strong className="text-foreground">70% of questions</strong> that resolve
-            during the two-week cycle.
+            <strong className="text-foreground">5 markets</strong> during
+            the two-week cycle.
           </p>
           <p>
             This prevents someone from cherry-picking one easy question and winning
-            with a perfect score. Consistency matters.
+            with a perfect score. You need skin in the game.
           </p>
         </CardContent>
       </Card>
@@ -162,7 +162,7 @@ export default function HowItWorksPage() {
           <ul className="space-y-2">
             <li>
               <strong className="text-foreground">Forecast on everything.</strong> Even a 50% guess is
-              better than skipping — it keeps your participation up and 50% always scores exactly 0.75.
+              better than skipping — you need at least 5 markets to qualify, and 50% always scores exactly 0.75.
             </li>
             <li>
               <strong className="text-foreground">Update often.</strong> Got new info? Change your

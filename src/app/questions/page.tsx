@@ -68,11 +68,10 @@ export default async function QuestionsPage() {
   // Participation tracking for logged-in users
   const totalMarkets = allVisible.length;
   const forecastedCount = user ? enriched.filter((q) => q.user_probability !== null).length : 0;
-  const minPct = season.min_participation_pct ?? 70;
-  const needed = Math.ceil(totalMarkets * minPct / 100);
-  const remaining = Math.max(0, needed - forecastedCount);
-  const qualifies = forecastedCount >= needed;
-  const pct = totalMarkets > 0 ? Math.min((forecastedCount / needed) * 100, 100) : 0;
+  const minRequired = 5;
+  const remaining = Math.max(0, minRequired - forecastedCount);
+  const qualifies = forecastedCount >= minRequired;
+  const pct = Math.min((forecastedCount / minRequired) * 100, 100);
 
   return (
     <div className="space-y-4">

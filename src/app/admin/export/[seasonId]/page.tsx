@@ -74,7 +74,7 @@ export default async function ExportPage({ params }: { params: Promise<{ seasonI
       joinedAt: entry.created_at ? new Date(entry.created_at) : null,
       totalResolvedQuestions: totalResolved,
       participationPct,
-      qualifiesForPrize: participationPct >= (season.min_participation_pct ?? 70),
+      qualifiesForPrize: userForecasts.length >= 5,
       avgSubmissionTime,
     };
   });

@@ -77,7 +77,7 @@ export default async function LeaderboardPage() {
       joinedAt: entry.created_at ? new Date(entry.created_at) : null,
       totalResolvedQuestions: resolvedCount,
       participationPct,
-      qualifiesForPrize: participationPct >= (season.min_participation_pct ?? 70),
+      qualifiesForPrize: userForecasts.length >= 5,
       avgSubmissionTime,
     };
   });

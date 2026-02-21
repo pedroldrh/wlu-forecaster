@@ -115,7 +115,7 @@ export default async function HomePage() {
           joinedAt: entry.created_at ? new Date(entry.created_at) : null,
           totalResolvedQuestions: totalResolved,
           participationPct,
-          qualifiesForPrize: participationPct >= (season.min_participation_pct ?? 70),
+          qualifiesForPrize: userForecasts.length >= 5,
           avgSubmissionTime,
         };
       });
@@ -248,10 +248,11 @@ export default async function HomePage() {
                 <Activity className="h-4 w-4 text-green-500 shrink-0" />
                 <div>
                   <p className="text-2xl font-bold font-mono">
-                    {personalStats.participationPct.toFixed(0)}%
+                    {personalStats.questionsForecasted}
+                    <span className="text-sm font-normal text-muted-foreground">/5</span>
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Participation {personalStats.qualifiesForPrize ? "✓" : ""}
+                    Qualified {personalStats.qualifiesForPrize ? "✓" : ""}
                   </p>
                 </div>
               </div>
@@ -285,7 +286,7 @@ export default async function HomePage() {
                 <ShieldCheck className="h-5 w-5 mt-0.5 shrink-0 text-muted-foreground" />
                 <div>
                   <p className="font-medium text-sm">Stay Active</p>
-                  <p className="text-sm text-muted-foreground">Forecast on at least 70% of questions to qualify for prizes.</p>
+                  <p className="text-sm text-muted-foreground">Forecast on at least 5 markets to qualify for prizes.</p>
                 </div>
               </div>
               <div className="flex gap-3">
