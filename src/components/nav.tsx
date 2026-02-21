@@ -108,7 +108,7 @@ export function Nav() {
 
   const links = [
     { href: "/", label: "Home" },
-    { href: "/questions", label: "Questions" },
+    { href: "/questions", label: "Markets" },
     { href: "/leaderboard", label: "Leaderboard" },
     { href: "/how-it-works", label: "How It Works" },
   ];
