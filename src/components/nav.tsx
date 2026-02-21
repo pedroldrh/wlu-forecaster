@@ -11,10 +11,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { BarChart3, Menu, X, User, LogOut, Shield, TrendingUp } from "lucide-react";
 import { UserAvatar } from "@/components/user-avatar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter, usePathname } from "next/navigation";
 import { brierPoints } from "@/lib/scoring";
+import { InstallAppLink } from "@/components/install-prompt";
+import { NavigationProgress } from "@/components/navigation-progress";
+import { useUnvotedCount } from "@/hooks/use-unvoted-count";
 
 export function Nav() {
   const [user, setUser] = useState<any>(null);
@@ -24,6 +27,7 @@ export function Nav() {
   const router = useRouter();
   const pathname = usePathname();
   const supabase = createClient();
+  const unvotedCount = useUnvotedCount();
 
   async function fetchUserStats(userId: string) {
     // Get live season
@@ -114,7 +118,7 @@ export function Nav() {
   ];
 
   return (
-    <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+    <nav className="relative border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-3 font-bold text-2xl">
@@ -128,9 +132,14 @@ export function Nav() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`text-base transition-colors ${isActive ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"}`}
+                  className={`relative text-base transition-colors ${isActive ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"}`}
                 >
                   {link.label}
+                  {link.href === "/questions" && unvotedCount > 0 && (
+                    <span className="absolute -top-1.5 -right-4 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white px-1">
+                      {unvotedCount}
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -190,8 +199,11 @@ export function Nav() {
             </Button>
           )}
 
-          <Button variant="ghost" size="icon-lg" className="md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
+          <Button variant="ghost" size="icon-lg" className="relative md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
             {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {!mobileOpen && unvotedCount > 0 && (
+              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-destructive" />
+            )}
           </Button>
         </div>
       </div>
@@ -201,8 +213,13 @@ export function Nav() {
           {links.map((link) => {
             const isActive = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
             return (
-              <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)} className={`block text-sm py-2 ${isActive ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"}`}>
+              <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)} className={`relative block text-sm py-2 ${isActive ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"}`}>
                 {link.label}
+                {link.href === "/questions" && unvotedCount > 0 && (
+                  <span className="inline-flex ml-1.5 h-4 min-w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white px-1">
+                    {unvotedCount}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -221,8 +238,15 @@ export function Nav() {
               )}
             </div>
           )}
+          <div className="pt-1 border-t mt-2">
+            <InstallAppLink />
+          </div>
         </div>
       )}
+
+      <Suspense fallback={null}>
+        <NavigationProgress />
+      </Suspense>
     </nav>
   );
 }
