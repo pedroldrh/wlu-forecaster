@@ -200,36 +200,20 @@ export function Nav() {
           )}
 
           <Button variant="ghost" size="icon-lg" className="relative md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
-            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            {!mobileOpen && unvotedCount > 0 && (
-              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-destructive" />
-            )}
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
         </div>
       </div>
 
       {mobileOpen && (
         <div className="md:hidden border-t px-4 py-3 space-y-1">
-          {links.map((link) => {
-            const isActive = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
-            return (
-              <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)} className={`relative block text-sm py-2 ${isActive ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"}`}>
-                {link.label}
-                {link.href === "/questions" && unvotedCount > 0 && (
-                  <span className="inline-flex ml-1.5 h-4 min-w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white px-1">
-                    {unvotedCount}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
           {profile?.role === "ADMIN" && (
             <Link href="/admin" onClick={() => setMobileOpen(false)} className={`block text-sm py-2 ${pathname.startsWith("/admin") ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"}`}>
               Admin
             </Link>
           )}
           {userStats && (
-            <div className="flex items-center gap-1.5 text-sm font-medium text-primary pt-1 border-t mt-2">
+            <div className="flex items-center gap-1.5 text-sm font-medium text-primary py-1">
               <TrendingUp className="h-3.5 w-3.5" />
               {userStats.resolved > 0 ? (
                 <span>{userStats.score.toFixed(1)} pts</span>
@@ -238,7 +222,7 @@ export function Nav() {
               )}
             </div>
           )}
-          <div className="pt-1 border-t mt-2">
+          <div className="pt-1 border-t mt-1">
             <InstallAppLink />
           </div>
         </div>
