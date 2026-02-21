@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { QuestionCard } from "@/components/question-card";
+import { ShieldCheck, AlertCircle } from "lucide-react";
 
 export default async function QuestionsPage() {
   const supabase = await createClient();
@@ -64,8 +65,44 @@ export default async function QuestionsPage() {
 
   const allVisible = [...open, ...closed, ...resolved];
 
+  // Participation tracking for logged-in users
+  const totalMarkets = allVisible.length;
+  const forecastedCount = user ? enriched.filter((q) => q.user_probability !== null).length : 0;
+  const minPct = season.min_participation_pct ?? 70;
+  const needed = Math.ceil(totalMarkets * minPct / 100);
+  const remaining = Math.max(0, needed - forecastedCount);
+  const qualifies = forecastedCount >= needed;
+  const pct = totalMarkets > 0 ? Math.min((forecastedCount / needed) * 100, 100) : 0;
+
   return (
     <div className="space-y-4">
+      {/* Participation tracker */}
+      {user && totalMarkets > 0 && (
+        <div className={`flex items-center gap-3 rounded-lg border px-4 py-3 text-sm ${qualifies ? "border-green-500/30 bg-green-500/5" : "border-amber-500/30 bg-amber-500/5"}`}>
+          {qualifies ? (
+            <ShieldCheck className="h-5 w-5 text-green-500 shrink-0" />
+          ) : (
+            <AlertCircle className="h-5 w-5 text-amber-500 shrink-0" />
+          )}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <span className="font-medium">
+                {qualifies
+                  ? `You qualify for prizes! (${forecastedCount}/${totalMarkets} markets)`
+                  : `Forecast on ${remaining} more market${remaining !== 1 ? "s" : ""} to qualify for prizes`}
+              </span>
+              <span className="text-muted-foreground shrink-0">{forecastedCount}/{totalMarkets}</span>
+            </div>
+            <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${qualifies ? "bg-green-500" : "bg-amber-500"}`}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       {allVisible.length === 0 ? (
         <p className="text-center text-muted-foreground py-8">No questions yet.</p>
       ) : (

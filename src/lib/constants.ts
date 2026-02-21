@@ -37,10 +37,10 @@ export const PRIZE_TYPE_LABELS: Record<string, string> = {
 };
 
 export const DEFAULT_PRIZES = {
-  prize1stCents: 60000,
-  prize2ndCents: 25000,
+  prize1stCents: 35000,
+  prize2ndCents: 22500,
   prize3rdCents: 15000,
-  prizeBonusCents: 5000,
+  prizeBonusCents: 10000,
   minParticipationPct: 70,
 };
 

@@ -85,9 +85,13 @@ export function QuestionCard({
                 <span className="text-yellow-500">Awaiting resolution</span>
               )}
             </div>
-            {userProbability !== null && userProbability !== undefined && (
+            {userProbability !== null && userProbability !== undefined ? (
               <span className="font-mono font-medium text-foreground">
                 You: {Math.round(userProbability * 100)}%
+              </span>
+            ) : status === "OPEN" && (
+              <span className="text-amber-500 font-medium">
+                Vote
               </span>
             )}
           </div>

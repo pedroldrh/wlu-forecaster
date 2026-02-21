@@ -114,9 +114,9 @@ export default async function LeaderboardPage() {
           <div className="flex items-center gap-3">
             <Trophy className="h-5 w-5 text-yellow-500" />
             <div>
-              <p className="font-semibold">Prize Pool: {formatDollars(totalPrize)}</p>
+              <p className="font-semibold">Prize Pool: $1,000</p>
               <p className="text-sm text-muted-foreground">
-                1st {formatDollars(season.prize_1st_cents)} · 2nd {formatDollars(season.prize_2nd_cents)} · 3rd {formatDollars(season.prize_3rd_cents)} · Bonus {formatDollars(season.prize_bonus_cents)}
+                1st $350 · 2nd $225 · 3rd $150 · 4th $100 · 5th $75 · Bonus $100
               </p>
             </div>
             <Badge variant="secondary" className="ml-auto">
