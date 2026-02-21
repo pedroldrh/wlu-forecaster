@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { CountdownTimer } from "@/components/countdown-timer";
 import { CATEGORY_LABELS } from "@/lib/constants";
 import { ForecastForm } from "./forecast-form";
+import { CommentSection } from "./comment-section";
 import { Users, CheckCircle, XCircle } from "lucide-react";
 import { brierPoints } from "@/lib/scoring";
 
@@ -39,6 +40,21 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
       .single();
     userForecast = forecast;
   }
+
+  // Get comments with profiles
+  const { data: rawComments } = await supabase
+    .from("comments")
+    .select("id, content, created_at, user_id, profiles:user_id(name, display_name, avatar_url)")
+    .eq("question_id", id)
+    .order("created_at", { ascending: true });
+
+  const comments = (rawComments || []).map((c: any) => ({
+    id: c.id,
+    content: c.content,
+    created_at: c.created_at,
+    user_id: c.user_id,
+    profile: c.profiles,
+  }));
 
   const isOpen = question.status === "OPEN" && new Date() < new Date(question.close_time);
   const forecasts = allForecasts || [];
@@ -125,6 +141,14 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
           </CardContent>
         </Card>
       )}
+
+      <Separator />
+
+      <CommentSection
+        questionId={id}
+        comments={comments}
+        currentUserId={user?.id ?? null}
+      />
     </div>
   );
 }
