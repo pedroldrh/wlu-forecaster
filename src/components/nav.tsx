@@ -9,20 +9,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { BarChart3, User, LogOut, Shield, TrendingUp } from "lucide-react";
+import { BarChart3, User, LogOut, Shield, TrendingUp, Download, X, Share } from "lucide-react";
 import { UserAvatar } from "@/components/user-avatar";
 import { useState, useEffect, Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter, usePathname } from "next/navigation";
 import { brierPoints } from "@/lib/scoring";
-import { InstallIconButton } from "@/components/install-prompt";
 import { NavigationProgress } from "@/components/navigation-progress";
 import { useUnvotedCount } from "@/hooks/use-unvoted-count";
 
 export function Nav() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
-
+  const [installOpen, setInstallOpen] = useState(false);
   const [userStats, setUserStats] = useState<{ score: number; forecasts: number; resolved: number } | null>(null);
   const router = useRouter();
   const pathname = usePathname();
@@ -163,7 +162,12 @@ export function Nav() {
             </div>
           )}
 
-          <InstallIconButton />
+          <button
+            onClick={() => setInstallOpen(true)}
+            className="inline-flex items-center justify-center h-10 w-10 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors md:hidden"
+          >
+            <Download className="h-5 w-5" />
+          </button>
 
           {user ? (
             <DropdownMenu>
@@ -206,6 +210,36 @@ export function Nav() {
       <Suspense fallback={null}>
         <NavigationProgress />
       </Suspense>
+
+      {installOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4" onClick={() => setInstallOpen(false)}>
+          <div className="max-w-md w-full rounded-xl border bg-background shadow-lg p-5" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-start justify-between mb-3">
+              <p className="font-semibold">Install Forecaster as an App</p>
+              <button onClick={() => setInstallOpen(false)} className="text-muted-foreground hover:text-foreground">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="space-y-3 text-sm text-muted-foreground">
+              <p className="font-medium text-foreground">On iPhone (Safari):</p>
+              <ol className="list-decimal list-inside space-y-2">
+                <li>Tap the <Share className="inline h-4 w-4 -mt-0.5" /> <strong className="text-foreground">Share</strong> button</li>
+                <li>Scroll down and tap <strong className="text-foreground">&quot;Add to Home Screen&quot;</strong></li>
+                <li>Tap <strong className="text-foreground">&quot;Add&quot;</strong> to confirm</li>
+              </ol>
+              <p className="font-medium text-foreground pt-2">On Android (Chrome):</p>
+              <ol className="list-decimal list-inside space-y-2">
+                <li>Tap the <strong className="text-foreground">menu (&#8942;)</strong> in your browser</li>
+                <li>Tap <strong className="text-foreground">&quot;Add to Home Screen&quot;</strong> or <strong className="text-foreground">&quot;Install App&quot;</strong></li>
+                <li>Tap <strong className="text-foreground">&quot;Install&quot;</strong> to confirm</li>
+              </ol>
+            </div>
+            <Button className="w-full mt-4" onClick={() => setInstallOpen(false)}>
+              Got it
+            </Button>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }
