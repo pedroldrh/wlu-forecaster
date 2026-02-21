@@ -145,15 +145,15 @@ export function InstallFab() {
 }
 
 export function InstallIconButton() {
-  const [show, setShow] = useState(false);
   const [open, setOpen] = useState(false);
+  const [hidden, setHidden] = useState(true);
 
   useEffect(() => {
-    if (isStandalone() || !isMobile()) return;
-    setShow(true);
+    if (isStandalone()) return;
+    setHidden(false);
   }, []);
 
-  if (!show) return null;
+  if (hidden) return null;
 
   return (
     <>
