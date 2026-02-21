@@ -144,6 +144,60 @@ export function InstallFab() {
   );
 }
 
+export function InstallIconButton() {
+  const [show, setShow] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (isStandalone() || !isMobile()) return;
+    setShow(true);
+  }, []);
+
+  if (!show) return null;
+
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="inline-flex items-center justify-center h-10 w-10 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors md:hidden"
+      >
+        <Download className="h-5 w-5" />
+      </button>
+
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 pb-[env(safe-area-inset-bottom,16px)]" onClick={() => setOpen(false)}>
+          <div className="max-w-md w-full rounded-xl border bg-background shadow-lg p-5" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-start justify-between mb-3">
+              <p className="font-semibold">Install Forecaster as an App</p>
+              <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="space-y-3 text-sm text-muted-foreground">
+              {isIOS() ? (
+                <ol className="list-decimal list-inside space-y-2">
+                  <li>Tap the <Share className="inline h-4 w-4 -mt-0.5" /> <strong className="text-foreground">Share</strong> button in Safari</li>
+                  <li>Scroll down and tap <strong className="text-foreground">&quot;Add to Home Screen&quot;</strong></li>
+                  <li>Tap <strong className="text-foreground">&quot;Add&quot;</strong> to confirm</li>
+                </ol>
+              ) : (
+                <ol className="list-decimal list-inside space-y-2">
+                  <li>Tap the <strong className="text-foreground">menu (&#8942;)</strong> in your browser</li>
+                  <li>Tap <strong className="text-foreground">&quot;Add to Home Screen&quot;</strong> or <strong className="text-foreground">&quot;Install App&quot;</strong></li>
+                  <li>Tap <strong className="text-foreground">&quot;Install&quot;</strong> to confirm</li>
+                </ol>
+              )}
+            </div>
+            <Button className="w-full mt-4" onClick={() => setOpen(false)}>
+              Got it
+            </Button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 export function InstallAppLink() {
   const [show, setShow] = useState(false);
   const [open, setOpen] = useState(false);

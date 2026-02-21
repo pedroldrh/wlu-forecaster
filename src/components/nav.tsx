@@ -9,20 +9,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { BarChart3, Menu, X, User, LogOut, Shield, TrendingUp } from "lucide-react";
+import { BarChart3, User, LogOut, Shield, TrendingUp } from "lucide-react";
 import { UserAvatar } from "@/components/user-avatar";
 import { useState, useEffect, Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter, usePathname } from "next/navigation";
 import { brierPoints } from "@/lib/scoring";
-import { InstallAppLink } from "@/components/install-prompt";
+import { InstallIconButton } from "@/components/install-prompt";
 import { NavigationProgress } from "@/components/navigation-progress";
 import { useUnvotedCount } from "@/hooks/use-unvoted-count";
 
 export function Nav() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
-  const [mobileOpen, setMobileOpen] = useState(false);
+
   const [userStats, setUserStats] = useState<{ score: number; forecasts: number; resolved: number } | null>(null);
   const router = useRouter();
   const pathname = usePathname();
@@ -163,6 +163,8 @@ export function Nav() {
             </div>
           )}
 
+          <InstallIconButton />
+
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -198,35 +200,8 @@ export function Nav() {
               <Link href="/signin">Sign in</Link>
             </Button>
           )}
-
-          <Button variant="ghost" size="icon-lg" className="relative md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </Button>
         </div>
       </div>
-
-      {mobileOpen && (
-        <div className="md:hidden border-t px-4 py-3 space-y-1">
-          {profile?.role === "ADMIN" && (
-            <Link href="/admin" onClick={() => setMobileOpen(false)} className={`block text-sm py-2 ${pathname.startsWith("/admin") ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"}`}>
-              Admin
-            </Link>
-          )}
-          {userStats && (
-            <div className="flex items-center gap-1.5 text-sm font-medium text-primary py-1">
-              <TrendingUp className="h-3.5 w-3.5" />
-              {userStats.resolved > 0 ? (
-                <span>{userStats.score.toFixed(1)} pts</span>
-              ) : (
-                <span>{userStats.forecasts} forecast{userStats.forecasts !== 1 ? "s" : ""}</span>
-              )}
-            </div>
-          )}
-          <div className="pt-1 border-t mt-1">
-            <InstallAppLink />
-          </div>
-        </div>
-      )}
 
       <Suspense fallback={null}>
         <NavigationProgress />
