@@ -1,10 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { LeaderboardTable } from "@/components/leaderboard-table";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { seasonScore, rankUsers, UserScore } from "@/lib/scoring";
-import { formatDollars } from "@/lib/utils";
-import { Trophy } from "lucide-react";
 
 export default async function LeaderboardPage() {
   const supabase = await createClient();
@@ -25,8 +22,6 @@ export default async function LeaderboardPage() {
       </div>
     );
   }
-
-  const totalPrize = season.prize_1st_cents + season.prize_2nd_cents + season.prize_3rd_cents + season.prize_bonus_cents;
 
   // Get entries with PAID or JOINED status
   const { data: entries } = await supabase
@@ -109,23 +104,6 @@ export default async function LeaderboardPage() {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardContent className="pt-4 pb-4">
-          <div className="flex items-center gap-3">
-            <Trophy className="h-5 w-5 text-yellow-500" />
-            <div>
-              <p className="font-semibold">Prize Pool: $1,000</p>
-              <p className="text-sm text-muted-foreground">
-                1st $350 · 2nd $225 · 3rd $150 · 4th $100 · 5th $75 · Bonus $100
-              </p>
-            </div>
-            <Badge variant="secondary" className="ml-auto">
-              Min {season.min_participation_pct}% participation
-            </Badge>
-          </div>
-        </CardContent>
-      </Card>
-
       <Card>
         <CardContent className="pt-4">
           <LeaderboardTable entries={leaderboardEntries} />
