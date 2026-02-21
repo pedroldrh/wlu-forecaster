@@ -26,13 +26,23 @@ export default async function QuestionsPage() {
 
   const allQuestions = questions || [];
 
-  // Get forecast counts and user forecasts
+  // Get forecast counts, consensus, and user forecasts
   const enriched = await Promise.all(
     allQuestions.map(async (q) => {
-      const { count } = await supabase
-        .from("forecasts")
-        .select("*", { count: "exact", head: true })
-        .eq("question_id", q.id);
+      const [{ count }, { data: allForecasts }] = await Promise.all([
+        supabase
+          .from("forecasts")
+          .select("*", { count: "exact", head: true })
+          .eq("question_id", q.id),
+        supabase
+          .from("forecasts")
+          .select("probability")
+          .eq("question_id", q.id),
+      ]);
+
+      const consensus = allForecasts && allForecasts.length > 0
+        ? allForecasts.reduce((sum, f) => sum + f.probability, 0) / allForecasts.length
+        : null;
 
       let userProb = null;
       if (user) {
@@ -45,7 +55,7 @@ export default async function QuestionsPage() {
         userProb = forecast?.probability ?? null;
       }
 
-      return { ...q, forecast_count: count || 0, user_probability: userProb };
+      return { ...q, forecast_count: count || 0, user_probability: userProb, consensus };
     })
   );
 
@@ -58,7 +68,7 @@ export default async function QuestionsPage() {
       return <p className="text-center text-muted-foreground py-8">No questions in this category.</p>;
     }
     return (
-      <div className="space-y-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {qs.map((q) => (
           <QuestionCard
             key={q.id}
@@ -70,6 +80,7 @@ export default async function QuestionsPage() {
             forecastCount={q.forecast_count}
             resolvedOutcome={q.resolved_outcome}
             userProbability={q.user_probability}
+            consensus={q.consensus}
           />
         ))}
       </div>

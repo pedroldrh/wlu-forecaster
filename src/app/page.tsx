@@ -33,10 +33,20 @@ export default async function HomePage() {
 
     if (data) {
       for (const q of data) {
-        const { count } = await supabase
-          .from("forecasts")
-          .select("*", { count: "exact", head: true })
-          .eq("question_id", q.id);
+        const [{ count }, { data: allForecasts }] = await Promise.all([
+          supabase
+            .from("forecasts")
+            .select("*", { count: "exact", head: true })
+            .eq("question_id", q.id),
+          supabase
+            .from("forecasts")
+            .select("probability")
+            .eq("question_id", q.id),
+        ]);
+
+        const consensus = allForecasts && allForecasts.length > 0
+          ? allForecasts.reduce((sum, f) => sum + f.probability, 0) / allForecasts.length
+          : null;
 
         let userProb = null;
         if (user) {
@@ -49,7 +59,7 @@ export default async function HomePage() {
           userProb = forecast?.probability ?? null;
         }
 
-        upcomingQuestions.push({ ...q, forecast_count: count || 0, user_probability: userProb });
+        upcomingQuestions.push({ ...q, forecast_count: count || 0, user_probability: userProb, consensus });
       }
     }
   }
@@ -287,7 +297,7 @@ export default async function HomePage() {
                 <Trophy className="h-5 w-5 mt-0.5 shrink-0 text-muted-foreground" />
                 <div>
                   <p className="font-medium text-sm">Win Prizes</p>
-                  <p className="text-sm text-muted-foreground">$1,000 prize pool across top 5, plus a $100 bonus prize.</p>
+                  <p className="text-sm text-muted-foreground">Prizes paid out every 2 weeks to the top of the leaderboard.</p>
                 </div>
               </div>
             </div>
@@ -303,18 +313,21 @@ export default async function HomePage() {
               <Link href="/questions">View all</Link>
             </Button>
           </div>
-          {upcomingQuestions.map((q) => (
-            <QuestionCard
-              key={q.id}
-              id={q.id}
-              title={q.title}
-              category={q.category}
-              status={q.status}
-              closeTime={q.close_time}
-              forecastCount={q.forecast_count}
-              userProbability={q.user_probability}
-            />
-          ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {upcomingQuestions.map((q) => (
+              <QuestionCard
+                key={q.id}
+                id={q.id}
+                title={q.title}
+                category={q.category}
+                status={q.status}
+                closeTime={q.close_time}
+                forecastCount={q.forecast_count}
+                userProbability={q.user_probability}
+                consensus={q.consensus}
+              />
+            ))}
+          </div>
         </div>
       )}
 

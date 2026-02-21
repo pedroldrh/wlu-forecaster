@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Target, BarChart3, Trophy, ShieldCheck, HelpCircle } from "lucide-react";
+import { Target, BarChart3, Trophy, ShieldCheck, HelpCircle, Calendar } from "lucide-react";
 
 export const metadata = {
   title: "How It Works — Forecaster",
@@ -69,8 +69,8 @@ export default function HowItWorksPage() {
             confidence costs you big. The best forecasters are honest about what they don&apos;t know.
           </p>
           <p>
-            Your <strong className="text-foreground">season score</strong> is the average of your
-            points across all questions you forecast on. Higher is better. Perfect score is 1.00.
+            Your <strong className="text-foreground">score</strong> is the average of your
+            points across all resolved questions you forecasted on. Higher is better. Perfect score is 1.00.
           </p>
           <p>
             This is the same type of probability-based forecasting used by platforms like{" "}
@@ -85,6 +85,26 @@ export default function HowItWorksPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            <CardTitle className="text-lg">Biweekly Payouts</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm text-muted-foreground">
+          <p>
+            The leaderboard <strong className="text-foreground">resolves every two weeks</strong>.
+            At the end of each two-week cycle, prizes are paid out to the top forecasters based
+            on their current leaderboard position.
+          </p>
+          <p>
+            After each payout, the leaderboard resets and a new cycle begins. This means you
+            have a fresh shot at winning <strong className="text-foreground">every two weeks</strong>.
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5" />
             <CardTitle className="text-lg">Participation Requirement</CardTitle>
           </div>
@@ -92,7 +112,8 @@ export default function HowItWorksPage() {
         <CardContent className="space-y-3 text-sm text-muted-foreground">
           <p>
             To qualify for prizes, you must forecast on at least{" "}
-            <strong className="text-foreground">70% of questions</strong> in the season.
+            <strong className="text-foreground">70% of questions</strong> that resolve
+            during the two-week cycle.
           </p>
           <p>
             This prevents someone from cherry-picking one easy question and winning
@@ -109,6 +130,9 @@ export default function HowItWorksPage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-3 text-sm text-muted-foreground">
+          <p>
+            Every two weeks, prizes are distributed to the top of the leaderboard:
+          </p>
           <div className="grid grid-cols-2 gap-2">
             <span>1st Place</span>
             <span className="font-mono text-foreground text-right">$350</span>
@@ -125,7 +149,7 @@ export default function HowItWorksPage() {
           </div>
           <p>
             The <strong className="text-foreground">bonus prize</strong> goes to the player with the
-            single highest-scoring forecast on any question — the most confident correct call of the season.
+            single highest-scoring forecast on any question — the most confident correct call of the cycle.
           </p>
           <p>
             Tiebreaker: if two players have the same score, the one who forecasted on more

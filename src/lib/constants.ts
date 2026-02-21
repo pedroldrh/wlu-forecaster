@@ -43,3 +43,19 @@ export const DEFAULT_PRIZES = {
   prizeBonusCents: 5000,
   minParticipationPct: 70,
 };
+
+export const CATEGORY_EMOJI: Record<string, string> = {
+  SPORTS: "⚾",
+  CAMPUS: "🏛️",
+  ACADEMICS: "📚",
+  GREEK: "🏛️",
+  OTHER: "❓",
+};
+
+export const CATEGORY_COLORS: Record<string, string> = {
+  SPORTS: "bg-blue-500/15 text-blue-500",
+  CAMPUS: "bg-purple-500/15 text-purple-500",
+  ACADEMICS: "bg-amber-500/15 text-amber-500",
+  GREEK: "bg-emerald-500/15 text-emerald-500",
+  OTHER: "bg-zinc-500/15 text-zinc-400",
+};
