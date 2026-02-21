@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { QuestionCard } from "@/components/question-card";
+import { SuggestQuestion } from "@/components/suggest-question";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default async function QuestionsPage() {
@@ -89,9 +90,12 @@ export default async function QuestionsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Questions</h1>
-        <p className="text-muted-foreground">{season.name}</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Questions</h1>
+          <p className="text-muted-foreground">{season.name}</p>
+        </div>
+        {user && <SuggestQuestion />}
       </div>
       <Tabs defaultValue="open">
         <TabsList>

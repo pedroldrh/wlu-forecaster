@@ -225,6 +225,47 @@ export type Database = {
           },
         ];
       };
+      question_requests: {
+        Row: {
+          id: string;
+          user_id: string;
+          title: string;
+          description: string | null;
+          category: string;
+          status: "PENDING" | "APPROVED" | "DENIED";
+          admin_note: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          title: string;
+          description?: string | null;
+          category?: string;
+          status?: "PENDING" | "APPROVED" | "DENIED";
+          admin_note?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          title?: string;
+          description?: string | null;
+          category?: string;
+          status?: "PENDING" | "APPROVED" | "DENIED";
+          admin_note?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "question_requests_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       comments: {
         Row: {
           id: string;
