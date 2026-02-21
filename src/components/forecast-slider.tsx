@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+
 
 interface ForecastSliderProps {
   defaultValue?: number;
@@ -48,12 +48,6 @@ export function ForecastSlider({
     }
   };
 
-  const getColor = () => {
-    if (value <= 15 || value >= 85) return "text-red-600";
-    if (value <= 30 || value >= 70) return "text-orange-500";
-    return "text-muted-foreground";
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
@@ -76,7 +70,7 @@ export function ForecastSlider({
             value={inputText}
             onChange={handleInputChange}
             onBlur={handleInputBlur}
-            className={cn("w-16 sm:w-20 text-center font-mono text-lg", getColor())}
+            className="w-16 sm:w-20 text-center font-mono text-lg text-primary"
             disabled={disabled || submitting}
           />
           <span className="text-muted-foreground">%</span>
