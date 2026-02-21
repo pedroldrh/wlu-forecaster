@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import { QuestionCard } from "@/components/question-card";
-import { SuggestQuestion } from "@/components/suggest-question";
 
 export default async function QuestionsPage() {
   const supabase = await createClient();
@@ -67,11 +66,6 @@ export default async function QuestionsPage() {
 
   return (
     <div className="space-y-4">
-      {user && (
-        <div className="flex justify-end">
-          <SuggestQuestion />
-        </div>
-      )}
       {allVisible.length === 0 ? (
         <p className="text-center text-muted-foreground py-8">No questions yet.</p>
       ) : (

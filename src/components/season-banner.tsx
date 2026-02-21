@@ -30,11 +30,23 @@ export function SeasonBanner({
 
   return (
     <Card className="overflow-hidden border-primary/20 bg-gradient-to-r from-primary/5 via-transparent to-blue-500/5">
-      <CardContent className="pt-4 pb-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <h2 className="font-bold text-lg">{name}</h2>
+      <CardContent className="pt-6 pb-6">
+        <div className="flex flex-col items-center text-center gap-3">
+          {/* Prize pool — big and bold */}
+          <div>
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <Trophy className="h-8 w-8 text-amber-500" />
+              <span className="text-5xl sm:text-6xl font-extrabold font-mono bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent">
+                {formatDollars(totalPrize)}
+              </span>
+            </div>
+            <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Prize Pool</p>
+          </div>
+
+          {/* Season info */}
+          <div className="flex flex-wrap items-center justify-center gap-3 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <h2 className="font-semibold text-foreground">{name}</h2>
               {status === "LIVE" ? (
                 <Badge className="gap-1 bg-green-600 hover:bg-green-700">
                   <Zap className="h-3 w-3" />
@@ -46,16 +58,11 @@ export function SeasonBanner({
                 </Badge>
               )}
             </div>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Calendar className="h-3.5 w-3.5" />
-                {formatDate(startDate)} — {formatDate(endDate)}
-              </span>
-              <span className="flex items-center gap-1 text-amber-500 font-medium">
-                <Trophy className="h-3.5 w-3.5" />
-                {formatDollars(totalPrize)} Prize Pool
-              </span>
-            </div>
+            <span className="hidden sm:inline text-muted-foreground/40">|</span>
+            <span className="flex items-center gap-1">
+              <Calendar className="h-3.5 w-3.5" />
+              {formatDate(startDate)} — {formatDate(endDate)}
+            </span>
           </div>
         </div>
       </CardContent>

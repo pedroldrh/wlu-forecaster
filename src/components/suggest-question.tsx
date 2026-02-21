@@ -20,7 +20,7 @@ export function SuggestQuestion() {
     startTransition(async () => {
       try {
         await submitQuestionRequest(title, description, category);
-        toast.success("Question suggested! We'll review it soon.");
+        toast.success("Market suggested! We'll review it soon.");
         setTitle("");
         setDescription("");
         setCategory("OTHER");
@@ -35,7 +35,7 @@ export function SuggestQuestion() {
     return (
       <Button variant="outline" size="sm" onClick={() => setOpen(true)} className="gap-2">
         <Lightbulb className="h-4 w-4" />
-        Suggest a Question
+        Suggest a New Market
       </Button>
     );
   }
@@ -46,7 +46,7 @@ export function SuggestQuestion() {
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
             <Lightbulb className="h-5 w-5" />
-            Suggest a Question
+            Suggest a New Market
           </CardTitle>
           <Button variant="ghost" size="icon" onClick={() => setOpen(false)}>
             <X className="h-4 w-4" />

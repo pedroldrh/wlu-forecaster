@@ -7,6 +7,8 @@ import { seasonScore, brierPoints } from "@/lib/scoring";
 import { formatPercent, formatDate } from "@/lib/utils";
 import { UserAvatar } from "@/components/user-avatar";
 import { DisplayNameForm } from "./display-name-form";
+import { SuggestQuestion } from "@/components/suggest-question";
+import { TrendingUp, Hash, Activity, Award } from "lucide-react";
 
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -145,51 +147,86 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   const displayName = profile.display_name || profile.name || "Anonymous";
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-start gap-4">
-        <UserAvatar avatarUrl={profile.avatar_url} userId={id} size="lg" />
-        <div>
-          <h1 className="text-2xl font-bold">{displayName}</h1>
-          <p className="text-sm text-muted-foreground">
-            Joined {formatDate(new Date(profile.created_at))}
-          </p>
-          <div className="flex gap-2 mt-1">
-            {badges.map((b) => (
-              <Badge key={b} variant="outline">{b}</Badge>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {isOwnProfile && (
-        <DisplayNameForm currentDisplayName={profile.display_name || ""} />
-      )}
-
-      {season && (
-        <div className="grid grid-cols-3 gap-4">
-          <Card>
-            <CardContent className="pt-4 text-center">
-              <div className="text-2xl font-bold font-mono">
-                {formatPercent(score)}
+    <div className="max-w-3xl mx-auto space-y-6">
+      {/* Profile header */}
+      <Card className="overflow-hidden border-primary/20 bg-gradient-to-r from-primary/5 via-transparent to-blue-500/5">
+        <CardContent className="pt-6 pb-6">
+          <div className="flex items-center gap-4">
+            <UserAvatar avatarUrl={profile.avatar_url} userId={id} size="lg" />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-2xl font-bold truncate">{displayName}</h1>
+                {badges.map((b) => (
+                  <Badge key={b} variant="secondary" className="shrink-0">{b}</Badge>
+                ))}
               </div>
-              <p className="text-xs text-muted-foreground">Avg Score</p>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                Joined {formatDate(new Date(profile.created_at))}
+              </p>
+            </div>
+          </div>
+          {isOwnProfile && (
+            <div className="mt-4 pt-4 border-t border-border/50">
+              <DisplayNameForm currentDisplayName={profile.display_name || ""} />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Stats grid */}
+      {season && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <Card>
+            <CardContent className="pt-4 pb-4">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-primary shrink-0" />
+                <div>
+                  <p className="text-2xl font-bold font-mono">{formatPercent(score)}</p>
+                  <p className="text-xs text-muted-foreground">Avg Score</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="pt-4 text-center">
-              <div className="text-2xl font-bold">{questionsPlayed}</div>
-              <p className="text-xs text-muted-foreground">Questions</p>
+            <CardContent className="pt-4 pb-4">
+              <div className="flex items-center gap-2">
+                <Hash className="h-4 w-4 text-blue-400 shrink-0" />
+                <div>
+                  <p className="text-2xl font-bold font-mono">{questionsPlayed}</p>
+                  <p className="text-xs text-muted-foreground">Resolved</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="pt-4 text-center">
-              <div className="text-2xl font-bold">{allForecasts.length}</div>
-              <p className="text-xs text-muted-foreground">Total Forecasts</p>
+            <CardContent className="pt-4 pb-4">
+              <div className="flex items-center gap-2">
+                <Activity className="h-4 w-4 text-green-500 shrink-0" />
+                <div>
+                  <p className="text-2xl font-bold font-mono">{allForecasts.length}</p>
+                  <p className="text-xs text-muted-foreground">Forecasts</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4 pb-4">
+              <div className="flex items-center gap-2">
+                <Award className="h-4 w-4 text-amber-500 shrink-0" />
+                <div>
+                  <p className="text-2xl font-bold font-mono">{entries.length}</p>
+                  <p className="text-xs text-muted-foreground">Seasons</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
       )}
 
+      {/* Suggest a market (own profile only) */}
+      {isOwnProfile && <SuggestQuestion />}
+
+      {/* Calibration chart */}
       {calibrationData.length >= 5 && (
         <Card>
           <CardHeader>
@@ -201,25 +238,26 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
         </Card>
       )}
 
+      {/* Score breakdown */}
       {resolvedForecasts.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Brier Score Breakdown</CardTitle>
+            <CardTitle className="text-lg">Score Breakdown</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="divide-y">
               {resolvedForecasts.map((f, i) => (
-                <div key={i} className="flex items-center justify-between py-2 border-b last:border-0">
+                <div key={i} className="flex items-center justify-between py-3">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{f.title}</p>
                     <p className="text-xs text-muted-foreground">
-                      Resolved {f.outcome ? "YES" : "NO"} · Your forecast: {Math.round(f.probability * 100)}%
+                      Resolved {f.outcome ? "YES" : "NO"} · You: {Math.round(f.probability * 100)}%
                     </p>
                   </div>
-                  <div className="text-right ml-4 shrink-0">
-                    <div className="font-mono text-sm font-bold">
+                  <div className="ml-4 shrink-0">
+                    <Badge variant={f.points >= 0.75 ? "default" : "secondary"} className="font-mono">
                       {(f.points * 100).toFixed(1)} pts
-                    </div>
+                    </Badge>
                   </div>
                 </div>
               ))}
@@ -228,15 +266,16 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
         </Card>
       )}
 
+      {/* Recent forecasts */}
       {allForecasts.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Recent Forecasts</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="divide-y">
               {allForecasts.slice(0, 20).map((f) => (
-                <div key={f.id} className="flex items-center justify-between py-2 border-b last:border-0">
+                <div key={f.id} className="flex items-center justify-between py-3">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{f.question.title}</p>
                     <p className="text-xs text-muted-foreground">
@@ -246,7 +285,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                     </p>
                   </div>
                   <div className="text-right ml-4 shrink-0">
-                    <div className="font-mono text-sm">{Math.round(f.probability * 100)}%</div>
+                    <div className="font-mono text-sm font-medium">{Math.round(f.probability * 100)}%</div>
                     {f.question.status === "RESOLVED" && (
                       <div className="text-xs font-mono text-muted-foreground">
                         {(brierPoints(f.probability, f.question.resolved_outcome!) * 100).toFixed(1)} pts
