@@ -117,8 +117,8 @@ export function Nav() {
       <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2 font-bold text-lg">
-            <BarChart3 className="h-5 w-5" />
-            Forecaster
+            <BarChart3 className="h-5 w-5 text-primary" />
+            <span className="bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">Forecaster</span>
           </Link>
           <div className="hidden md:flex items-center gap-4">
             {links.map((link) => (
@@ -140,7 +140,7 @@ export function Nav() {
 
         <div className="flex items-center gap-2">
           {userStats && (
-            <div className="hidden sm:flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+            <div className="hidden sm:flex items-center gap-1.5 text-sm font-medium text-primary">
               <TrendingUp className="h-3.5 w-3.5" />
               {userStats.resolved > 0 ? (
                 <span>{userStats.score.toFixed(1)} pts</span>

@@ -30,9 +30,9 @@ export default function SignInPage() {
     <Card className="w-full max-w-sm">
       <CardHeader className="text-center">
         <div className="flex justify-center mb-2">
-          <BarChart3 className="h-10 w-10" />
+          <BarChart3 className="h-10 w-10 text-primary" />
         </div>
-        <CardTitle className="text-2xl">Forecaster</CardTitle>
+        <CardTitle className="text-2xl bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">Forecaster</CardTitle>
         <CardDescription>W&L Campus Forecasting Tournament</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">

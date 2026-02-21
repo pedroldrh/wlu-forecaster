@@ -49,7 +49,7 @@ export function QuestionCard({
             </div>
             {consensusPct !== null && status !== "RESOLVED" && (
               <div className="shrink-0 flex flex-col items-center">
-                <div className="text-xl font-bold font-mono">{consensusPct}%</div>
+                <div className="text-xl font-bold font-mono text-primary">{consensusPct}%</div>
                 <span className="text-[10px] text-muted-foreground">chance</span>
               </div>
             )}

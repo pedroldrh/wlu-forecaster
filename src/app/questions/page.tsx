@@ -92,7 +92,7 @@ export default async function QuestionsPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Questions</h1>
+          <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">Questions</h1>
           <p className="text-muted-foreground">{season.name}</p>
         </div>
         {user && <SuggestQuestion />}

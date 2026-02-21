@@ -122,7 +122,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
             <CardContent>
               <div className="flex justify-between items-center">
                 <span>Your forecast: {Math.round(userForecast.probability * 100)}%</span>
-                <span className="font-mono font-bold">
+                <span className="font-mono font-bold text-primary">
                   {(brierPoints(userForecast.probability, question.resolved_outcome!) * 100).toFixed(1)} pts
                 </span>
               </div>
@@ -136,7 +136,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
           <CardContent className="py-4">
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Community consensus</span>
-              <span className="font-mono font-bold">{Math.round(consensus * 100)}%</span>
+              <span className="font-mono font-bold text-primary">{Math.round(consensus * 100)}%</span>
             </div>
           </CardContent>
         </Card>

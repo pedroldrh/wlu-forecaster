@@ -110,7 +110,7 @@ export default async function LeaderboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Leaderboard</h1>
+        <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">Leaderboard</h1>
         <p className="text-muted-foreground">
           {season.name} — {resolvedCount} question{resolvedCount !== 1 ? "s" : ""} resolved
         </p>
