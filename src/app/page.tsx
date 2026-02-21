@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { seasonScore, rankUsers, UserScore } from "@/lib/scoring";
 import Link from "next/link";
-import { BarChart3, Trophy, ShieldCheck, Target } from "lucide-react";
+import { BarChart3, Trophy, ShieldCheck, Target, TrendingUp, Hash, Activity, Award } from "lucide-react";
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -56,6 +56,7 @@ export default async function HomePage() {
 
   // Get top 5 leaderboard from season entries
   let leaderboardEntries: any[] = [];
+  let allRanked: UserScore[] = [];
   if (season) {
     const { data: entries } = await supabase
       .from("season_entries")
@@ -110,6 +111,7 @@ export default async function HomePage() {
       });
 
       const ranked = rankUsers(users);
+      allRanked = ranked;
       const prizeAmounts = [season.prize_1st_cents, season.prize_2nd_cents, season.prize_3rd_cents];
 
       leaderboardEntries = ranked.slice(0, 5).map((u, i) => {
@@ -131,6 +133,17 @@ export default async function HomePage() {
     }
   }
 
+  // Compute personal stats for logged-in user
+  let personalStats: {
+    rank: number;
+    totalPlayers: number;
+    score: number;
+    questionsForecasted: number;
+    totalQuestions: number;
+    participationPct: number;
+    qualifiesForPrize: boolean;
+  } | null = null;
+
   // Show How It Works to users who haven't forecasted yet
   let hasForecasted = false;
   if (user && season) {
@@ -139,6 +152,28 @@ export default async function HomePage() {
       .select("*", { count: "exact", head: true })
       .eq("user_id", user.id);
     hasForecasted = (count ?? 0) > 0;
+
+    if (hasForecasted && allRanked.length > 0) {
+      const userRankIndex = allRanked.findIndex((u) => u.userId === user.id);
+      const userRanked = userRankIndex >= 0 ? allRanked[userRankIndex] : null;
+
+      const { count: totalQCount } = await supabase
+        .from("questions")
+        .select("*", { count: "exact", head: true })
+        .eq("season_id", season.id);
+
+      if (userRanked) {
+        personalStats = {
+          rank: userRankIndex + 1,
+          totalPlayers: allRanked.length,
+          score: userRanked.score * 100,
+          questionsForecasted: userRanked.questionsPlayed,
+          totalQuestions: totalQCount || 0,
+          participationPct: userRanked.participationPct,
+          qualifiesForPrize: userRanked.qualifiesForPrize,
+        };
+      }
+    }
   }
 
   return (
@@ -164,6 +199,58 @@ export default async function HomePage() {
         <Card>
           <CardContent className="py-8 text-center text-muted-foreground">
             No active season right now. Check back soon!
+          </CardContent>
+        </Card>
+      )}
+
+      {personalStats && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Your Stats</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div>
+                  <p className="text-2xl font-bold font-mono">
+                    {personalStats.score > 0 ? personalStats.score.toFixed(1) : "—"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Score</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Award className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div>
+                  <p className="text-2xl font-bold font-mono">
+                    #{personalStats.rank}
+                    <span className="text-sm font-normal text-muted-foreground">/{personalStats.totalPlayers}</span>
+                  </p>
+                  <p className="text-xs text-muted-foreground">Rank</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Hash className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div>
+                  <p className="text-2xl font-bold font-mono">
+                    {personalStats.questionsForecasted}
+                    <span className="text-sm font-normal text-muted-foreground">/{personalStats.totalQuestions}</span>
+                  </p>
+                  <p className="text-xs text-muted-foreground">Forecasted</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Activity className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div>
+                  <p className="text-2xl font-bold font-mono">
+                    {personalStats.participationPct.toFixed(0)}%
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Participation {personalStats.qualifiesForPrize ? "✓" : ""}
+                  </p>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
