@@ -13,7 +13,7 @@ import { BarChart3, Menu, X, User, LogOut, Shield, TrendingUp } from "lucide-rea
 import { UserAvatar } from "@/components/user-avatar";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { brierPoints } from "@/lib/scoring";
 
 export function Nav() {
@@ -22,6 +22,7 @@ export function Nav() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userStats, setUserStats] = useState<{ score: number; forecasts: number; resolved: number } | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
   const supabase = createClient();
 
   async function fetchUserStats(userId: string) {
@@ -121,17 +122,20 @@ export function Nav() {
             <span className="bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">Forecaster</span>
           </Link>
           <div className="hidden md:flex items-center gap-5">
-            {links.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-[15px] text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {link.label}
-              </Link>
-            ))}
+            {links.map((link) => {
+              const isActive = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`text-[15px] transition-colors ${isActive ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
             {profile?.role === "ADMIN" && (
-              <Link href="/admin" className="text-[15px] text-muted-foreground hover:text-foreground transition-colors">
+              <Link href="/admin" className={`text-[15px] transition-colors ${pathname.startsWith("/admin") ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"}`}>
                 Admin
               </Link>
             )}
@@ -194,13 +198,16 @@ export function Nav() {
 
       {mobileOpen && (
         <div className="md:hidden border-t px-4 py-3 space-y-1">
-          {links.map((link) => (
-            <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)} className="block text-sm py-2 text-muted-foreground hover:text-foreground">
-              {link.label}
-            </Link>
-          ))}
+          {links.map((link) => {
+            const isActive = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
+            return (
+              <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)} className={`block text-sm py-2 ${isActive ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"}`}>
+                {link.label}
+              </Link>
+            );
+          })}
           {profile?.role === "ADMIN" && (
-            <Link href="/admin" onClick={() => setMobileOpen(false)} className="block text-sm py-2 text-muted-foreground hover:text-foreground">
+            <Link href="/admin" onClick={() => setMobileOpen(false)} className={`block text-sm py-2 ${pathname.startsWith("/admin") ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"}`}>
               Admin
             </Link>
           )}
