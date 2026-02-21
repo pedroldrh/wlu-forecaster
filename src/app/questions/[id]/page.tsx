@@ -80,7 +80,6 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
           {isOpen && <Badge variant="default">Open</Badge>}
         </div>
         <h1 className="text-2xl font-bold">{question.title}</h1>
-        <p className="text-muted-foreground">{question.description}</p>
       </div>
 
       <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -90,8 +89,6 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
         </span>
         {isOpen && <CountdownTimer targetDate={question.close_time} />}
       </div>
-
-      <Separator />
 
       {isOpen && user && (
         <Card>
@@ -109,6 +106,10 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
           </CardContent>
         </Card>
       )}
+
+      <Separator />
+
+      <p className="text-muted-foreground">{question.description}</p>
 
       {question.status === "RESOLVED" && (
         <Card>
