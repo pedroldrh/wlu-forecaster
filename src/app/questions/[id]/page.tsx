@@ -65,9 +65,8 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <Link href="/questions" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft className="h-4 w-4" />
-        Back to Questions
+      <Link href="/questions" className="inline-flex items-center justify-center h-8 w-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+        <ArrowLeft className="h-5 w-5" />
       </Link>
       <div className="space-y-2">
         <div className="flex items-center gap-2 flex-wrap">
