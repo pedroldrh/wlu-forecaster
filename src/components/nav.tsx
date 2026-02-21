@@ -114,24 +114,24 @@ export function Nav() {
 
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-      <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center gap-2 font-bold text-lg">
-            <BarChart3 className="h-5 w-5 text-primary" />
+          <Link href="/" className="flex items-center gap-2.5 font-bold text-xl">
+            <BarChart3 className="h-6 w-6 text-primary" />
             <span className="bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">Forecaster</span>
           </Link>
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-5">
             {links.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className="text-[15px] text-muted-foreground hover:text-foreground transition-colors"
               >
                 {link.label}
               </Link>
             ))}
             {profile?.role === "ADMIN" && (
-              <Link href="/admin" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <Link href="/admin" className="text-[15px] text-muted-foreground hover:text-foreground transition-colors">
                 Admin
               </Link>
             )}
@@ -140,8 +140,8 @@ export function Nav() {
 
         <div className="flex items-center gap-2">
           {userStats && (
-            <div className="hidden sm:flex items-center gap-1.5 text-sm font-medium text-primary">
-              <TrendingUp className="h-3.5 w-3.5" />
+            <div className="hidden sm:flex items-center gap-1.5 text-[15px] font-medium text-primary">
+              <TrendingUp className="h-4 w-4" />
               {userStats.resolved > 0 ? (
                 <span>{userStats.score.toFixed(1)} pts</span>
               ) : (
