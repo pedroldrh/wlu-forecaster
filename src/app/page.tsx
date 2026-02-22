@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { seasonScore, rankUsers, UserScore } from "@/lib/scoring";
 import Link from "next/link";
+import { SuggestQuestion } from "@/components/suggest-question";
 import { BarChart3, Trophy, ShieldCheck, Target } from "lucide-react";
 
 export default async function HomePage() {
@@ -173,19 +174,22 @@ export default async function HomePage() {
   return (
     <div className="space-y-6">
       {season ? (
-        <SeasonBanner
-          id={season.id}
-          name={season.name}
-          startDate={season.start_date}
-          endDate={season.end_date}
-          prize1stCents={season.prize_1st_cents}
-          prize2ndCents={season.prize_2nd_cents}
-          prize3rdCents={season.prize_3rd_cents}
-          prize4thCents={season.prize_4th_cents}
-          prize5thCents={season.prize_5th_cents}
-          prizeBonusCents={season.prize_bonus_cents}
-          status={season.status}
-        />
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 items-stretch">
+          <SeasonBanner
+            id={season.id}
+            name={season.name}
+            startDate={season.start_date}
+            endDate={season.end_date}
+            prize1stCents={season.prize_1st_cents}
+            prize2ndCents={season.prize_2nd_cents}
+            prize3rdCents={season.prize_3rd_cents}
+            prize4thCents={season.prize_4th_cents}
+            prize5thCents={season.prize_5th_cents}
+            prizeBonusCents={season.prize_bonus_cents}
+            status={season.status}
+          />
+          {user && <SuggestQuestion />}
+        </div>
       ) : (
         <Card>
           <CardContent className="py-8 text-center text-muted-foreground">

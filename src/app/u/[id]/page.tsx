@@ -216,9 +216,6 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
         </div>
       )}
 
-      {/* Suggest a market (own profile only) */}
-      {isOwnProfile && <SuggestQuestion />}
-
       {/* Referral card (own profile only) */}
       {isOwnProfile && <ReferralCard userId={id} referralCount={referrals} />}
 
@@ -282,6 +279,9 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           </CardContent>
         </Card>
       )}
+
+      {/* Suggest a market (own profile only) */}
+      {isOwnProfile && <SuggestQuestion />}
     </div>
   );
 }
