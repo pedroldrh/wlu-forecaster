@@ -245,17 +245,18 @@ function InstallModal({ open, onClose }: { open: boolean; onClose: () => void })
           </button>
         </div>
         <div className="space-y-3 text-sm text-muted-foreground">
-          <p className="font-medium text-foreground">On iPhone (Safari):</p>
+          <p className="font-medium text-foreground">New iOS (glass address bar at bottom):</p>
           <ol className="list-decimal list-inside space-y-2">
-            <li>Tap the <Share className="inline h-4 w-4 -mt-0.5" /> <strong className="text-foreground">Share</strong> button</li>
+            <li>Tap the <strong className="text-foreground">&#8943;</strong> (three dots) at the bottom right</li>
+            <li>Tap <Share className="inline h-4 w-4 -mt-0.5" /> <strong className="text-foreground">Share</strong></li>
             <li>Scroll down and tap <strong className="text-foreground">&quot;Add to Home Screen&quot;</strong></li>
-            <li>Tap <strong className="text-foreground">&quot;Add&quot;</strong> to confirm</li>
+            <li>Tap <strong className="text-foreground">&quot;Add&quot;</strong></li>
           </ol>
-          <p className="font-medium text-foreground pt-2">On Android (Chrome):</p>
+          <p className="font-medium text-foreground pt-2">Older iOS (toolbar at bottom):</p>
           <ol className="list-decimal list-inside space-y-2">
-            <li>Tap the <strong className="text-foreground">menu (&#8942;)</strong> in your browser</li>
-            <li>Tap <strong className="text-foreground">&quot;Add to Home Screen&quot;</strong> or <strong className="text-foreground">&quot;Install App&quot;</strong></li>
-            <li>Tap <strong className="text-foreground">&quot;Install&quot;</strong> to confirm</li>
+            <li>Tap the <Share className="inline h-4 w-4 -mt-0.5" /> <strong className="text-foreground">Share</strong> button in the toolbar</li>
+            <li>Scroll down and tap <strong className="text-foreground">&quot;Add to Home Screen&quot;</strong></li>
+            <li>Tap <strong className="text-foreground">&quot;Add&quot;</strong></li>
           </ol>
         </div>
         <Button className="w-full mt-4" onClick={onClose}>
