@@ -31,7 +31,7 @@ export default async function HowItWorksPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Target className="h-5 w-5 text-primary" />
+            <Target className="h-5 w-5 text-red-500" />
             <CardTitle className="text-lg">Making Predictions</CardTitle>
           </div>
         </CardHeader>

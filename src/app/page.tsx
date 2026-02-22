@@ -202,7 +202,7 @@ export default async function HomePage() {
           <CardContent>
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="flex gap-3">
-                <Target className="h-5 w-5 mt-0.5 shrink-0 text-primary" />
+                <Target className="h-5 w-5 mt-0.5 shrink-0 text-red-500" />
                 <div>
                   <p className="font-medium text-sm">Make Predictions</p>
                   <p className="text-sm text-muted-foreground">Assign probabilities (0-100%) to campus questions. Think it&apos;ll rain at formal? Say 70%.</p>
