@@ -1,19 +1,30 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BarChart3, ExternalLink } from "lucide-react";
+import { BarChart3, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 function isInAppBrowser(): boolean {
   if (typeof navigator === "undefined") return false;
   const ua = navigator.userAgent || navigator.vendor || "";
-  // Snapchat, Instagram, Facebook, Twitter, LinkedIn, TikTok, etc.
   return /snapchat|FBAN|FBAV|Instagram|Twitter|LinkedInApp|BytedanceWebview|TikTok|musical_ly/i.test(ua);
 }
 
 function isIOS(): boolean {
   if (typeof navigator === "undefined") return false;
   return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+
+function getAppName(): string {
+  if (typeof navigator === "undefined") return "";
+  const ua = navigator.userAgent || "";
+  if (/snapchat/i.test(ua)) return "Snapchat";
+  if (/Instagram/i.test(ua)) return "Instagram";
+  if (/FBAN|FBAV/i.test(ua)) return "Facebook";
+  if (/Twitter/i.test(ua)) return "Twitter";
+  if (/TikTok|musical_ly|BytedanceWebview/i.test(ua)) return "TikTok";
+  if (/LinkedInApp/i.test(ua)) return "LinkedIn";
+  return "this app";
 }
 
 export function InAppBrowserGate() {
@@ -27,35 +38,22 @@ export function InAppBrowserGate() {
   if (!show) return null;
 
   const url = window.location.href;
+  const browser = isIOS() ? "Safari" : "Chrome";
+  const appName = getAppName();
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
     } catch {
-      // fallback
       const input = document.createElement("input");
       input.value = url;
       document.body.appendChild(input);
       input.select();
       document.execCommand("copy");
       document.body.removeChild(input);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
     }
-  };
-
-  const handleOpenInBrowser = () => {
-    // On iOS, try to open in Safari via x-safari scheme or window.open
-    if (isIOS()) {
-      // This sometimes works to escape in-app browsers on iOS
-      window.location.href = url;
-    } else {
-      // On Android, intent:// can open the default browser
-      const intentUrl = `intent://${url.replace(/^https?:\/\//, "")}#Intent;scheme=https;end`;
-      window.location.href = intentUrl;
-    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 3000);
   };
 
   return (
@@ -71,32 +69,40 @@ export function InAppBrowserGate() {
 
         {/* Message */}
         <div className="space-y-2">
-          <h1 className="text-lg font-semibold">Open in {isIOS() ? "Safari" : "your browser"}</h1>
+          <h1 className="text-lg font-semibold">Open in {browser} to continue</h1>
           <p className="text-sm text-muted-foreground">
-            This app works best in {isIOS() ? "Safari" : "Chrome"}. Tap the button below to open it, or copy the link and paste it in your browser.
+            {appName}&apos;s browser can&apos;t run this app. Copy the link below and paste it in {browser}.
           </p>
         </div>
 
-        {/* Actions */}
-        <div className="space-y-3">
-          <Button className="w-full gap-2" size="lg" onClick={handleOpenInBrowser}>
-            <ExternalLink className="h-4 w-4" />
-            Open in {isIOS() ? "Safari" : "Browser"}
-          </Button>
-
-          <Button variant="outline" className="w-full" onClick={handleCopy}>
-            {copied ? "Copied!" : "Copy Link"}
-          </Button>
+        {/* Link display */}
+        <div className="rounded-lg border bg-muted/50 px-4 py-3">
+          <p className="text-sm font-mono text-foreground break-all">{url}</p>
         </div>
 
-        {/* Manual instructions */}
-        <div className="text-xs text-muted-foreground space-y-1 pt-2">
-          <p className="font-medium text-foreground">Or manually:</p>
-          {isIOS() ? (
-            <p>Tap the <strong className="text-foreground">&#8943;</strong> menu &rarr; <strong className="text-foreground">Open in Safari</strong></p>
+        {/* Copy button */}
+        <Button className="w-full gap-2" size="lg" onClick={handleCopy}>
+          {copied ? (
+            <>
+              <Check className="h-5 w-5" />
+              Copied! Now paste in {browser}
+            </>
           ) : (
-            <p>Tap the <strong className="text-foreground">&#8942;</strong> menu &rarr; <strong className="text-foreground">Open in Browser</strong></p>
+            <>
+              <Copy className="h-5 w-5" />
+              Copy Link
+            </>
           )}
+        </Button>
+
+        {/* Steps */}
+        <div className="text-sm text-muted-foreground space-y-2 pt-2">
+          <p className="font-medium text-foreground text-xs uppercase tracking-wider">Steps</p>
+          <ol className="list-decimal list-inside space-y-1.5 text-left">
+            <li>Tap <strong className="text-foreground">Copy Link</strong> above</li>
+            <li>Open <strong className="text-foreground">{browser}</strong></li>
+            <li>Paste the link in the address bar</li>
+          </ol>
         </div>
       </div>
     </div>
