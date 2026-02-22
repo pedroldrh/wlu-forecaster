@@ -9,6 +9,7 @@ import { SuggestQuestion } from "@/components/suggest-question";
 import { ReferralCard } from "@/components/referral-card";
 import { ScoreCard } from "@/components/score-card";
 import { TrendingUp, Hash, Activity, Award } from "lucide-react";
+import Link from "next/link";
 
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -49,7 +50,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
   let score = 0;
   let questionsPlayed = 0;
-  let resolvedForecasts: { probability: number; outcome: boolean; title: string; points: number }[] = [];
+  let resolvedForecasts: { questionId: string; probability: number; outcome: boolean; title: string; points: number }[] = [];
   if (season) {
     // Get resolved question IDs for this season
     const { data: resolvedQuestions } = await supabase
@@ -85,6 +86,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
       resolvedForecasts = (forecasts ?? []).map((f) => {
         const q = questionMap.get(f.question_id)!;
         return {
+          questionId: f.question_id,
           probability: f.probability,
           outcome: q.resolved_outcome as boolean,
           title: q.title,
@@ -228,7 +230,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           <CardContent>
             <div className="divide-y">
               {resolvedForecasts.map((f, i) => (
-                <div key={i} className="flex items-center justify-between py-3">
+                <Link key={i} href={`/questions/${f.questionId}`} className="flex items-center justify-between py-3 hover:bg-muted/50 -mx-2 px-2 rounded-md transition-colors">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{f.title}</p>
                     <p className="text-xs text-muted-foreground">
@@ -240,7 +242,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                       {(f.points * 100).toFixed(1)} pts
                     </Badge>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </CardContent>
@@ -256,7 +258,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           <CardContent>
             <div className="divide-y">
               {allForecasts.slice(0, 20).map((f) => (
-                <div key={f.id} className="flex items-center justify-between py-3">
+                <Link key={f.id} href={`/questions/${f.question_id}`} className="flex items-center justify-between py-3 hover:bg-muted/50 -mx-2 px-2 rounded-md transition-colors">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{f.question.title}</p>
                     <p className="text-xs text-muted-foreground">
@@ -273,7 +275,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                       </div>
                     )}
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </CardContent>
