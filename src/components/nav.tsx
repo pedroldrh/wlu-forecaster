@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { BarChart3, User, LogOut, Shield, TrendingUp, Download, X, Share } from "lucide-react";
+import { BarChart3, User, LogOut, Shield, Download, X, Share } from "lucide-react";
 import { UserAvatar } from "@/components/user-avatar";
 import { useState, useEffect, Suspense } from "react";
 import { createPortal } from "react-dom";
@@ -31,7 +31,6 @@ export function Nav() {
   const unvotedCount = useUnvotedCount();
 
   async function fetchUserStats(userId: string) {
-    // Get live season
     const { data: season } = await supabase
       .from("seasons")
       .select("id")
@@ -39,7 +38,6 @@ export function Nav() {
       .single();
     if (!season) { setUserStats(null); return; }
 
-    // Get user's forecasts for this season's questions
     const { data: questions } = await supabase
       .from("questions")
       .select("id, status, resolved_outcome")
@@ -128,93 +126,83 @@ export function Nav() {
   return (
     <>
       <nav className="relative border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 pt-[env(safe-area-inset-top,0px)]">
-        <div className="max-w-7xl mx-auto px-4 h-16 md:h-20 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <Link href="/" className="flex items-center gap-3 font-bold text-2xl">
-              <BarChart3 className="h-8 w-8 text-primary" />
-              <span className="bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">Forecaster</span>
-            </Link>
-            <div className="hidden md:flex items-center gap-6">
-              {links.map((link) => {
-                const isActive = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={`relative text-base transition-colors ${isActive ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"}`}
-                  >
-                    {link.label}
-                    {link.href === "/questions" && unvotedCount > 0 && (
-                      <span className="absolute -top-1.5 -right-4 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white px-1">
-                        {unvotedCount}
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
-              {profile?.role === "ADMIN" && (
-                <Link href="/admin" className={`text-base transition-colors ${pathname.startsWith("/admin") ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"}`}>
-                  Admin
+        <div className="max-w-7xl mx-auto px-4 h-14 md:h-20 flex items-center justify-between">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 md:gap-3 font-bold text-xl md:text-2xl">
+            <BarChart3 className="h-6 w-6 md:h-8 md:w-8 text-primary" />
+            <span className="bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">Forecaster</span>
+          </Link>
+
+          {/* Desktop nav links */}
+          <div className="hidden md:flex items-center gap-6">
+            {links.map((link) => {
+              const isActive = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`relative text-base transition-colors ${isActive ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  {link.label}
+                  {link.href === "/questions" && unvotedCount > 0 && (
+                    <span className="absolute -top-1.5 -right-4 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white px-1">
+                      {unvotedCount}
+                    </span>
+                  )}
                 </Link>
-              )}
-            </div>
+              );
+            })}
+            {profile?.role === "ADMIN" && (
+              <Link href="/admin" className={`text-base transition-colors ${pathname.startsWith("/admin") ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"}`}>
+                Admin
+              </Link>
+            )}
           </div>
 
-          <div className="flex items-center gap-3">
-            {!isStandalone && (
-              <button
-                onClick={() => setInstallOpen(true)}
-                className="inline-flex items-center justify-center h-10 w-10 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors md:hidden"
-              >
-                <Download className="h-5 w-5" />
-              </button>
-            )}
-
+          {/* Right side */}
+          <div className="flex items-center gap-2">
             {user ? (
-              <div className="flex items-center gap-2">
-                <Link
-                  href={`/u/${user.id}`}
-                  className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-accent transition-colors"
-                >
-                  <UserAvatar userId={user.id} size="sm" />
-                  {userStats && userStats.resolved > 0 ? (
-                    <span className="text-sm font-bold font-mono text-primary">{userStats.score.toFixed(1)}</span>
-                  ) : userStats && userStats.forecasts > 0 ? (
-                    <span className="text-xs text-muted-foreground">{userStats.forecasts} bet{userStats.forecasts !== 1 ? "s" : ""}</span>
-                  ) : null}
-                </Link>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <span className="sr-only">Menu</span>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-2 rounded-full pl-1 pr-3 py-1 hover:bg-accent active:bg-accent/80 transition-colors outline-none">
+                    <UserAvatar userId={user.id} size="sm" />
+                    {userStats && userStats.resolved > 0 ? (
+                      <span className="text-sm font-bold font-mono text-primary">{userStats.score.toFixed(1)}</span>
+                    ) : userStats && userStats.forecasts > 0 ? (
+                      <span className="text-xs text-muted-foreground">{userStats.forecasts} bet{userStats.forecasts !== 1 ? "s" : ""}</span>
+                    ) : null}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem asChild>
+                    <Link href={`/u/${user.id}`}>
+                      <User className="mr-2 h-4 w-4" />
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  {!isStandalone && (
+                    <DropdownMenuItem onClick={() => setInstallOpen(true)}>
+                      <Download className="mr-2 h-4 w-4" />
+                      Install App
+                    </DropdownMenuItem>
+                  )}
+                  {profile?.role === "ADMIN" && (
                     <DropdownMenuItem asChild>
-                      <Link href={`/u/${user.id}`}>
-                        <User className="mr-2 h-4 w-4" />
-                        Profile
+                      <Link href="/admin">
+                        <Shield className="mr-2 h-4 w-4" />
+                        Admin
                       </Link>
                     </DropdownMenuItem>
-                    {profile?.role === "ADMIN" && (
-                      <DropdownMenuItem asChild>
-                        <Link href="/admin">
-                          <Shield className="mr-2 h-4 w-4" />
-                          Admin
-                        </Link>
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleSignOut}>
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Sign out
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
-              <Button asChild className="text-base h-10 px-5">
+              <Button asChild size="sm" className="text-sm h-9 px-4 md:text-base md:h-10 md:px-5 rounded-full">
                 <Link href="/signin">Sign in</Link>
               </Button>
             )}
