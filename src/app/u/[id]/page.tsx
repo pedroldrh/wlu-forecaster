@@ -2,7 +2,6 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CalibrationChart } from "@/components/calibration-chart";
 import { seasonScore, brierPoints } from "@/lib/scoring";
 import { formatPercent, formatDate } from "@/lib/utils";
 import { UserAvatar } from "@/components/user-avatar";
@@ -51,8 +50,6 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   let score = 0;
   let questionsPlayed = 0;
   let resolvedForecasts: { probability: number; outcome: boolean; title: string; points: number }[] = [];
-  let calibrationData: { probability: number; outcome: boolean }[] = [];
-
   if (season) {
     // Get resolved question IDs for this season
     const { data: resolvedQuestions } = await supabase
@@ -85,8 +82,6 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
       score = seasonScore(forCalc);
       questionsPlayed = (forecasts ?? []).length;
-      calibrationData = forCalc;
-
       resolvedForecasts = (forecasts ?? []).map((f) => {
         const q = questionMap.get(f.question_id)!;
         return {
@@ -226,18 +221,6 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
       {/* Referral card (own profile only) */}
       {isOwnProfile && <ReferralCard userId={id} referralCount={referrals} />}
-
-      {/* Calibration chart */}
-      {calibrationData.length >= 5 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Calibration</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CalibrationChart forecasts={calibrationData} />
-          </CardContent>
-        </Card>
-      )}
 
       {/* Score breakdown */}
       {resolvedForecasts.length > 0 && (
