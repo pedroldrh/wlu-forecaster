@@ -10,8 +10,12 @@ import { BarChart3, Trophy, ShieldCheck, Target } from "lucide-react";
 
 export default async function HomePage() {
   const supabase = await createAdminClient();
-  const authClient = await createClient();
-  const { data: { user } } = await authClient.auth.getUser();
+  let user: { id: string } | null = null;
+  try {
+    const authClient = await createClient();
+    const { data } = await authClient.auth.getUser();
+    user = data.user;
+  } catch {}
 
   // Get current live season
   const { data: season } = await supabase

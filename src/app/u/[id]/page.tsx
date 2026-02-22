@@ -14,8 +14,12 @@ import { TrendingUp, Hash, Activity, Award } from "lucide-react";
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createAdminClient();
-  const authClient = await createClient();
-  const { data: { user } } = await authClient.auth.getUser();
+  let user: { id: string } | null = null;
+  try {
+    const authClient = await createClient();
+    const { data } = await authClient.auth.getUser();
+    user = data.user;
+  } catch {}
 
   // Fetch the profile
   const { data: profile } = await supabase

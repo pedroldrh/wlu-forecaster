@@ -5,8 +5,12 @@ import { seasonScore, rankUsers, UserScore } from "@/lib/scoring";
 
 export default async function LeaderboardPage() {
   const supabase = await createAdminClient();
-  const authClient = await createClient();
-  const { data: { user } } = await authClient.auth.getUser();
+  let user: { id: string } | null = null;
+  try {
+    const authClient = await createClient();
+    const { data } = await authClient.auth.getUser();
+    user = data.user;
+  } catch {}
 
   const { data: season } = await supabase
     .from("seasons")
