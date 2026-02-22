@@ -23,6 +23,7 @@ export function Nav() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [installOpen, setInstallOpen] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
   const [userStats, setUserStats] = useState<{ score: number; forecasts: number; resolved: number } | null>(null);
   const router = useRouter();
   const pathname = usePathname();
@@ -102,6 +103,13 @@ export function Nav() {
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    setIsStandalone(
+      window.matchMedia("(display-mode: standalone)").matches
+      || ("standalone" in navigator && (navigator as any).standalone === true)
+    );
+  }, []);
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
@@ -164,12 +172,14 @@ export function Nav() {
               </div>
             )}
 
-            <button
-              onClick={() => setInstallOpen(true)}
-              className="inline-flex items-center justify-center h-10 w-10 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors md:hidden"
-            >
-              <Download className="h-5 w-5" />
-            </button>
+            {!isStandalone && (
+              <button
+                onClick={() => setInstallOpen(true)}
+                className="inline-flex items-center justify-center h-10 w-10 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors md:hidden"
+              >
+                <Download className="h-5 w-5" />
+              </button>
+            )}
 
             {user ? (
               <DropdownMenu>
