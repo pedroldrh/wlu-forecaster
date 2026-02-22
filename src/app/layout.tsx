@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Nav } from "@/components/nav";
 import { BottomNav } from "@/components/bottom-nav";
+import { InAppBrowserGate } from "@/components/in-app-browser-gate";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -58,6 +59,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
+          <InAppBrowserGate />
           <Nav />
           <main className="max-w-7xl mx-auto px-4 py-6 pb-20 md:pb-6">{children}</main>
           <BottomNav />
