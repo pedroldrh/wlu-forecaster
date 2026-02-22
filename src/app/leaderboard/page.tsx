@@ -1,11 +1,12 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { LeaderboardTable } from "@/components/leaderboard-table";
 import { Card, CardContent } from "@/components/ui/card";
 import { seasonScore, rankUsers, UserScore } from "@/lib/scoring";
 
 export default async function LeaderboardPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const supabase = await createAdminClient();
+  const authClient = await createClient();
+  const { data: { user } } = await authClient.auth.getUser();
 
   const { data: season } = await supabase
     .from("seasons")

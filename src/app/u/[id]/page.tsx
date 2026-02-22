@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,8 +13,9 @@ import { TrendingUp, Hash, Activity, Award } from "lucide-react";
 
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const supabase = await createAdminClient();
+  const authClient = await createClient();
+  const { data: { user } } = await authClient.auth.getUser();
 
   // Fetch the profile
   const { data: profile } = await supabase

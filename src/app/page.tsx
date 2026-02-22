@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { SeasonBanner } from "@/components/season-banner";
 import { QuestionCard } from "@/components/question-card";
 import { LeaderboardTable } from "@/components/leaderboard-table";
@@ -9,8 +9,9 @@ import Link from "next/link";
 import { BarChart3, Trophy, ShieldCheck, Target } from "lucide-react";
 
 export default async function HomePage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const supabase = await createAdminClient();
+  const authClient = await createClient();
+  const { data: { user } } = await authClient.auth.getUser();
 
   // Get current live season
   const { data: season } = await supabase
