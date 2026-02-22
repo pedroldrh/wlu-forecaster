@@ -163,7 +163,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
             <UserAvatar userId={id} size="lg" />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-2xl font-bold truncate">{displayName}</h1>
+                <h1 className="text-2xl font-bold break-words">{displayName}</h1>
                 {badges.map((b) => (
                   <Badge key={b} variant="secondary" className="shrink-0">{b}</Badge>
                 ))}
