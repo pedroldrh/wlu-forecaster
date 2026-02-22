@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { seasonScore, brierPoints } from "@/lib/scoring";
 import { formatPercent, formatDate } from "@/lib/utils";
 import { UserAvatar } from "@/components/user-avatar";
-import { SuggestQuestion } from "@/components/suggest-question";
 import { ReferralCard } from "@/components/referral-card";
 import { ScoreCard } from "@/components/score-card";
 import { TrendingUp, Hash, Activity, Award } from "lucide-react";
@@ -282,8 +281,6 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
         </Card>
       )}
 
-      {/* Suggest a market (own profile only) */}
-      {isOwnProfile && <SuggestQuestion />}
     </div>
   );
 }
