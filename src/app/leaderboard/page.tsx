@@ -31,7 +31,7 @@ export default async function LeaderboardPage() {
   // Get entries with PAID or JOINED status
   const { data: entries } = await supabase
     .from("season_entries")
-    .select("user_id, paid_at, created_at, profiles(id, name, email, display_name)")
+    .select("user_id, paid_at, created_at, profiles(id, name, display_name)")
     .eq("season_id", season.id)
     .in("status", ["PAID", "JOINED"]);
 
@@ -68,7 +68,7 @@ export default async function LeaderboardPage() {
   }
 
   const users: UserScore[] = (entries ?? []).map((entry) => {
-    const profile = entry.profiles as unknown as { id: string; name: string | null; email: string; display_name: string | null } | null;
+    const profile = entry.profiles as unknown as { id: string; name: string | null; display_name: string | null } | null;
     const userForecasts = forecastsByUser.get(entry.user_id) ?? [];
     const participationPct = resolvedCount > 0 ? (userForecasts.length / resolvedCount) * 100 : 0;
     const avgSubmissionTime = userForecasts.length > 0
@@ -76,7 +76,7 @@ export default async function LeaderboardPage() {
       : Infinity;
     return {
       userId: entry.user_id,
-      name: profile?.display_name || profile?.name || profile?.email || "Anonymous",
+      name: profile?.display_name || profile?.name || "Anonymous",
       score: seasonScore(userForecasts.map(f => ({ probability: f.probability, outcome: f.outcome }))),
       questionsPlayed: userForecasts.length,
       joinedAt: entry.created_at ? new Date(entry.created_at) : null,

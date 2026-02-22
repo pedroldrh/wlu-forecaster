@@ -75,7 +75,7 @@ export default async function HomePage() {
   if (season) {
     const { data: entries } = await supabase
       .from("season_entries")
-      .select("user_id, created_at, profiles(id, name, email, display_name)")
+      .select("user_id, created_at, profiles(id, name, display_name)")
       .eq("season_id", season.id)
       .in("status", ["PAID", "JOINED"]);
 
@@ -107,14 +107,14 @@ export default async function HomePage() {
           probability: f.probability,
           outcome: resolvedMap.get(f.question_id)!,
         }));
-        const profile = entry.profiles as unknown as { id: string; name: string; email: string; display_name: string | null };
+        const profile = entry.profiles as unknown as { id: string; name: string; display_name: string | null };
         const participationPct = totalResolved > 0 ? (userForecasts.length / totalResolved) * 100 : 0;
         const avgSubmissionTime = userForecasts.length > 0
           ? userForecasts.reduce((sum: number, f: any) => sum + new Date(f.submitted_at).getTime(), 0) / userForecasts.length
           : Infinity;
         return {
           userId: entry.user_id,
-          name: profile?.display_name || profile?.name || profile?.email || "Unknown",
+          name: profile?.display_name || profile?.name || "Anonymous",
           score: seasonScore(scoringForecasts),
           questionsPlayed: userForecasts.length,
           joinedAt: entry.created_at ? new Date(entry.created_at) : null,
