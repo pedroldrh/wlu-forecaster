@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { RANDOM_NAMES } from "@/lib/random-names";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -60,13 +61,37 @@ export async function GET(request: Request) {
 
         const { data: profile } = await admin
           .from("profiles")
-          .select("name, avatar_url")
+          .select("name, avatar_url, display_name")
           .eq("id", user.id)
           .single();
 
         if (profile && !profile.name && name) {
           updates.name = name;
-          updates.display_name = name;
+        }
+
+        // Assign a random unhinged display name if they don't have one
+        if (profile && !profile.display_name) {
+          const { data: allProfiles } = await admin
+            .from("profiles")
+            .select("display_name");
+
+          const takenNames = new Set(
+            (allProfiles ?? [])
+              .map((p: { display_name: string | null }) => p.display_name)
+              .filter(Boolean)
+          );
+
+          const available = RANDOM_NAMES.filter((n) => !takenNames.has(n));
+
+          if (available.length > 0) {
+            updates.display_name =
+              available[Math.floor(Math.random() * available.length)];
+          } else {
+            // All names taken — append a random number
+            const base =
+              RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)];
+            updates.display_name = `${base} #${Math.floor(Math.random() * 1000)}`;
+          }
         }
 
         await admin

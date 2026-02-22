@@ -6,7 +6,6 @@ import { CalibrationChart } from "@/components/calibration-chart";
 import { seasonScore, brierPoints } from "@/lib/scoring";
 import { formatPercent, formatDate } from "@/lib/utils";
 import { UserAvatar } from "@/components/user-avatar";
-import { DisplayNameForm } from "./display-name-form";
 import { SuggestQuestion } from "@/components/suggest-question";
 import { TrendingUp, Hash, Activity, Award } from "lucide-react";
 
@@ -165,11 +164,6 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
               </p>
             </div>
           </div>
-          {isOwnProfile && (
-            <div className="mt-4 pt-4 border-t border-border/50">
-              <DisplayNameForm currentDisplayName={profile.display_name || ""} />
-            </div>
-          )}
         </CardContent>
       </Card>
 
