@@ -63,7 +63,7 @@ export function NotificationBell({ userId }: { userId: string }) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-y-auto rounded-xl border bg-background shadow-lg z-50">
+        <div className="fixed right-2 left-2 sm:left-auto sm:absolute sm:right-0 top-[env(safe-area-inset-top,0px)] sm:top-full mt-14 sm:mt-2 sm:w-80 max-h-96 overflow-y-auto rounded-xl border bg-background shadow-lg z-50">
           <div className="px-4 py-3 border-b">
             <p className="font-semibold text-sm">Notifications</p>
           </div>
