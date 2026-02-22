@@ -19,6 +19,8 @@ export async function createSeason(data: {
   prize1stCents: number;
   prize2ndCents: number;
   prize3rdCents: number;
+  prize4thCents: number;
+  prize5thCents: number;
   prizeBonusCents: number;
   minParticipationPct: number;
 }) {
@@ -31,6 +33,8 @@ export async function createSeason(data: {
     prize_1st_cents: data.prize1stCents,
     prize_2nd_cents: data.prize2ndCents,
     prize_3rd_cents: data.prize3rdCents,
+    prize_4th_cents: data.prize4thCents,
+    prize_5th_cents: data.prize5thCents,
     prize_bonus_cents: data.prizeBonusCents,
     min_participation_pct: data.minParticipationPct,
     status: "DRAFT",
@@ -46,6 +50,8 @@ export async function updateSeason(id: string, data: {
   prize1stCents?: number;
   prize2ndCents?: number;
   prize3rdCents?: number;
+  prize4thCents?: number;
+  prize5thCents?: number;
   prizeBonusCents?: number;
   minParticipationPct?: number;
   status?: string;
@@ -58,6 +64,8 @@ export async function updateSeason(id: string, data: {
   if (data.prize1stCents !== undefined) updateData.prize_1st_cents = data.prize1stCents;
   if (data.prize2ndCents !== undefined) updateData.prize_2nd_cents = data.prize2ndCents;
   if (data.prize3rdCents !== undefined) updateData.prize_3rd_cents = data.prize3rdCents;
+  if (data.prize4thCents !== undefined) updateData.prize_4th_cents = data.prize4thCents;
+  if (data.prize5thCents !== undefined) updateData.prize_5th_cents = data.prize5thCents;
   if (data.prizeBonusCents !== undefined) updateData.prize_bonus_cents = data.prizeBonusCents;
   if (data.minParticipationPct !== undefined) updateData.min_participation_pct = data.minParticipationPct;
   if (data.status) updateData.status = data.status;

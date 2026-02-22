@@ -127,7 +127,7 @@ export default async function HomePage() {
 
       const ranked = rankUsers(users);
       allRanked = ranked;
-      const prizeAmounts = [season.prize_1st_cents, season.prize_2nd_cents, season.prize_3rd_cents];
+      const prizeAmounts = [season.prize_1st_cents, season.prize_2nd_cents, season.prize_3rd_cents, season.prize_4th_cents, season.prize_5th_cents];
 
       // Query referral counts
       const { data: referralRows } = await supabase
@@ -153,7 +153,7 @@ export default async function HomePage() {
           isCurrentUser: u.userId === user?.id,
           participationPct: u.participationPct,
           qualifiesForPrize: u.qualifiesForPrize,
-          prizeCents: u.qualifiesForPrize && i < 3 ? prizeAmounts[i] : undefined,
+          prizeCents: u.qualifiesForPrize && i < 5 ? prizeAmounts[i] : undefined,
           referralBonus: rawReferrals > 0 ? Math.min(rawReferrals, 3) : undefined,
         };
       });
@@ -181,6 +181,8 @@ export default async function HomePage() {
           prize1stCents={season.prize_1st_cents}
           prize2ndCents={season.prize_2nd_cents}
           prize3rdCents={season.prize_3rd_cents}
+          prize4thCents={season.prize_4th_cents}
+          prize5thCents={season.prize_5th_cents}
           prizeBonusCents={season.prize_bonus_cents}
           status={season.status}
         />

@@ -88,7 +88,7 @@ export default async function LeaderboardPage() {
   });
 
   const ranked = rankUsers(users);
-  const prizeAmounts = [season.prize_1st_cents, season.prize_2nd_cents, season.prize_3rd_cents];
+  const prizeAmounts = [season.prize_1st_cents, season.prize_2nd_cents, season.prize_3rd_cents, season.prize_4th_cents, season.prize_5th_cents];
 
   // Query referral counts
   const { data: referralRows } = await supabase
@@ -114,7 +114,7 @@ export default async function LeaderboardPage() {
       isCurrentUser: u.userId === user?.id,
       participationPct: u.participationPct,
       qualifiesForPrize: u.qualifiesForPrize,
-      prizeCents: u.qualifiesForPrize && i < 3 ? prizeAmounts[i] : undefined,
+      prizeCents: u.qualifiesForPrize && i < 5 ? prizeAmounts[i] : undefined,
       referralBonus: rawReferrals > 0 ? Math.min(rawReferrals, 3) : undefined,
     };
   });

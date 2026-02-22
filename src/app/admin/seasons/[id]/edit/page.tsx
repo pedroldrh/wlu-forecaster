@@ -21,6 +21,8 @@ export default async function EditSeasonPage({ params }: { params: Promise<{ id:
     prize1stCents: season.prize_1st_cents,
     prize2ndCents: season.prize_2nd_cents,
     prize3rdCents: season.prize_3rd_cents,
+    prize4thCents: season.prize_4th_cents,
+    prize5thCents: season.prize_5th_cents,
     prizeBonusCents: season.prize_bonus_cents,
     minParticipationPct: season.min_participation_pct,
     status: season.status,

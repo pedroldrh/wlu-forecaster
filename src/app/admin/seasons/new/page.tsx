@@ -25,6 +25,8 @@ export default function NewSeasonPage() {
         prize1stCents: Math.round(parseFloat(form.get("prize1st") as string) * 100),
         prize2ndCents: Math.round(parseFloat(form.get("prize2nd") as string) * 100),
         prize3rdCents: Math.round(parseFloat(form.get("prize3rd") as string) * 100),
+        prize4thCents: Math.round(parseFloat(form.get("prize4th") as string) * 100),
+        prize5thCents: Math.round(parseFloat(form.get("prize5th") as string) * 100),
         prizeBonusCents: Math.round(parseFloat(form.get("prizeBonus") as string) * 100),
         minParticipationPct: parseInt(form.get("minParticipation") as string),
       });
@@ -68,6 +70,14 @@ export default function NewSeasonPage() {
             <div className="space-y-2">
               <Label htmlFor="prize3rd">3rd Prize ($)</Label>
               <Input id="prize3rd" name="prize3rd" type="number" step="1" min="0" placeholder="150" defaultValue="150" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="prize4th">4th Prize ($)</Label>
+              <Input id="prize4th" name="prize4th" type="number" step="1" min="0" placeholder="100" defaultValue="100" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="prize5th">5th Prize ($)</Label>
+              <Input id="prize5th" name="prize5th" type="number" step="1" min="0" placeholder="75" defaultValue="75" required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="prizeBonus">Bonus Prize ($)</Label>

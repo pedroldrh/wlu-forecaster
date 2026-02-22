@@ -44,13 +44,15 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
         >
           {/* Rank */}
           <div className="w-8 shrink-0 text-center font-mono text-sm">
-            {entry.rank <= 3 ? (
+            {entry.rank <= 5 ? (
               <Trophy
                 className={cn(
                   "h-5 w-5 mx-auto",
                   entry.rank === 1 && "text-yellow-500",
                   entry.rank === 2 && "text-gray-400",
-                  entry.rank === 3 && "text-amber-700"
+                  entry.rank === 3 && "text-amber-700",
+                  entry.rank === 4 && "text-blue-400",
+                  entry.rank === 5 && "text-purple-400"
                 )}
               />
             ) : (

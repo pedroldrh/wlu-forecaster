@@ -7,6 +7,7 @@ import { CountdownTimer } from "@/components/countdown-timer";
 import { CATEGORY_LABELS } from "@/lib/constants";
 import { ForecastForm } from "./forecast-form";
 import { CommentSection } from "./comment-section";
+import { DisputeForm } from "@/components/dispute-form";
 import { Users, CheckCircle, XCircle, ArrowLeft } from "lucide-react";
 import { brierPoints } from "@/lib/scoring";
 import Link from "next/link";
@@ -134,6 +135,12 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
             </CardContent>
           )}
         </Card>
+      )}
+
+      {question.status === "RESOLVED" && user && userForecast && (
+        <div className="flex justify-end">
+          <DisputeForm questionId={id} />
+        </div>
       )}
 
       {question.status !== "OPEN" && consensus !== null && (

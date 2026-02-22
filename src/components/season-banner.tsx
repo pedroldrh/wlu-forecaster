@@ -12,6 +12,8 @@ interface SeasonBannerProps {
   prize1stCents: number;
   prize2ndCents: number;
   prize3rdCents: number;
+  prize4thCents: number;
+  prize5thCents: number;
   prizeBonusCents: number;
   status: string;
 }
@@ -23,10 +25,12 @@ export function SeasonBanner({
   prize1stCents,
   prize2ndCents,
   prize3rdCents,
+  prize4thCents,
+  prize5thCents,
   prizeBonusCents,
   status,
 }: SeasonBannerProps) {
-  const totalPrize = prize1stCents + prize2ndCents + prize3rdCents + prizeBonusCents;
+  const totalPrize = prize1stCents + prize2ndCents + prize3rdCents + prize4thCents + prize5thCents + prizeBonusCents;
 
   return (
     <Card className="overflow-hidden border-primary/20 bg-gradient-to-r from-primary/5 via-transparent to-blue-500/5">

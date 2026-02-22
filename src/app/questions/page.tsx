@@ -59,9 +59,12 @@ export default async function QuestionsPage() {
     })
   );
 
-  const open = enriched.filter((q) => q.status === "OPEN");
-  const closed = enriched.filter((q) => q.status === "CLOSED");
-  const resolved = enriched.filter((q) => q.status === "RESOLVED");
+  const sortByVoted = <T extends { user_probability: number | null }>(arr: T[]) =>
+    [...arr].sort((a, b) => (a.user_probability !== null ? 1 : 0) - (b.user_probability !== null ? 1 : 0));
+
+  const open = sortByVoted(enriched.filter((q) => q.status === "OPEN"));
+  const closed = sortByVoted(enriched.filter((q) => q.status === "CLOSED"));
+  const resolved = sortByVoted(enriched.filter((q) => q.status === "RESOLVED"));
 
   const allVisible = [...open, ...closed, ...resolved];
 

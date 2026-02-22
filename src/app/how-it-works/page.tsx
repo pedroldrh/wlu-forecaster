@@ -1,11 +1,31 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Target, BarChart3, Trophy, ShieldCheck, HelpCircle, Calendar } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
+import { formatDollars } from "@/lib/utils";
 
 export const metadata = {
   title: "How It Works — Forecaster",
 };
 
-export default function HowItWorksPage() {
+export default async function HowItWorksPage() {
+  const supabase = await createClient();
+  const { data: season } = await supabase
+    .from("seasons")
+    .select("prize_1st_cents, prize_2nd_cents, prize_3rd_cents, prize_4th_cents, prize_5th_cents, prize_bonus_cents")
+    .in("status", ["LIVE", "ENDED"])
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .single();
+
+  const prizes = season ?? {
+    prize_1st_cents: 35000,
+    prize_2nd_cents: 22500,
+    prize_3rd_cents: 15000,
+    prize_4th_cents: 10000,
+    prize_5th_cents: 7500,
+    prize_bonus_cents: 10000,
+  };
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <Card>
@@ -128,17 +148,17 @@ export default function HowItWorksPage() {
           </p>
           <div className="grid grid-cols-2 gap-2">
             <span>1st Place</span>
-            <span className="font-mono text-foreground text-right">$350</span>
+            <span className="font-mono text-foreground text-right">{formatDollars(prizes.prize_1st_cents)}</span>
             <span>2nd Place</span>
-            <span className="font-mono text-foreground text-right">$225</span>
+            <span className="font-mono text-foreground text-right">{formatDollars(prizes.prize_2nd_cents)}</span>
             <span>3rd Place</span>
-            <span className="font-mono text-foreground text-right">$150</span>
+            <span className="font-mono text-foreground text-right">{formatDollars(prizes.prize_3rd_cents)}</span>
             <span>4th Place</span>
-            <span className="font-mono text-foreground text-right">$100</span>
+            <span className="font-mono text-foreground text-right">{formatDollars(prizes.prize_4th_cents)}</span>
             <span>5th Place</span>
-            <span className="font-mono text-foreground text-right">$75</span>
+            <span className="font-mono text-foreground text-right">{formatDollars(prizes.prize_5th_cents)}</span>
             <span>Bonus Prize</span>
-            <span className="font-mono text-foreground text-right">$100</span>
+            <span className="font-mono text-foreground text-right">{formatDollars(prizes.prize_bonus_cents)}</span>
           </div>
           <p>
             The <strong className="text-foreground">bonus prize</strong> goes to the player with the

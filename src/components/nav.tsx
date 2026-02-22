@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { BarChart3, User, LogOut, Shield, Download, X, Share } from "lucide-react";
 import { UserAvatar } from "@/components/user-avatar";
+import { NotificationBell } from "@/components/notification-bell";
 import { useState, useEffect, Suspense } from "react";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
@@ -162,6 +163,8 @@ export function Nav() {
           {/* Right side */}
           <div className="flex items-center gap-2">
             {user ? (
+              <>
+              <NotificationBell userId={user.id} />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-2 rounded-full pl-1 pr-3 py-1 hover:bg-accent active:bg-accent/80 transition-colors outline-none">
@@ -201,6 +204,7 @@ export function Nav() {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              </>
             ) : (
               <Button asChild size="sm" className="text-sm h-9 px-4 md:text-base md:h-10 md:px-5 rounded-full">
                 <Link href="/signin">Sign in</Link>

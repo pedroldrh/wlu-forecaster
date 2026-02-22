@@ -47,6 +47,8 @@ export type Database = {
           prize_1st_cents: number;
           prize_2nd_cents: number;
           prize_3rd_cents: number;
+          prize_4th_cents: number;
+          prize_5th_cents: number;
           prize_bonus_cents: number;
           min_participation_pct: number;
           status: "DRAFT" | "LIVE" | "ENDED" | "PAYOUTS_SENT";
@@ -61,6 +63,8 @@ export type Database = {
           prize_1st_cents?: number;
           prize_2nd_cents?: number;
           prize_3rd_cents?: number;
+          prize_4th_cents?: number;
+          prize_5th_cents?: number;
           prize_bonus_cents?: number;
           min_participation_pct?: number;
           status?: "DRAFT" | "LIVE" | "ENDED" | "PAYOUTS_SENT";
@@ -75,6 +79,8 @@ export type Database = {
           prize_1st_cents?: number;
           prize_2nd_cents?: number;
           prize_3rd_cents?: number;
+          prize_4th_cents?: number;
+          prize_5th_cents?: number;
           prize_bonus_cents?: number;
           min_participation_pct?: number;
           status?: "DRAFT" | "LIVE" | "ENDED" | "PAYOUTS_SENT";
@@ -313,7 +319,7 @@ export type Database = {
           id: string;
           season_id: string;
           user_id: string;
-          prize_type: "1ST" | "2ND" | "3RD" | "BONUS";
+          prize_type: "1ST" | "2ND" | "3RD" | "4TH" | "5TH" | "BONUS";
           amount_cents: number;
           verified: boolean;
           claimed_at: string | null;
@@ -323,7 +329,7 @@ export type Database = {
           id?: string;
           season_id: string;
           user_id: string;
-          prize_type: "1ST" | "2ND" | "3RD" | "BONUS";
+          prize_type: "1ST" | "2ND" | "3RD" | "4TH" | "5TH" | "BONUS";
           amount_cents: number;
           verified?: boolean;
           claimed_at?: string | null;
@@ -349,6 +355,92 @@ export type Database = {
           },
           {
             foreignKeyName: "prize_claims_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      resolution_disputes: {
+        Row: {
+          id: string;
+          user_id: string;
+          question_id: string;
+          message: string;
+          status: "PENDING" | "REVIEWED" | "DISMISSED";
+          admin_note: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          question_id: string;
+          message: string;
+          status?: "PENDING" | "REVIEWED" | "DISMISSED";
+          admin_note?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          question_id?: string;
+          message?: string;
+          status?: "PENDING" | "REVIEWED" | "DISMISSED";
+          admin_note?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "resolution_disputes_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "resolution_disputes_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "questions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      notifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          type: "resolution" | "new_question" | "dispute_response";
+          title: string;
+          body: string;
+          link: string | null;
+          read: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          type: "resolution" | "new_question" | "dispute_response";
+          title: string;
+          body: string;
+          link?: string | null;
+          read?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          type?: "resolution" | "new_question" | "dispute_response";
+          title?: string;
+          body?: string;
+          link?: string | null;
+          read?: boolean;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey";
             columns: ["user_id"];
             isOneToOne: false;
             referencedRelation: "profiles";

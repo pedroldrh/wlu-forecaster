@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Users, HelpCircle, Calendar, Trophy, Lightbulb } from "lucide-react";
+import { Users, HelpCircle, Calendar, Trophy, Lightbulb, AlertTriangle } from "lucide-react";
 
 export default async function AdminPage() {
   const supabase = await createClient();
@@ -12,12 +12,13 @@ export default async function AdminPage() {
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
   if (profile?.role !== "ADMIN") redirect("/");
 
-  const [userResult, participantResult, openResult, seasonResult, requestResult] = await Promise.all([
+  const [userResult, participantResult, openResult, seasonResult, requestResult, disputeResult] = await Promise.all([
     supabase.from("profiles").select("*", { count: "exact", head: true }),
     supabase.from("season_entries").select("*", { count: "exact", head: true }).in("status", ["PAID", "JOINED"]),
     supabase.from("questions").select("*", { count: "exact", head: true }).eq("status", "OPEN"),
     supabase.from("seasons").select("*", { count: "exact", head: true }),
     supabase.from("question_requests").select("*", { count: "exact", head: true }).eq("status", "PENDING"),
+    supabase.from("resolution_disputes").select("*", { count: "exact", head: true }).eq("status", "PENDING"),
   ]);
 
   const userCount = userResult.count ?? 0;
@@ -25,6 +26,7 @@ export default async function AdminPage() {
   const openQuestions = openResult.count ?? 0;
   const seasons = seasonResult.count ?? 0;
   const pendingRequests = requestResult.count ?? 0;
+  const pendingDisputes = disputeResult.count ?? 0;
 
   return (
     <div className="space-y-6">
@@ -111,6 +113,22 @@ export default async function AdminPage() {
           <CardContent>
             <Button asChild className="w-full">
               <Link href="/admin/requests">Review Requests</Link>
+            </Button>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" />
+              Resolution Disputes
+              {pendingDisputes > 0 && (
+                <span className="text-sm font-normal text-muted-foreground">({pendingDisputes} pending)</span>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link href="/admin/disputes">Review Disputes</Link>
             </Button>
           </CardContent>
         </Card>

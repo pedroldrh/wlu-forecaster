@@ -1,6 +1,7 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { createNotification } from "@/actions/notifications";
 import { revalidatePath } from "next/cache";
 
 async function requireAdmin() {
@@ -33,6 +34,24 @@ export async function createQuestion(data: {
     status: "OPEN",
   });
   if (error) throw new Error(error.message);
+
+  // Notify all season participants about the new market
+  const adminSupabase = await createAdminClient();
+  const { data: entries } = await adminSupabase
+    .from("season_entries")
+    .select("user_id")
+    .eq("season_id", data.seasonId)
+    .in("status", ["PAID", "JOINED"]);
+  for (const entry of entries ?? []) {
+    await createNotification(
+      entry.user_id,
+      "new_question",
+      "New market available",
+      `"${data.title}" — make your forecast now!`,
+      "/questions"
+    );
+  }
+
   revalidatePath("/admin/questions");
   revalidatePath("/questions");
 }
@@ -68,6 +87,25 @@ export async function resolveQuestion(id: string, outcome: boolean) {
     resolved_outcome: outcome,
     resolved_at: new Date().toISOString(),
   }).eq("id", id);
+
+  // Notify all forecasters on this question
+  const adminSupabase = await createAdminClient();
+  const { data: forecasts } = await adminSupabase
+    .from("forecasts")
+    .select("user_id")
+    .eq("question_id", id);
+  const notifiedIds = new Set<string>();
+  for (const f of forecasts ?? []) {
+    if (notifiedIds.has(f.user_id)) continue;
+    notifiedIds.add(f.user_id);
+    await createNotification(
+      f.user_id,
+      "resolution",
+      "Market resolved",
+      `"${question.title}" resolved ${outcome ? "YES" : "NO"}. Check your score!`,
+      `/questions/${id}`
+    );
+  }
 
   revalidatePath("/admin/questions");
   revalidatePath("/questions");
