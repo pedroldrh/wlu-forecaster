@@ -202,28 +202,28 @@ export default async function HomePage() {
           <CardContent>
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="flex gap-3">
-                <Target className="h-5 w-5 mt-0.5 shrink-0 text-muted-foreground" />
+                <Target className="h-5 w-5 mt-0.5 shrink-0 text-primary" />
                 <div>
                   <p className="font-medium text-sm">Make Predictions</p>
                   <p className="text-sm text-muted-foreground">Assign probabilities (0-100%) to campus questions. Think it&apos;ll rain at formal? Say 70%.</p>
                 </div>
               </div>
               <div className="flex gap-3">
-                <BarChart3 className="h-5 w-5 mt-0.5 shrink-0 text-muted-foreground" />
+                <BarChart3 className="h-5 w-5 mt-0.5 shrink-0 text-blue-500" />
                 <div>
                   <p className="font-medium text-sm">Brier Scoring</p>
                   <p className="text-sm text-muted-foreground">You&apos;re scored on accuracy. Confident and correct? Big points. Wrong? You lose points.</p>
                 </div>
               </div>
               <div className="flex gap-3">
-                <ShieldCheck className="h-5 w-5 mt-0.5 shrink-0 text-muted-foreground" />
+                <ShieldCheck className="h-5 w-5 mt-0.5 shrink-0 text-amber-500" />
                 <div>
                   <p className="font-medium text-sm">Stay Active</p>
                   <p className="text-sm text-muted-foreground">Forecast on at least 5 markets to qualify for prizes.</p>
                 </div>
               </div>
               <div className="flex gap-3">
-                <Trophy className="h-5 w-5 mt-0.5 shrink-0 text-muted-foreground" />
+                <Trophy className="h-5 w-5 mt-0.5 shrink-0 text-amber-500" />
                 <div>
                   <p className="font-medium text-sm">Win Prizes</p>
                   <p className="text-sm text-muted-foreground">Prizes paid out every 2 weeks to the top of the leaderboard.</p>
