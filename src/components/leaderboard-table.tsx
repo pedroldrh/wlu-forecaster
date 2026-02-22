@@ -16,13 +16,13 @@ interface LeaderboardEntry {
   rank: number;
   userId: string;
   name: string;
-  image?: string | null;
   score: number;
   questionsPlayed: number;
   isCurrentUser?: boolean;
   participationPct?: number;
   qualifiesForPrize?: boolean;
   prizeCents?: number;
+  referralBonus?: number;
 }
 
 interface LeaderboardTableProps {
@@ -87,7 +87,7 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
                 href={`/u/${entry.userId}`}
                 className="flex items-center gap-2 hover:underline min-w-0"
               >
-                <UserAvatar avatarUrl={entry.image} userId={entry.userId} size="xs" className="shrink-0" />
+                <UserAvatar userId={entry.userId} size="xs" className="shrink-0" />
                 <span className="font-medium truncate">{entry.name}</span>
                 {entry.isCurrentUser && (
                   <Badge variant="outline" className="text-xs shrink-0">
@@ -102,7 +102,10 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
               </Link>
             </TableCell>
             <TableCell className="text-right font-mono">
-              {formatPercent(entry.score)}
+              <span>{formatPercent(entry.score)}</span>
+              {entry.referralBonus ? (
+                <span className="text-xs text-green-600 ml-1" title="Referral bonus">+{entry.referralBonus}</span>
+              ) : null}
             </TableCell>
             <TableCell className="text-right hidden sm:table-cell">{entry.questionsPlayed}</TableCell>
             {showParticipation && (

@@ -7,6 +7,8 @@ import { seasonScore, brierPoints } from "@/lib/scoring";
 import { formatPercent, formatDate } from "@/lib/utils";
 import { UserAvatar } from "@/components/user-avatar";
 import { SuggestQuestion } from "@/components/suggest-question";
+import { ReferralCard } from "@/components/referral-card";
+import { ScoreCard } from "@/components/score-card";
 import { TrendingUp, Hash, Activity, Award } from "lucide-react";
 
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
@@ -145,13 +147,20 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   const isOwnProfile = user?.id === id;
   const displayName = profile.display_name || profile.name || "Anonymous";
 
+  // Count referrals for this user
+  const { count: referralCount } = await supabase
+    .from("profiles")
+    .select("*", { count: "exact", head: true })
+    .eq("referred_by", id);
+  const referrals = referralCount ?? 0;
+
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Profile header */}
       <Card className="overflow-hidden border-primary/20 bg-gradient-to-r from-primary/5 via-transparent to-blue-500/5">
         <CardContent className="pt-6 pb-6">
           <div className="flex items-center gap-4">
-            <UserAvatar avatarUrl={profile.avatar_url} userId={id} size="lg" />
+            <UserAvatar userId={id} size="lg" />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-2xl font-bold truncate">{displayName}</h1>
@@ -170,17 +179,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
       {/* Stats grid */}
       {season && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <Card>
-            <CardContent className="pt-4 pb-4">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-primary shrink-0" />
-                <div>
-                  <p className="text-2xl font-bold font-mono">{formatPercent(score)}</p>
-                  <p className="text-xs text-muted-foreground">Avg Score</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <ScoreCard score={score} hasBreakdown={resolvedForecasts.length > 0} />
           <Card>
             <CardContent className="pt-4 pb-4">
               <div className="flex items-center gap-2">
@@ -220,6 +219,9 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
       {/* Suggest a market (own profile only) */}
       {isOwnProfile && <SuggestQuestion />}
 
+      {/* Referral card (own profile only) */}
+      {isOwnProfile && <ReferralCard userId={id} referralCount={referrals} />}
+
       {/* Calibration chart */}
       {calibrationData.length >= 5 && (
         <Card>
@@ -234,7 +236,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
       {/* Score breakdown */}
       {resolvedForecasts.length > 0 && (
-        <Card>
+        <Card id="score-breakdown">
           <CardHeader>
             <CardTitle className="text-lg">Score Breakdown</CardTitle>
           </CardHeader>

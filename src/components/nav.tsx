@@ -161,17 +161,6 @@ export function Nav() {
           </div>
 
           <div className="flex items-center gap-3">
-            {userStats && (
-              <div className="hidden sm:flex items-center gap-2 text-base font-medium text-primary">
-                <TrendingUp className="h-5 w-5" />
-                {userStats.resolved > 0 ? (
-                  <span>{userStats.score.toFixed(1)} pts</span>
-                ) : (
-                  <span>{userStats.forecasts} forecast{userStats.forecasts !== 1 ? "s" : ""}</span>
-                )}
-              </div>
-            )}
-
             {!isStandalone && (
               <button
                 onClick={() => setInstallOpen(true)}
@@ -182,35 +171,48 @@ export function Nav() {
             )}
 
             {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="gap-2 text-base h-10 px-3">
-                    <UserAvatar avatarUrl={profile?.avatar_url} userId={user.id} size="sm" />
-                    <span className="hidden sm:inline">{profile?.name || "Account"}</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem asChild>
-                    <Link href={`/u/${user.id}`}>
-                      <User className="mr-2 h-4 w-4" />
-                      Profile
-                    </Link>
-                  </DropdownMenuItem>
-                  {profile?.role === "ADMIN" && (
+              <div className="flex items-center gap-2">
+                <Link
+                  href={`/u/${user.id}`}
+                  className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-accent transition-colors"
+                >
+                  <UserAvatar userId={user.id} size="sm" />
+                  {userStats && userStats.resolved > 0 ? (
+                    <span className="text-sm font-bold font-mono text-primary">{userStats.score.toFixed(1)}</span>
+                  ) : userStats && userStats.forecasts > 0 ? (
+                    <span className="text-xs text-muted-foreground">{userStats.forecasts} bet{userStats.forecasts !== 1 ? "s" : ""}</span>
+                  ) : null}
+                </Link>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      <span className="sr-only">Menu</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
-                      <Link href="/admin">
-                        <Shield className="mr-2 h-4 w-4" />
-                        Admin
+                      <Link href={`/u/${user.id}`}>
+                        <User className="mr-2 h-4 w-4" />
+                        Profile
                       </Link>
                     </DropdownMenuItem>
-                  )}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Sign out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    {profile?.role === "ADMIN" && (
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin">
+                          <Shield className="mr-2 h-4 w-4" />
+                          Admin
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleSignOut}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             ) : (
               <Button asChild className="text-base h-10 px-5">
                 <Link href="/signin">Sign in</Link>

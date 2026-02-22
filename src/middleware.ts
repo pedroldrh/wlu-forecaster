@@ -25,6 +25,17 @@ export async function middleware(request: NextRequest) {
     }
   );
 
+  // Capture referral code from ?ref= param
+  const ref = request.nextUrl.searchParams.get("ref");
+  if (ref) {
+    supabaseResponse.cookies.set("referral_code", ref, {
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+    });
+  }
+
   // Refresh session
   await supabase.auth.getUser();
 

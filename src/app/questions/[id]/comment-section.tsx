@@ -108,7 +108,6 @@ export function CommentSection({ questionId, comments, currentUserId }: CommentS
             return (
               <div key={comment.id} className="flex gap-3 group">
                 <UserAvatar
-                  avatarUrl={comment.profile?.avatar_url}
                   userId={comment.user_id}
                   size="sm"
                   className="shrink-0 mt-0.5"

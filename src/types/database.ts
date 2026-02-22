@@ -8,6 +8,7 @@ export type Database = {
           name: string | null;
           display_name: string | null;
           avatar_url: string | null;
+          referred_by: string | null;
           role: "USER" | "ADMIN";
           is_wlu_verified: boolean;
           created_at: string;
@@ -18,6 +19,7 @@ export type Database = {
           name?: string | null;
           display_name?: string | null;
           avatar_url?: string | null;
+          referred_by?: string | null;
           role?: "USER" | "ADMIN";
           is_wlu_verified?: boolean;
           created_at?: string;
@@ -28,6 +30,7 @@ export type Database = {
           name?: string | null;
           display_name?: string | null;
           avatar_url?: string | null;
+          referred_by?: string | null;
           role?: "USER" | "ADMIN";
           is_wlu_verified?: boolean;
           created_at?: string;

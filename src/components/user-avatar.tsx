@@ -1,9 +1,7 @@
 import { cn } from "@/lib/utils";
 
 interface UserAvatarProps {
-  avatarUrl?: string | null;
   userId: string;
-  name?: string | null;
   size?: "xs" | "sm" | "md" | "lg";
   className?: string;
 }
@@ -15,11 +13,10 @@ const sizeClasses = {
   lg: "h-16 w-16",
 };
 
-export function UserAvatar({ avatarUrl, userId, size = "md", className }: UserAvatarProps) {
-  const src = avatarUrl || `/api/avatar/${userId}`;
+export function UserAvatar({ userId, size = "md", className }: UserAvatarProps) {
   return (
     <img
-      src={src}
+      src={`/api/avatar/${userId}`}
       alt=""
       className={cn("rounded-full", sizeClasses[size], className)}
     />

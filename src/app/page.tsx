@@ -70,7 +70,7 @@ export default async function HomePage() {
   if (season) {
     const { data: entries } = await supabase
       .from("season_entries")
-      .select("user_id, created_at, profiles(id, name, email, avatar_url, display_name)")
+      .select("user_id, created_at, profiles(id, name, email, display_name)")
       .eq("season_id", season.id)
       .in("status", ["PAID", "JOINED"]);
 
@@ -102,7 +102,7 @@ export default async function HomePage() {
           probability: f.probability,
           outcome: resolvedMap.get(f.question_id)!,
         }));
-        const profile = entry.profiles as unknown as { id: string; name: string; email: string; avatar_url: string; display_name: string | null };
+        const profile = entry.profiles as unknown as { id: string; name: string; email: string; display_name: string | null };
         const participationPct = totalResolved > 0 ? (userForecasts.length / totalResolved) * 100 : 0;
         const avgSubmissionTime = userForecasts.length > 0
           ? userForecasts.reduce((sum: number, f: any) => sum + new Date(f.submitted_at).getTime(), 0) / userForecasts.length
@@ -124,20 +124,32 @@ export default async function HomePage() {
       allRanked = ranked;
       const prizeAmounts = [season.prize_1st_cents, season.prize_2nd_cents, season.prize_3rd_cents];
 
+      // Query referral counts
+      const { data: referralRows } = await supabase
+        .from("profiles")
+        .select("referred_by")
+        .not("referred_by", "is", null);
+
+      const referralCounts = new Map<string, number>();
+      for (const row of referralRows ?? []) {
+        const id = row.referred_by as string;
+        referralCounts.set(id, (referralCounts.get(id) || 0) + 1);
+      }
+
       leaderboardEntries = ranked.slice(0, 5).map((u, i) => {
-        const entry = entries.find((e) => e.user_id === u.userId);
-        const profile = entry?.profiles as unknown as { avatar_url: string };
+        const rawReferrals = referralCounts.get(u.userId) || 0;
+        const referralBonus = Math.min(rawReferrals, 3) * 0.01;
         return {
           rank: i + 1,
           userId: u.userId,
           name: u.name,
-          image: profile?.avatar_url,
-          score: u.score,
+          score: u.score + referralBonus,
           questionsPlayed: u.questionsPlayed,
           isCurrentUser: u.userId === user?.id,
           participationPct: u.participationPct,
           qualifiesForPrize: u.qualifiesForPrize,
           prizeCents: u.qualifiesForPrize && i < 3 ? prizeAmounts[i] : undefined,
+          referralBonus: rawReferrals > 0 ? Math.min(rawReferrals, 3) : undefined,
         };
       });
     }

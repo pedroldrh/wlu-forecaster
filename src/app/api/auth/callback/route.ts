@@ -36,7 +36,6 @@ export async function GET(request: Request) {
         const isWlu = user.email.endsWith("@mail.wlu.edu");
         const meta = user.user_metadata;
         const name = meta?.full_name || meta?.name || null;
-        const avatarUrl = meta?.avatar_url || null;
 
         // Use service role client to update profile
         const admin = createServerClient(
@@ -56,17 +55,32 @@ export async function GET(request: Request) {
           }
         );
 
-        // Set is_wlu_verified, and fill in name/avatar if not already set
+        // Set is_wlu_verified, and fill in name if not already set
         const updates: Record<string, unknown> = { is_wlu_verified: isWlu };
 
         const { data: profile } = await admin
           .from("profiles")
-          .select("name, avatar_url, display_name")
+          .select("name, display_name, referred_by")
           .eq("id", user.id)
           .single();
 
         if (profile && !profile.name && name) {
           updates.name = name;
+        }
+
+        // Record referral if cookie present and not yet referred
+        const referralCode = cookieStore.get("referral_code")?.value;
+        if (referralCode && profile && !profile.referred_by && referralCode !== user.id) {
+          // Verify the referrer exists
+          const { data: referrer } = await admin
+            .from("profiles")
+            .select("id")
+            .eq("id", referralCode)
+            .single();
+
+          if (referrer) {
+            updates.referred_by = referralCode;
+          }
         }
 
         // Assign a random unhinged display name if they don't have one
@@ -98,6 +112,11 @@ export async function GET(request: Request) {
           .from("profiles")
           .update(updates)
           .eq("id", user.id);
+
+        // Clear referral cookie if it was used
+        if (referralCode) {
+          cookieStore.delete("referral_code");
+        }
       }
 
       return NextResponse.redirect(`${origin}${next}`);
