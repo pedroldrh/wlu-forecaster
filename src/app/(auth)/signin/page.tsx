@@ -28,11 +28,11 @@ export default function SignInPage() {
 
   return (
     <Card className="w-full max-w-sm">
-      <CardHeader className="text-center">
-        <div className="flex justify-center mb-2">
-          <BarChart3 className="h-10 w-10 text-primary" />
-        </div>
-        <CardTitle className="text-2xl bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">Forecaster</CardTitle>
+      <CardHeader>
+        <CardTitle className="flex items-center justify-center gap-3 text-2xl">
+          <BarChart3 className="h-8 w-8 text-primary" />
+          <span className="bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent font-bold">Forecaster</span>
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <Button
