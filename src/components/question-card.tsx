@@ -34,7 +34,7 @@ export function QuestionCard({
 
   return (
     <Link href={`/questions/${id}`}>
-      <Card className="hover:bg-muted/50 transition-colors h-full flex flex-col">
+      <Card className="hover:bg-primary/5 hover:border-primary/30 transition-colors h-full flex flex-col">
         <CardContent className="pt-4 pb-3 flex flex-col flex-1 gap-3">
           {/* Top: icon + title + consensus */}
           <div className="flex items-start gap-3">
