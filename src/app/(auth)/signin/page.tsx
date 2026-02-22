@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -33,7 +33,6 @@ export default function SignInPage() {
           <BarChart3 className="h-10 w-10 text-primary" />
         </div>
         <CardTitle className="text-2xl bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">Forecaster</CardTitle>
-        <CardDescription>W&L Campus Forecasting Tournament</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         <Button
@@ -53,10 +52,6 @@ export default function SignInPage() {
         >
           {loading === "microsoft" ? "Redirecting..." : "Sign in with Microsoft"}
         </Button>
-
-        <p className="text-xs text-muted-foreground text-center">
-          Use any Google or Microsoft account to sign in
-        </p>
 
         <p className="text-sm font-medium text-center pt-2">
           No spam, ever. We only email you if you win a prize.
