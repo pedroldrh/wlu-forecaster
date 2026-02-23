@@ -10,65 +10,91 @@ import {
 import { Button } from "@/components/ui/button";
 import { HelpCircle } from "lucide-react";
 
-const STORAGE_KEY = "forecaster-onboarding-seen";
+const SEEN_KEY = "forecaster-onboarding-seen";
+const COMPLETED_KEY = "forecaster-onboarding-completed";
 
 const slides = [
   {
-    image: "/onboarding/prize-pool.jpg",
+    image: "/onboarding/home.png",
     title: "Compete for Real Prizes",
     description:
       "Every season has a prize pool. Join for free and compete against other W&L students for cash prizes.",
   },
   {
-    image: "/onboarding/markets.jpg",
+    image: "/onboarding/markets.png",
     title: "Vote on Campus Markets",
     description:
       "Browse markets about sports, campus events, academics, and more. Tap \"Vote\" to make your prediction.",
   },
   {
-    image: "/onboarding/market-detail.jpg",
+    image: "/onboarding/market-detail.png",
     title: "Set Your Probability",
     description:
       "Assign a 0-100% chance to each question. The more confident and correct you are, the higher you score.",
   },
   {
-    image: "/onboarding/leaderboard.jpg",
+    image: "/onboarding/leaderboard.png",
     title: "Climb the Leaderboard",
     description:
       "Forecast on at least 5 markets to qualify for prizes. Top forecasters win cash every season.",
+  },
+  {
+    image: "/onboarding/profile.png",
+    title: "Track Your Progress",
+    description:
+      "View your score, forecasts, and stats on your profile. Share your referral link to earn bonus points.",
   },
 ];
 
 export function OnboardingModal() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
-  const [hasSeen, setHasSeen] = useState(true);
+  const [showFab, setShowFab] = useState(false);
 
   useEffect(() => {
-    const seen = localStorage.getItem(STORAGE_KEY);
-    if (seen) {
-      setHasSeen(true);
+    const seen = localStorage.getItem(SEEN_KEY);
+    const completed = localStorage.getItem(COMPLETED_KEY);
+
+    if (seen && !completed) {
+      // Dismissed without completing — show the floating button
+      setShowFab(true);
+      return;
+    }
+    if (completed) {
+      // Completed the walkthrough — hide everything
       return;
     }
 
+    // First time — check if logged in
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
-        setHasSeen(false);
         setOpen(true);
       }
     });
   }, []);
 
-  const complete = useCallback(() => {
-    localStorage.setItem(STORAGE_KEY, "true");
-    setHasSeen(true);
+  const dismiss = useCallback(() => {
+    localStorage.setItem(SEEN_KEY, "true");
     setOpen(false);
     setStep(0);
+    // Only show fab if they didn't finish all slides
+    if (!localStorage.getItem(COMPLETED_KEY)) {
+      setShowFab(true);
+    }
+  }, []);
+
+  const complete = useCallback(() => {
+    localStorage.setItem(SEEN_KEY, "true");
+    localStorage.setItem(COMPLETED_KEY, "true");
+    setOpen(false);
+    setStep(0);
+    setShowFab(false);
   }, []);
 
   const openGuide = useCallback(() => {
     setStep(0);
+    setShowFab(false);
     setOpen(true);
   }, []);
 
@@ -77,10 +103,10 @@ export function OnboardingModal() {
 
   return (
     <>
-      <Dialog open={open} onOpenChange={(v) => { if (!v) complete(); }}>
+      <Dialog open={open} onOpenChange={(v) => { if (!v) dismiss(); }}>
         <DialogContent showCloseButton={false} className="max-w-sm gap-0 p-0 overflow-hidden">
           <button
-            onClick={complete}
+            onClick={dismiss}
             className="absolute top-3 right-3 z-10 text-xs text-muted-foreground hover:text-foreground transition-colors bg-background/80 backdrop-blur rounded-full px-2 py-1"
           >
             Skip
@@ -88,12 +114,12 @@ export function OnboardingModal() {
 
           <DialogTitle className="sr-only">How Forecaster Works</DialogTitle>
 
-          <div className="relative w-full aspect-[9/16] max-h-[50vh] overflow-hidden bg-muted">
+          <div className="w-full bg-muted flex items-center justify-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={current.image}
               alt={current.title}
-              className="w-full h-full object-cover object-top"
+              className="w-full h-auto max-h-[55vh] object-contain"
             />
           </div>
 
@@ -126,8 +152,8 @@ export function OnboardingModal() {
         </DialogContent>
       </Dialog>
 
-      {/* Floating "How it works" button — shown after onboarding is dismissed */}
-      {hasSeen && !open && (
+      {/* Floating "How it works" — only if user dismissed without completing */}
+      {showFab && !open && (
         <button
           onClick={openGuide}
           className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-40 flex items-center gap-1.5 rounded-full bg-primary text-primary-foreground shadow-lg px-3 py-2 text-xs font-medium hover:bg-primary/90 active:scale-95 transition-all"
