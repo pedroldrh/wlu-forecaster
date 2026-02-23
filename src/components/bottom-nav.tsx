@@ -2,19 +2,28 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, BarChart3, Trophy, HelpCircle } from "lucide-react";
+import { Home, BarChart3, Trophy, User } from "lucide-react";
 import { useUnvotedCount } from "@/hooks/use-unvoted-count";
-
-const tabs = [
-  { href: "/", label: "Home", icon: Home },
-  { href: "/questions", label: "Markets", icon: BarChart3 },
-  { href: "/leaderboard", label: "Board", icon: Trophy },
-  { href: "/how-it-works", label: "Info", icon: HelpCircle },
-];
+import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 export function BottomNav() {
   const pathname = usePathname();
   const unvotedCount = useUnvotedCount();
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    createClient().auth.getUser().then(({ data: { user } }) => {
+      setUserId(user?.id ?? null);
+    });
+  }, []);
+
+  const tabs = [
+    { href: "/", label: "Home", icon: Home },
+    { href: "/questions", label: "Markets", icon: BarChart3 },
+    { href: "/leaderboard", label: "Board", icon: Trophy },
+    { href: userId ? `/u/${userId}` : "/signin", label: "Profile", icon: User },
+  ];
 
   if (pathname === "/signin") return null;
 
@@ -22,7 +31,7 @@ export function BottomNav() {
     <nav className="fixed bottom-0 inset-x-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden pb-[env(safe-area-inset-bottom,0px)]">
       <div className="flex items-center justify-around h-16">
         {tabs.map((tab) => {
-          const isActive = tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href);
+          const isActive = tab.href === "/" ? pathname === "/" : tab.label === "Profile" ? pathname.startsWith("/u/") : pathname.startsWith(tab.href);
           const Icon = tab.icon;
           return (
             <Link
