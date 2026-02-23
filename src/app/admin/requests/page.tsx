@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,13 +13,15 @@ export default async function AdminRequestsPage() {
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
   if (profile?.role !== "ADMIN") redirect("/");
 
-  const { data: requests } = await supabase
+  const admin = await createAdminClient();
+
+  const { data: requests } = await admin
     .from("question_requests")
     .select("*, profiles:user_id(name, display_name, email)")
     .order("created_at", { ascending: false });
 
   // Get the live season for approve action
-  const { data: season } = await supabase
+  const { data: season } = await admin
     .from("seasons")
     .select("id, name")
     .eq("status", "LIVE")
