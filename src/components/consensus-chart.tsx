@@ -55,9 +55,9 @@ export function ConsensusChart({ data }: ConsensusChartProps) {
       },
     });
 
-    // Convert ISO strings to YYYY-MM-DD for lightweight-charts
+    // Convert ISO strings to Unix timestamps (seconds) — avoids duplicate-date errors
     const chartData = data.map((d) => ({
-      time: d.time.slice(0, 10) as string,
+      time: Math.floor(new Date(d.time).getTime() / 1000),
       value: d.value,
     }));
 
