@@ -62,10 +62,10 @@ export default function SignInPage() {
       <img
         src="/campus.jpg"
         alt=""
-        className="absolute inset-0 w-full h-full object-cover blur-sm opacity-30 pointer-events-none scale-105"
+        className="absolute inset-0 w-full h-full object-cover blur-[2px] opacity-50 pointer-events-none scale-105"
       />
       {/* Gradient overlay for readability */}
-      <div className="absolute inset-0 bg-gradient-to-b from-blue-600/70 via-indigo-600/60 to-blue-700/70 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-blue-600/50 via-indigo-600/40 to-blue-700/50 pointer-events-none" />
 
       {/* Close button */}
       <button
