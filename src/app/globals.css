@@ -237,7 +237,7 @@
   }
 }
 
-/* ── Splash Screen ── */
+/* ── Splash Screen (PWA only) ── */
 
 .splash-overlay {
   position: fixed;
@@ -246,7 +246,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #1a1a2e;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
   animation: splash-exit 400ms ease-in 1400ms both;
 }
 
@@ -257,9 +257,9 @@
   animation: splash-fade-in 300ms ease-out 200ms both;
 }
 
-/* SVG rect that sweeps across, clipped to bar shapes */
+/* Diagonal reflection band clipped to bar shapes */
 .splash-reflection {
-  animation: splash-shine 700ms ease-in-out 600ms both;
+  animation: splash-shine 600ms ease-in-out 600ms both;
 }
 
 /* Keyframes */
@@ -270,8 +270,8 @@
 }
 
 @keyframes splash-shine {
-  0%   { transform: skewX(-15deg) translateX(-6px); }
-  100% { transform: skewX(-15deg) translateX(30px); }
+  0%   { transform: rotate(-30deg) translate(-14px, 8px); }
+  100% { transform: rotate(-30deg) translate(22px, -8px); }
 }
 
 @keyframes splash-exit {

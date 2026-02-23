@@ -53,12 +53,11 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${sora.variable} antialiased`}
-        style={{ background: "#1a1a2e" }}
       >
-        {/* Inline splash overlay so it paints before React hydrates */}
+        {/* Inline splash blocker: covers screen with blue before React hydrates (PWA only) */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `if(!sessionStorage.getItem("splash-shown")){document.write('<div id="splash-pre" style="position:fixed;inset:0;z-index:99998;background:#1a1a2e"></div>')}`,
+            __html: `(function(){var s=window.matchMedia("(display-mode: standalone)").matches||navigator.standalone;if(s&&!sessionStorage.getItem("splash-shown")){var d=document.createElement("div");d.id="splash-pre";d.style.cssText="position:fixed;inset:0;z-index:99998;background:#3b82f6";document.currentScript.after(d)}})()`,
           }}
         />
         <Providers>
