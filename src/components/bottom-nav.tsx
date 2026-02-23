@@ -16,6 +16,8 @@ export function BottomNav() {
   const pathname = usePathname();
   const unvotedCount = useUnvotedCount();
 
+  if (pathname === "/signin") return null;
+
   return (
     <nav className="fixed bottom-0 inset-x-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden pb-[env(safe-area-inset-bottom,0px)]">
       <div className="flex items-center justify-around h-16">

@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { BarChart3 } from "lucide-react";
+import { BarChart3, X } from "lucide-react";
 import { toast } from "sonner";
 
 const WORDS_TOP = ["sports", "campus", "greek life"];
@@ -12,6 +13,7 @@ const ALL_WORDS = [...WORDS_TOP, ...WORDS_BOTTOM];
 export default function SignInPage() {
   const [loading, setLoading] = useState(false);
   const [spotlight, setSpotlight] = useState(0);
+  const router = useRouter();
   const supabase = createClient();
 
   useEffect(() => {
@@ -45,7 +47,16 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="relative min-h-[calc(100vh-3.5rem)] md:min-h-[calc(100vh-5rem)] bg-gradient-to-b from-blue-600 via-indigo-600 to-blue-700 flex flex-col items-center overflow-hidden">
+    <div className="relative min-h-screen bg-gradient-to-b from-blue-600 via-indigo-600 to-blue-700 flex flex-col items-center overflow-hidden">
+      {/* Close button */}
+      <button
+        onClick={() => router.push("/")}
+        className="absolute top-4 left-4 z-20 p-2 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+        aria-label="Close"
+      >
+        <X className="h-6 w-6" />
+      </button>
+
       {/* Brand */}
       <div className="animate-hero-fade-in flex items-center gap-2.5 pt-10 sm:pt-14 pb-4 z-10">
         <BarChart3 className="h-7 w-7 text-white/90" />
