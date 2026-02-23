@@ -1,18 +1,31 @@
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { BarChart3 } from "lucide-react";
+import { BarChart3, Home, ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-4">
+    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-5 px-4">
       <BarChart3 className="h-12 w-12 text-muted-foreground" />
-      <h1 className="text-2xl font-bold">Page Not Found</h1>
-      <p className="text-muted-foreground">
-        The page you&apos;re looking for doesn&apos;t exist.
-      </p>
-      <Button asChild>
-        <Link href="/">Back to Home</Link>
-      </Button>
+      <div className="space-y-2">
+        <h1 className="text-2xl font-bold">Page not found</h1>
+        <p className="text-muted-foreground text-sm">
+          The page you&apos;re looking for doesn&apos;t exist or has been moved.
+        </p>
+      </div>
+      <div className="flex gap-3">
+        <Button asChild variant="outline" className="gap-2">
+          <Link href="/questions">
+            <ArrowLeft className="h-4 w-4" />
+            Markets
+          </Link>
+        </Button>
+        <Button asChild className="gap-2">
+          <Link href="/">
+            <Home className="h-4 w-4" />
+            Home
+          </Link>
+        </Button>
+      </div>
     </div>
   );
 }
