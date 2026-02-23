@@ -21,7 +21,7 @@ export function SplashScreen() {
     const timer = setTimeout(() => {
       sessionStorage.setItem("splash-shown", "1");
       setVisible(false);
-    }, 1800);
+    }, 2000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -35,11 +35,10 @@ export function SplashScreen() {
         fill="white"
         className="splash-logo"
       >
-        <rect x="3" y="13" width="4" height="8" rx="2" />
-        <rect x="10" y="3" width="4" height="18" rx="2" />
-        <rect x="17" y="8" width="4" height="13" rx="2" />
+        <rect className="splash-bar splash-bar-1" x="3" y="13" width="4" height="8" rx="2" />
+        <rect className="splash-bar splash-bar-2" x="10" y="3" width="4" height="18" rx="2" />
+        <rect className="splash-bar splash-bar-3" x="17" y="8" width="4" height="13" rx="2" />
       </svg>
-      <div className="splash-shine" />
     </div>
   );
 }
