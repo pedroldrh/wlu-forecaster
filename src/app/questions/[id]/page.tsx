@@ -8,7 +8,7 @@ import { ForecastForm } from "./forecast-form";
 import { CommentSection } from "./comment-section";
 import { DisputeForm } from "@/components/dispute-form";
 import { ConsensusChart } from "@/components/consensus-chart";
-import { Users, CheckCircle, XCircle, ArrowLeft, TrendingUp, Clock } from "lucide-react";
+import { Users, CheckCircle, XCircle, ArrowLeft, Clock } from "lucide-react";
 import { brierPoints } from "@/lib/scoring";
 import { AnimatedNumber } from "@/components/animated-number";
 import Link from "next/link";
@@ -46,11 +46,6 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
     .select("*", { count: "exact", head: true })
     .eq("question_id", id);
 
-  // Get all forecasts for consensus
-  const { data: allForecasts } = await supabase
-    .from("forecasts")
-    .select("probability")
-    .eq("question_id", id);
 
   let userForecast = null;
   if (user) {
@@ -111,11 +106,6 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
   }
 
   const isOpen = question.status === "OPEN" && new Date() < new Date(question.close_time);
-  const forecasts = allForecasts || [];
-  const consensus = forecasts.length > 0
-    ? forecasts.reduce((sum, f) => sum + f.probability, 0) / forecasts.length
-    : null;
-  const consensusPct = consensus !== null ? Math.round(consensus * 100) : null;
   const emoji = getQuestionEmoji(question.title, question.category);
 
   return (
@@ -176,65 +166,37 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
         </CardContent>
       </Card>
 
-      {/* Consensus + Your Forecast row */}
-      {(consensusPct !== null || userForecast) && (
-        <div className="grid grid-cols-2 gap-3">
-          {consensusPct !== null && (
-            <Card>
-              <CardContent className="py-4">
-                <div className="flex items-center gap-3">
-                  <TrendingUp className="h-5 w-5 text-primary shrink-0" />
-                  <div className="flex-1">
-                    <p className="text-xs text-muted-foreground">Community</p>
-                    <p className="text-2xl font-bold font-mono text-primary">{consensusPct}%</p>
-                  </div>
-                </div>
-                {/* Consensus bar */}
-                <div className="mt-2 h-2 rounded-full bg-muted overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-primary transition-all"
-                    style={{ width: `${consensusPct}%` }}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          )}
-          {userForecast && (
-            <Card className={question.status === "RESOLVED" ? "border-primary/30" : ""}>
-              <CardContent className="py-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                    <span className="text-[10px] font-bold text-primary">You</span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-xs text-muted-foreground">Your Forecast</p>
-                    <p className="text-2xl font-bold font-mono">{Math.round(userForecast.probability * 100)}%</p>
-                  </div>
-                </div>
-                {question.status === "RESOLVED" && (
-                  <div className="mt-2 flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Score</span>
-                    <span className="font-mono font-bold text-primary">
-                      <AnimatedNumber value={brierPoints(userForecast.probability, question.resolved_outcome!) * 100} suffix=" pts" />
-                    </span>
-                  </div>
-                )}
-                {/* Your forecast bar */}
-                {question.status !== "RESOLVED" && (
-                  <div className="mt-2 h-2 rounded-full bg-muted overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-foreground/40 transition-all"
-                      style={{ width: `${Math.round(userForecast.probability * 100)}%` }}
-                    />
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-          {/* Fill empty slot if only one card shows */}
-          {consensusPct !== null && !userForecast && <div />}
-          {consensusPct === null && userForecast && <div />}
-        </div>
+      {/* Your Forecast card */}
+      {userForecast && (
+        <Card className={question.status === "RESOLVED" ? "border-primary/30" : ""}>
+          <CardContent className="py-4">
+            <div className="flex items-center gap-3">
+              <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                <span className="text-[10px] font-bold text-primary">You</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-xs text-muted-foreground">Your Forecast</p>
+                <p className="text-2xl font-bold font-mono">{Math.round(userForecast.probability * 100)}%</p>
+              </div>
+            </div>
+            {question.status === "RESOLVED" && (
+              <div className="mt-2 flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Score</span>
+                <span className="font-mono font-bold text-primary">
+                  <AnimatedNumber value={brierPoints(userForecast.probability, question.resolved_outcome!) * 100} suffix=" pts" />
+                </span>
+              </div>
+            )}
+            {question.status !== "RESOLVED" && (
+              <div className="mt-2 h-2 rounded-full bg-muted overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-foreground/40 transition-all"
+                  style={{ width: `${Math.round(userForecast.probability * 100)}%` }}
+                />
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {/* Consensus chart */}
