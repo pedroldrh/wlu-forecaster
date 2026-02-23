@@ -120,6 +120,9 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    @apply bg-background;
+  }
   body {
     @apply bg-background text-foreground;
     font-weight: 500;
@@ -253,30 +256,29 @@
 .splash-logo {
   width: 80px;
   height: 80px;
+  position: relative;
+  z-index: 1;
 }
 
-/* Full-height shine band positioned over the logo center */
+/* Diagonal light sweep across the entire splash page */
 .splash-shine {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 60px;
+  inset: -50%;
   background: linear-gradient(
-    105deg,
-    transparent 20%,
-    rgba(255, 255, 255, 0.12) 40%,
-    rgba(255, 255, 255, 0.25) 50%,
-    rgba(255, 255, 255, 0.12) 60%,
-    transparent 80%
+    115deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.12) 46%,
+    rgba(255, 255, 255, 0.28) 50%,
+    rgba(255, 255, 255, 0.12) 54%,
+    transparent 60%
   );
   pointer-events: none;
-  opacity: 0;
-  animation: splash-shine 600ms ease-in-out 400ms both;
+  animation: splash-shine 700ms ease-in-out 400ms both;
 }
 
 @keyframes splash-shine {
-  0%   { opacity: 1; left: calc(50% - 120px); }
-  100% { opacity: 1; left: calc(50% + 80px); }
+  0%   { transform: translate(-40%, 20%); }
+  100% { transform: translate(40%, -20%); }
 }
 
 @keyframes splash-exit {
