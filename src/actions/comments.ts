@@ -1,17 +1,18 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
 export async function submitComment(questionId: string, content: string) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const authClient = await createClient();
+  const { data: { user } } = await authClient.auth.getUser();
   if (!user) throw new Error("Not authenticated");
 
   const trimmed = content.trim();
   if (trimmed.length === 0) throw new Error("Comment cannot be empty");
   if (trimmed.length > 500) throw new Error("Comment must be 500 characters or less");
 
+  const supabase = await createAdminClient();
   const { error } = await supabase.from("comments").insert({
     question_id: questionId,
     user_id: user.id,
@@ -25,10 +26,11 @@ export async function submitComment(questionId: string, content: string) {
 }
 
 export async function deleteComment(commentId: string, questionId: string) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const authClient = await createClient();
+  const { data: { user } } = await authClient.auth.getUser();
   if (!user) throw new Error("Not authenticated");
 
+  const supabase = await createAdminClient();
   const { error } = await supabase
     .from("comments")
     .delete()

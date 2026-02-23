@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +14,7 @@ import type { Metadata } from "next";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
   const { data: question } = await supabase.from("questions").select("title, description, status").eq("id", id).single();
   if (!question) return { title: "Market Not Found" };
 
@@ -31,8 +31,9 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 export default async function QuestionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const supabase = await createAdminClient();
+  const authClient = await createClient();
+  const { data: { user } } = await authClient.auth.getUser();
 
   const { data: question } = await supabase.from("questions").select("*").eq("id", id).single();
   if (!question) notFound();
