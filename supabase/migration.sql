@@ -4,15 +4,14 @@
 -- 1. Add display_name to profiles
 alter table public.profiles add column if not exists display_name text;
 
--- 2. Update handle_new_user trigger to also set display_name
+-- 2. Update handle_new_user trigger (display_name left NULL so auth callback assigns a random name)
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.profiles (id, email, name, display_name, avatar_url, is_wlu_verified)
+  insert into public.profiles (id, email, name, avatar_url, is_wlu_verified)
   values (
     new.id,
     new.email,
-    coalesce(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
     coalesce(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
     new.raw_user_meta_data->>'avatar_url',
     new.email like '%@mail.wlu.edu'
