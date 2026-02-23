@@ -191,6 +191,28 @@
   animation: hero-fade-in 0.8s ease-out both;
 }
 
+/* Sign-in button shine sweep */
+@keyframes shine-sweep {
+  0% { transform: translateX(-100%) skewX(-15deg); }
+  100% { transform: translateX(200%) skewX(-15deg); }
+}
+
+.animate-shine-sweep::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 45%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(255, 255, 255, 0.3) 55%,
+    transparent 100%
+  );
+  animation: shine-sweep 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
 /* Confetti animation */
 @keyframes confetti-fall {
   0% {
