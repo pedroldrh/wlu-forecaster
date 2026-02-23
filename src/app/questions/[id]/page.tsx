@@ -163,7 +163,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
       </Card>
 
       {/* Two-column layout on desktop */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-5 lg:items-start">
         {/* LEFT COLUMN: Chart, Description, Comments */}
         <div className="space-y-5 min-w-0">
           {/* Consensus chart */}
@@ -195,15 +195,15 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
           </Card>
         </div>
 
-        {/* RIGHT COLUMN: Forecast form, Your Forecast, Resolution, Dispute */}
-        <div className="space-y-5">
+        {/* RIGHT COLUMN: sticky sidebar */}
+        <div className="lg:sticky lg:top-5 space-y-5">
           {/* Forecast form */}
           {isOpen && user && (
-            <Card className="border-primary/20 bg-gradient-to-r from-primary/5 via-transparent to-blue-500/5">
+            <Card className="border-primary/20 bg-gradient-to-r from-primary/5 via-transparent to-blue-500/5 flex flex-col lg:min-h-[396px]">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg">Your Forecast</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex-1 flex flex-col justify-center">
                 <ForecastForm questionId={id} currentProbability={userForecast?.probability ?? null} />
               </CardContent>
             </Card>

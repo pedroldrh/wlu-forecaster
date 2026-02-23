@@ -19,7 +19,7 @@ export function ConsensusChart({ data }: ConsensusChartProps) {
     if (!containerRef.current || data.length === 0) return;
 
     const chart = createChart(containerRef.current, {
-      height: 260,
+      height: 300,
       layout: {
         background: { type: ColorType.Solid, color: "transparent" },
         textColor: "rgba(255, 255, 255, 0.5)",
