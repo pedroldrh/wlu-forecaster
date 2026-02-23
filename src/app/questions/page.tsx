@@ -1,11 +1,12 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { QuestionCard } from "@/components/question-card";
 import { SuggestQuestion } from "@/components/suggest-question";
 import { ShieldCheck, AlertCircle } from "lucide-react";
 
 export default async function QuestionsPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const supabase = await createAdminClient();
+  const authClient = await createClient();
+  const { data: { user } } = await authClient.auth.getUser();
 
   const { data: season } = await supabase
     .from("seasons")
