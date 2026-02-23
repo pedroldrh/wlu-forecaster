@@ -2,19 +2,12 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { BarChart3, User, LogOut, Shield } from "lucide-react";
+import { BarChart3 } from "lucide-react";
 import { UserAvatar } from "@/components/user-avatar";
 import { NotificationBell } from "@/components/notification-bell";
 import { useState, useEffect, Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { brierPoints } from "@/lib/scoring";
 import { NavigationProgress } from "@/components/navigation-progress";
 import { useUnvotedCount } from "@/hooks/use-unvoted-count";
@@ -23,7 +16,6 @@ export function Nav() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [userStats, setUserStats] = useState<{ score: number; forecasts: number; resolved: number } | null>(null);
-  const router = useRouter();
   const pathname = usePathname();
   const supabase = createClient();
   const unvotedCount = useUnvotedCount();
@@ -99,14 +91,6 @@ export function Nav() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setProfile(null);
-    router.push("/");
-    router.refresh();
-  };
-
   const links = [
     { href: "/", label: "Home" },
     { href: "/questions", label: "Markets" },
@@ -157,39 +141,14 @@ export function Nav() {
             {user ? (
               <>
               <NotificationBell userId={user.id} />
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 rounded-full pl-1 pr-3 py-1 hover:bg-accent active:bg-accent/80 transition-colors outline-none">
-                    <UserAvatar userId={user.id} size="sm" />
-                    {userStats && userStats.resolved > 0 ? (
-                      <span className="text-sm font-bold font-mono text-primary">{userStats.score.toFixed(1)}</span>
-                    ) : userStats && userStats.forecasts > 0 ? (
-                      <span className="text-xs text-muted-foreground">{userStats.forecasts} bet{userStats.forecasts !== 1 ? "s" : ""}</span>
-                    ) : null}
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem asChild>
-                    <Link href={`/u/${user.id}`}>
-                      <User className="mr-2 h-4 w-4" />
-                      Profile
-                    </Link>
-                  </DropdownMenuItem>
-                  {profile?.role === "ADMIN" && (
-                    <DropdownMenuItem asChild>
-                      <Link href="/admin">
-                        <Shield className="mr-2 h-4 w-4" />
-                        Admin
-                      </Link>
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Sign out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Link href={`/u/${user.id}`} className="flex items-center gap-2 rounded-full pl-1 pr-3 py-1 hover:bg-accent active:bg-accent/80 transition-colors outline-none">
+                <UserAvatar userId={user.id} size="sm" />
+                {userStats && userStats.resolved > 0 ? (
+                  <span className="text-sm font-bold font-mono text-primary">{userStats.score.toFixed(1)}</span>
+                ) : userStats && userStats.forecasts > 0 ? (
+                  <span className="text-xs text-muted-foreground">{userStats.forecasts} bet{userStats.forecasts !== 1 ? "s" : ""}</span>
+                ) : null}
+              </Link>
               </>
             ) : (
               <Button asChild size="sm" className="text-sm h-9 px-4 md:text-base md:h-10 md:px-5 rounded-full">
