@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { BarChart3 } from "lucide-react";
 import { UserAvatar } from "@/components/user-avatar";
 import { NotificationBell } from "@/components/notification-bell";
@@ -151,9 +150,13 @@ export function Nav() {
               </Link>
               </>
             ) : (
-              <Button asChild size="sm" className="text-sm h-9 px-4 md:text-base md:h-10 md:px-5 rounded-full">
-                <Link href="/signin">Sign in</Link>
-              </Button>
+              <Link
+                href="/signin"
+                className="relative inline-flex items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold text-sm h-9 px-5 md:text-base md:h-10 md:px-6 shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/30 hover:scale-105 active:scale-95 transition-all duration-200 overflow-hidden group"
+              >
+                <span className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                <span className="relative">Sign in</span>
+              </Link>
             )}
           </div>
         </div>
