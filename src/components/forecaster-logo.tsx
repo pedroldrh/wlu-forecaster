@@ -8,9 +8,9 @@ export function ForecasterLogo(props: SVGProps<SVGSVGElement>) {
       fill="currentColor"
       {...props}
     >
-      <rect x="3" y="14" width="4" height="7" rx="2" />
-      <rect x="10" y="8" width="4" height="13" rx="2" />
-      <rect x="17" y="3" width="4" height="18" rx="2" />
+      <rect x="3" y="13" width="4" height="8" rx="2" />
+      <rect x="10" y="3" width="4" height="18" rx="2" />
+      <rect x="17" y="8" width="4" height="13" rx="2" />
     </svg>
   );
 }
