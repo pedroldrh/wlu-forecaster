@@ -169,6 +169,95 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
           {/* Consensus chart */}
           <ConsensusChart data={consensusTimeline} />
 
+          {/* Forecast form — mobile only (appears right after chart) */}
+          <div className="lg:hidden space-y-5">
+            {isOpen && user && (
+              <Card className="border-primary/20 bg-gradient-to-r from-primary/5 via-transparent to-blue-500/5 flex flex-col">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">Your Forecast</CardTitle>
+                </CardHeader>
+                <CardContent className="flex-1 flex flex-col justify-center">
+                  <ForecastForm questionId={id} currentProbability={userForecast?.probability ?? null} />
+                </CardContent>
+              </Card>
+            )}
+
+            {isOpen && !user && (
+              <Card className="border-dashed">
+                <CardContent className="py-8 text-center">
+                  <p className="text-muted-foreground mb-3">Sign in to submit your forecast</p>
+                  <Link href="/signin" className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
+                    Sign in
+                  </Link>
+                </CardContent>
+              </Card>
+            )}
+
+            {userForecast && (
+              <Card className={question.status === "RESOLVED" ? "border-primary/30" : ""}>
+                <CardContent className="py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                      <span className="text-[10px] font-bold text-primary">You</span>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-xs text-muted-foreground">Your Forecast</p>
+                      <p className="text-2xl font-bold font-mono">{Math.round(userForecast.probability * 100)}%</p>
+                    </div>
+                  </div>
+                  {question.status === "RESOLVED" && (
+                    <div className="mt-2 flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Score</span>
+                      <span className="font-mono font-bold text-primary">
+                        <AnimatedNumber value={brierPoints(userForecast.probability, question.resolved_outcome!) * 100} suffix=" pts" />
+                      </span>
+                    </div>
+                  )}
+                  {question.status !== "RESOLVED" && (
+                    <div className="mt-2 h-2 rounded-full bg-muted overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-foreground/40 transition-all"
+                        style={{ width: `${Math.round(userForecast.probability * 100)}%` }}
+                      />
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {question.status === "RESOLVED" && (
+              <Card className={`overflow-hidden ${question.resolved_outcome ? "border-green-500/30 bg-green-500/5" : "border-red-500/30 bg-red-500/5"}`}>
+                <CardContent className="py-5">
+                  <div className="flex items-center gap-3">
+                    {question.resolved_outcome ? (
+                      <div className="h-10 w-10 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
+                        <CheckCircle className="h-5 w-5 text-green-600" />
+                      </div>
+                    ) : (
+                      <div className="h-10 w-10 rounded-full bg-red-500/20 flex items-center justify-center shrink-0">
+                        <XCircle className="h-5 w-5 text-red-500" />
+                      </div>
+                    )}
+                    <div>
+                      <p className="font-semibold text-lg">Resolved: {question.resolved_outcome ? "YES" : "NO"}</p>
+                      {question.resolved_at && (
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(question.resolved_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {question.status === "RESOLVED" && user && userForecast && (
+              <div className="flex justify-end">
+                <DisputeForm questionId={id} />
+              </div>
+            )}
+          </div>
+
           {/* Description */}
           {question.description && (
             <Card>
@@ -193,8 +282,8 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
           </Card>
         </div>
 
-        {/* RIGHT COLUMN: sticky sidebar */}
-        <div className="lg:sticky lg:top-5 space-y-5">
+        {/* RIGHT COLUMN: sticky sidebar — desktop only */}
+        <div className="hidden lg:block lg:sticky lg:top-5 space-y-5">
           {/* Forecast form */}
           {isOpen && user && (
             <Card className="border-primary/20 bg-gradient-to-r from-primary/5 via-transparent to-blue-500/5 flex flex-col lg:min-h-[396px]">
