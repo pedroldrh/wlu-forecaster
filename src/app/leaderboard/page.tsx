@@ -148,12 +148,9 @@ export default async function LeaderboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="text-center space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight">Spring 2026</h1>
-        <p className="text-muted-foreground text-sm">{season.name}</p>
-      </div>
       <Card>
-        <CardContent className="pt-4">
+        <CardContent className="pt-6">
+          <h1 className="text-2xl font-bold tracking-tight text-center mb-4">Spring 2026 Leaderboard</h1>
           <LeaderboardTable entries={leaderboardEntries} />
         </CardContent>
       </Card>
