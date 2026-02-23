@@ -5,10 +5,12 @@ import { OnboardingModal } from "@/components/onboarding-modal";
 import { VoteReminder } from "@/components/vote-reminder";
 import { ServiceWorkerRegister } from "@/components/sw-register";
 import { PushPrompt } from "@/components/push-prompt";
+import { SplashScreen } from "@/components/splash-screen";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <>
+      <SplashScreen />
       {children}
       <Toaster />
       <OnboardingModal />
