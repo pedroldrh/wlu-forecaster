@@ -51,13 +51,15 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="relative h-screen bg-gradient-to-b from-blue-600 via-indigo-600 to-blue-700 flex flex-col items-center overflow-hidden touch-none overscroll-none">
+    <div className="fixed inset-0 z-50 bg-gradient-to-b from-blue-600 via-indigo-600 to-blue-700 flex flex-col items-center overflow-hidden touch-none overscroll-none">
       {/* Campus photo background */}
       <img
         src="/campus.jpg"
         alt=""
         className="absolute inset-0 w-full h-full object-cover blur-sm opacity-30 pointer-events-none scale-105"
       />
+      {/* Gradient overlay to ensure text readability */}
+      <div className="absolute inset-0 bg-gradient-to-b from-blue-600/70 via-indigo-600/60 to-blue-700/70 pointer-events-none" />
 
       {/* Close button */}
       <button
