@@ -51,27 +51,34 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-gradient-to-b from-blue-600 via-indigo-600 to-blue-700 flex flex-col items-center overflow-hidden touch-none overscroll-none">
+    <div
+      className="fixed left-0 right-0 bottom-0 z-50 bg-gradient-to-b from-blue-600 via-indigo-600 to-blue-700 flex flex-col items-center justify-center overflow-hidden touch-none overscroll-none"
+      style={{
+        top: "calc(-1 * env(safe-area-inset-top, 0px))",
+        paddingTop: "env(safe-area-inset-top, 0px)",
+      }}
+    >
       {/* Campus photo background */}
       <img
         src="/campus.jpg"
         alt=""
         className="absolute inset-0 w-full h-full object-cover blur-sm opacity-30 pointer-events-none scale-105"
       />
-      {/* Gradient overlay to ensure text readability */}
+      {/* Gradient overlay for readability */}
       <div className="absolute inset-0 bg-gradient-to-b from-blue-600/70 via-indigo-600/60 to-blue-700/70 pointer-events-none" />
 
       {/* Close button */}
       <button
         onClick={() => router.push("/")}
         className="absolute top-4 left-4 z-20 p-2 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+        style={{ marginTop: "env(safe-area-inset-top, 0px)" }}
         aria-label="Close"
       >
         <X className="h-6 w-6" />
       </button>
 
       {/* Brand */}
-      <div className="animate-hero-fade-in flex items-center gap-2.5 pt-10 sm:pt-14 pb-4 z-10">
+      <div className="animate-hero-fade-in flex items-center gap-2.5 pb-6 z-10">
         <BarChart3 className="h-7 w-7 text-white/90" />
         <span className="text-xl font-bold text-white/90 tracking-tight">
           Forecaster
@@ -79,7 +86,7 @@ export default function SignInPage() {
       </div>
 
       {/* Floating words — top */}
-      <div className="flex flex-col items-center gap-2 z-10 mt-4 sm:mt-8">
+      <div className="flex flex-col items-center gap-2 z-10">
         {WORDS_TOP.map((word, i) => (
           <span key={word} className={wordClass(i)} style={wordStyle(i)}>
             {word}
@@ -104,8 +111,8 @@ export default function SignInPage() {
         ))}
       </div>
 
-      {/* Sign in section — centered between words and bottom */}
-      <div className="flex-1 flex items-center w-full max-w-sm mx-auto px-6 z-10">
+      {/* Sign in button */}
+      <div className="w-full max-w-sm mx-auto px-6 mt-10 z-10">
         <button
           onClick={handleSignIn}
           disabled={loading}
