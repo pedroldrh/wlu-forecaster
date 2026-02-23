@@ -196,10 +196,10 @@ export function NotificationBell({ userId }: { userId: string }) {
                   Tap the <strong>three dots</strong> <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">•••</span> at the bottom-right of Safari
                 </Step>
                 <Step num={2}>
-                  Scroll down and tap <strong>Share</strong> <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">↑</span>
+                  Tap the <strong>Share</strong> button <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">↑</span>
                 </Step>
                 <Step num={3}>
-                  Scroll down in the share sheet and tap <strong>&quot;Add to Home Screen&quot;</strong>
+                  Scroll down and tap <strong>&quot;Add to Home Screen&quot;</strong>
                 </Step>
                 <Step num={4}>
                   Tap <strong>&quot;Add&quot;</strong> in the top-right corner — done!
