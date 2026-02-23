@@ -53,7 +53,14 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${sora.variable} antialiased`}
+        style={{ background: "#1a1a2e" }}
       >
+        {/* Inline splash overlay so it paints before React hydrates */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if(!sessionStorage.getItem("splash-shown")){document.write('<div id="splash-pre" style="position:fixed;inset:0;z-index:99998;background:#1a1a2e"></div>')}`,
+          }}
+        />
         <Providers>
           <InAppBrowserGate />
           <Nav />
