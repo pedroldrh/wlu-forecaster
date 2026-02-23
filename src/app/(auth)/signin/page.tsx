@@ -56,7 +56,7 @@ export default function SignInPage() {
       <img
         src="/campus.jpg"
         alt=""
-        className="absolute inset-0 w-full h-full object-cover blur-xl opacity-15 pointer-events-none scale-110"
+        className="absolute inset-0 w-full h-full object-cover blur-sm opacity-30 pointer-events-none scale-105"
       />
 
       {/* Close button */}

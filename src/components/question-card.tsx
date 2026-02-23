@@ -2,8 +2,16 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CountdownTimer } from "./countdown-timer";
-import { CATEGORY_LABELS, CATEGORY_COLORS, getQuestionEmoji } from "@/lib/constants";
+import { CATEGORY_LABELS, getQuestionEmoji } from "@/lib/constants";
 import { Users, CheckCircle, XCircle } from "lucide-react";
+
+const CATEGORY_GRADIENTS: Record<string, string> = {
+  SPORTS: "from-blue-500 to-blue-600",
+  CAMPUS: "from-purple-500 to-purple-600",
+  ACADEMICS: "from-amber-500 to-amber-600",
+  GREEK: "from-emerald-500 to-emerald-600",
+  OTHER: "from-zinc-500 to-zinc-600",
+};
 
 interface QuestionCardProps {
   id: string;
@@ -32,20 +40,31 @@ export function QuestionCard({
     ? Math.round(consensus * 100)
     : null;
 
+  const gradient = CATEGORY_GRADIENTS[category] || CATEGORY_GRADIENTS.OTHER;
+  const emoji = getQuestionEmoji(title, category);
+
   return (
     <Link href={`/questions/${id}`}>
-      <Card className="h-full flex flex-col transition-all duration-200 hover:bg-primary/5 hover:border-primary/30 md:hover:scale-[1.02] md:hover:-translate-y-0.5 md:hover:shadow-lg md:hover:shadow-primary/10">
-        <CardContent className="pt-4 pb-3 flex flex-col flex-1 gap-3">
-          {/* Top: icon + title + consensus */}
+      <Card className="h-full flex flex-col transition-all duration-200 hover:border-primary/30 md:hover:scale-[1.02] md:hover:-translate-y-0.5 md:hover:shadow-lg md:hover:shadow-primary/10 overflow-hidden">
+        {/* Category header banner */}
+        <div className={`relative h-12 bg-gradient-to-r ${gradient} flex items-center justify-between px-4`}>
+          <span className="text-xs font-semibold text-white/90 uppercase tracking-wider">
+            {CATEGORY_LABELS[category] || category}
+          </span>
+          <span className="text-2xl select-none" aria-hidden="true">
+            {emoji}
+          </span>
+          {/* Decorative faded emoji watermark */}
+          <span className="absolute right-10 top-1/2 -translate-y-1/2 text-5xl opacity-[0.12] select-none pointer-events-none" aria-hidden="true">
+            {emoji}
+          </span>
+        </div>
+
+        <CardContent className="pt-3 pb-3 flex flex-col flex-1 gap-3">
+          {/* Title + consensus */}
           <div className="flex items-start gap-3">
-            <div className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 text-lg ${CATEGORY_COLORS[category] || CATEGORY_COLORS.OTHER}`}>
-              {getQuestionEmoji(title, category)}
-            </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-medium text-sm leading-snug line-clamp-2">{title}</h3>
-              <span className="text-xs text-muted-foreground">
-                {CATEGORY_LABELS[category] || category}
-              </span>
             </div>
             {consensusPct !== null && status !== "RESOLVED" && (
               <div className="shrink-0 flex flex-col items-center">
