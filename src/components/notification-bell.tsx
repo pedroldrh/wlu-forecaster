@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-const INSTALL_DISMISS_KEY = "install-prompt-dismissed";
+const INSTALL_DISMISS_KEY = "install-prompt-dismissed-v2";
 
 type InstallPlatform = "ios" | "android" | "desktop";
 
