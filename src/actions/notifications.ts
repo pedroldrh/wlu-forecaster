@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { sendPushToUser } from "@/lib/send-push";
 
 export async function createNotification(
   userId: string,
@@ -18,6 +19,9 @@ export async function createNotification(
     link: link ?? null,
   });
   if (error) console.error("Failed to create notification:", error.message);
+
+  // Fire-and-forget push notification
+  sendPushToUser(userId, { title, body, link, tag: type }).catch(() => {});
 }
 
 export async function markAllRead() {
