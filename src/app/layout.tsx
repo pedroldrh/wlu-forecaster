@@ -1,19 +1,15 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Nav } from "@/components/nav";
 import { BottomNav } from "@/components/bottom-nav";
 import { InAppBrowserGate } from "@/components/in-app-browser-gate";
 
-const geistSans = Geist({
+const sora = localFont({
+  src: "../fonts/Sora-VariableFont_wght.ttf",
   variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: "100 800",
 });
 
 export const viewport: Viewport = {
@@ -56,7 +52,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${sora.variable} antialiased`}
       >
         <Providers>
           <InAppBrowserGate />
