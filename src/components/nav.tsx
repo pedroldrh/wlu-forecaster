@@ -9,11 +9,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { BarChart3, User, LogOut, Shield, Download, X, Share } from "lucide-react";
+import { BarChart3, User, LogOut, Shield } from "lucide-react";
 import { UserAvatar } from "@/components/user-avatar";
 import { NotificationBell } from "@/components/notification-bell";
 import { useState, useEffect, Suspense } from "react";
-import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter, usePathname } from "next/navigation";
 import { brierPoints } from "@/lib/scoring";
@@ -23,8 +22,6 @@ import { useUnvotedCount } from "@/hooks/use-unvoted-count";
 export function Nav() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
-  const [installOpen, setInstallOpen] = useState(false);
-  const [isStandalone, setIsStandalone] = useState(false);
   const [userStats, setUserStats] = useState<{ score: number; forecasts: number; resolved: number } | null>(null);
   const router = useRouter();
   const pathname = usePathname();
@@ -100,13 +97,6 @@ export function Nav() {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    setIsStandalone(
-      window.matchMedia("(display-mode: standalone)").matches
-      || ("standalone" in navigator && (navigator as any).standalone === true)
-    );
   }, []);
 
   const handleSignOut = async () => {
@@ -185,12 +175,6 @@ export function Nav() {
                       Profile
                     </Link>
                   </DropdownMenuItem>
-                  {!isStandalone && (
-                    <DropdownMenuItem onClick={() => setInstallOpen(true)}>
-                      <Download className="mr-2 h-4 w-4" />
-                      Install App
-                    </DropdownMenuItem>
-                  )}
                   {profile?.role === "ADMIN" && (
                     <DropdownMenuItem asChild>
                       <Link href="/admin">
@@ -220,46 +204,6 @@ export function Nav() {
         </Suspense>
       </nav>
 
-      <InstallModal open={installOpen} onClose={() => setInstallOpen(false)} />
     </>
-  );
-}
-
-function InstallModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
-  if (!mounted || !open) return null;
-
-  return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
-      <div className="max-w-md w-full rounded-xl border bg-background shadow-lg p-5" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-start justify-between mb-3">
-          <p className="font-semibold">Install Forecaster as an App</p>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-        <div className="space-y-3 text-sm text-muted-foreground">
-          <p className="font-medium text-foreground">New iOS (glass address bar at bottom):</p>
-          <ol className="list-decimal list-inside space-y-2">
-            <li>Tap the <strong className="text-foreground">&#8943;</strong> (three dots) at the bottom right</li>
-            <li>Tap <Share className="inline h-4 w-4 -mt-0.5" /> <strong className="text-foreground">Share</strong></li>
-            <li>Scroll down and tap <strong className="text-foreground">&quot;Add to Home Screen&quot;</strong></li>
-            <li>Tap <strong className="text-foreground">&quot;Add&quot;</strong></li>
-          </ol>
-          <p className="font-medium text-foreground pt-2">Older iOS (toolbar at bottom):</p>
-          <ol className="list-decimal list-inside space-y-2">
-            <li>Tap the <Share className="inline h-4 w-4 -mt-0.5" /> <strong className="text-foreground">Share</strong> button in the toolbar</li>
-            <li>Scroll down and tap <strong className="text-foreground">&quot;Add to Home Screen&quot;</strong></li>
-            <li>Tap <strong className="text-foreground">&quot;Add&quot;</strong></li>
-          </ol>
-        </div>
-        <Button className="w-full mt-4" onClick={onClose}>
-          Got it
-        </Button>
-      </div>
-    </div>,
-    document.body
   );
 }
