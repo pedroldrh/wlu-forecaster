@@ -250,9 +250,39 @@
   animation: splash-exit 400ms ease-in 1400ms both;
 }
 
-.splash-logo {
+.splash-logo-box {
+  position: relative;
   width: 80px;
   height: 80px;
+  overflow: hidden;
+}
+
+.splash-logo {
+  width: 100%;
+  height: 100%;
+}
+
+.splash-shine {
+  position: absolute;
+  top: -20%;
+  width: 40%;
+  height: 140%;
+  background: linear-gradient(
+    105deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.35) 42%,
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(255, 255, 255, 0.35) 58%,
+    transparent 80%
+  );
+  pointer-events: none;
+  opacity: 0;
+  animation: splash-shine 600ms ease-in-out 400ms both;
+}
+
+@keyframes splash-shine {
+  0%   { opacity: 1; left: -40%; }
+  100% { opacity: 1; left: 100%; }
 }
 
 @keyframes splash-exit {
@@ -267,7 +297,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .splash-overlay {
+  .splash-overlay,
+  .splash-shine {
     animation-duration: 0.01ms !important;
     animation-delay: 0ms !important;
   }
