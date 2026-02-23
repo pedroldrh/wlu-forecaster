@@ -45,10 +45,10 @@ export function QuestionCard({
 
   return (
     <Link href={`/questions/${id}`}>
-      <Card className="h-full flex flex-col transition-all duration-200 hover:border-primary/30 md:hover:scale-[1.02] md:hover:-translate-y-0.5 md:hover:shadow-lg md:hover:shadow-primary/10 overflow-hidden">
+      <Card className="h-full flex flex-col transition-all duration-200 hover:border-primary/30 md:hover:scale-[1.02] md:hover:-translate-y-0.5 md:hover:shadow-lg md:hover:shadow-primary/10 overflow-hidden !pt-0 !gap-0">
         {/* Category header banner */}
-        <div className={`relative h-12 bg-gradient-to-r ${gradient} flex items-center justify-between px-4`}>
-          <span className="text-xs font-semibold text-white/90 uppercase tracking-wider">
+        <div className={`relative h-14 bg-gradient-to-r ${gradient} flex items-center justify-between px-4`}>
+          <span className="text-sm font-bold text-white uppercase tracking-wider">
             {CATEGORY_LABELS[category] || category}
           </span>
           <span className="text-2xl select-none" aria-hidden="true">
