@@ -53,14 +53,7 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${sora.variable} antialiased`}
-        style={{ background: "#3b82f6" }}
       >
-        {/* Remove blue body bg instantly for non-PWA; PWA keeps it until splash finishes */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `if(!window.matchMedia("(display-mode:standalone)").matches&&!navigator.standalone)document.body.style.background=""`,
-          }}
-        />
         <Providers>
           <InAppBrowserGate />
           <Nav />

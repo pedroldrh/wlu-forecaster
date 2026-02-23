@@ -14,9 +14,6 @@ export function SplashScreen() {
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    // Overlay covers screen, so body bg blocker is no longer needed
-    document.body.style.background = "";
-
     if (!isPWA() || sessionStorage.getItem("splash-shown")) {
       setVisible(false);
       return;
@@ -32,19 +29,17 @@ export function SplashScreen() {
 
   return (
     <div className="splash-overlay">
-      <div className="splash-logo-box">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="white"
-          className="splash-logo"
-        >
-          <rect x="3" y="13" width="4" height="8" rx="2" />
-          <rect x="10" y="3" width="4" height="18" rx="2" />
-          <rect x="17" y="8" width="4" height="13" rx="2" />
-        </svg>
-        <div className="splash-shine" />
-      </div>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="white"
+        className="splash-logo"
+      >
+        <rect x="3" y="13" width="4" height="8" rx="2" />
+        <rect x="10" y="3" width="4" height="18" rx="2" />
+        <rect x="17" y="8" width="4" height="13" rx="2" />
+      </svg>
+      <div className="splash-shine" />
     </div>
   );
 }

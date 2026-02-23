@@ -250,29 +250,23 @@
   animation: splash-exit 400ms ease-in 1400ms both;
 }
 
-.splash-logo-box {
-  position: relative;
+.splash-logo {
   width: 80px;
   height: 80px;
-  overflow: hidden;
 }
 
-.splash-logo {
-  width: 100%;
-  height: 100%;
-}
-
+/* Full-height shine band positioned over the logo center */
 .splash-shine {
   position: absolute;
-  top: -20%;
-  width: 40%;
-  height: 140%;
+  top: 0;
+  bottom: 0;
+  width: 60px;
   background: linear-gradient(
     105deg,
     transparent 20%,
-    rgba(255, 255, 255, 0.35) 42%,
-    rgba(255, 255, 255, 0.8) 50%,
-    rgba(255, 255, 255, 0.35) 58%,
+    rgba(255, 255, 255, 0.12) 40%,
+    rgba(255, 255, 255, 0.25) 50%,
+    rgba(255, 255, 255, 0.12) 60%,
     transparent 80%
   );
   pointer-events: none;
@@ -281,8 +275,8 @@
 }
 
 @keyframes splash-shine {
-  0%   { opacity: 1; left: -40%; }
-  100% { opacity: 1; left: 100%; }
+  0%   { opacity: 1; left: calc(50% - 120px); }
+  100% { opacity: 1; left: calc(50% + 80px); }
 }
 
 @keyframes splash-exit {
