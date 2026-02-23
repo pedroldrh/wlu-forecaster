@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BarChart3, Copy, Check } from "lucide-react";
+import { ChartBar, Copy, Check } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 
 function isInAppBrowser(): boolean {
@@ -61,7 +61,7 @@ export function InAppBrowserGate() {
       <div className="max-w-sm w-full space-y-6">
         {/* Logo */}
         <div className="flex items-center justify-center gap-3">
-          <BarChart3 className="h-8 w-8 text-primary" />
+          <ChartBar className="h-8 w-8 text-primary" />
           <span className="text-2xl font-bold bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">
             Forecaster
           </span>

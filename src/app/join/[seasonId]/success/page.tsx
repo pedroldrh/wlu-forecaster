@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle } from "@phosphor-icons/react/ssr";
 import Link from "next/link";
 
 export default async function SuccessPage({ params }: { params: Promise<{ seasonId: string }> }) {

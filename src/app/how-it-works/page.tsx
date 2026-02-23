@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Target, BarChart3, Trophy, ShieldCheck, HelpCircle, Calendar } from "lucide-react";
+import { Crosshair, ChartBar, Trophy, ShieldCheck, Question, CalendarBlank } from "@phosphor-icons/react/ssr";
 import { createClient } from "@/lib/supabase/server";
 import { formatDollars } from "@/lib/utils";
 
@@ -32,7 +32,7 @@ export default async function HowItWorksPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Target className="h-5 w-5 text-red-500" />
+              <Crosshair className="h-5 w-5 text-red-500" />
               <CardTitle className="text-lg">Making Predictions</CardTitle>
             </div>
           </CardHeader>
@@ -61,7 +61,7 @@ export default async function HowItWorksPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-blue-500" />
+              <ChartBar className="h-5 w-5 text-blue-500" />
               <CardTitle className="text-lg">Scoring (Brier Score)</CardTitle>
             </div>
           </CardHeader>
@@ -99,7 +99,7 @@ export default async function HowItWorksPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-green-500" />
+              <CalendarBlank className="h-5 w-5 text-green-500" />
               <CardTitle className="text-lg">Biweekly Payouts</CardTitle>
             </div>
           </CardHeader>
@@ -175,7 +175,7 @@ export default async function HowItWorksPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <HelpCircle className="h-5 w-5 text-purple-500" />
+              <Question className="h-5 w-5 text-purple-500" />
               <CardTitle className="text-lg">Tips</CardTitle>
             </div>
           </CardHeader>

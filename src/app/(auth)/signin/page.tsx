@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { BarChart3, X } from "lucide-react";
+import { ChartBar, X } from "@phosphor-icons/react";
 import { toast } from "sonner";
 
 const WORDS_TOP = ["sports", "campus", "greek life"];
@@ -79,7 +79,7 @@ export default function SignInPage() {
 
       {/* Brand */}
       <div className="animate-hero-fade-in flex items-center gap-2.5 pb-6 z-10">
-        <BarChart3 className="h-7 w-7 text-white/90" />
+        <ChartBar className="h-7 w-7 text-white/90" />
         <span className="text-xl font-bold text-white/90 tracking-tight">
           Forecaster
         </span>

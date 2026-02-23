@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Users, HelpCircle, Calendar, Trophy, Lightbulb, AlertTriangle, BarChart3 } from "lucide-react";
+import { UsersThree, Question, CalendarBlank, Trophy, Lightbulb, Warning, ChartBar } from "@phosphor-icons/react/ssr";
 
 export default async function AdminPage() {
   const supabase = await createClient();
@@ -38,7 +38,7 @@ export default async function AdminPage() {
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <UsersThree className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">Users</span>
             </div>
             <div className="text-2xl font-bold mt-1">{userCount}</div>
@@ -56,7 +56,7 @@ export default async function AdminPage() {
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
-              <HelpCircle className="h-4 w-4 text-muted-foreground" />
+              <Question className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">Open Questions</span>
             </div>
             <div className="text-2xl font-bold mt-1">{openQuestions}</div>
@@ -65,7 +65,7 @@ export default async function AdminPage() {
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <CalendarBlank className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">Seasons</span>
             </div>
             <div className="text-2xl font-bold mt-1">{seasons}</div>
@@ -77,7 +77,7 @@ export default async function AdminPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
+              <ChartBar className="h-5 w-5" />
               Stats
             </CardTitle>
           </CardHeader>
@@ -132,7 +132,7 @@ export default async function AdminPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5" />
+              <Warning className="h-5 w-5" />
               Resolution Disputes
               {pendingDisputes > 0 && (
                 <span className="text-sm font-normal text-muted-foreground">({pendingDisputes} pending)</span>

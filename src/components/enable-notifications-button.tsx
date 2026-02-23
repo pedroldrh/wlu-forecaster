@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Bell, BellOff, BellRing } from "lucide-react";
+import { Bell, BellSlash, BellRinging } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { savePushSubscription } from "@/actions/push-subscriptions";
 import { toast } from "sonner";
@@ -52,7 +52,7 @@ export function EnableNotificationsButton() {
   if (status === "granted") {
     return (
       <Button variant="outline" size="sm" disabled className="gap-2">
-        <BellRing className="h-4 w-4" />
+        <BellRinging className="h-4 w-4" />
         Notifications on
       </Button>
     );
@@ -61,7 +61,7 @@ export function EnableNotificationsButton() {
   if (status === "denied") {
     return (
       <Button variant="outline" size="sm" disabled className="gap-2 text-muted-foreground">
-        <BellOff className="h-4 w-4" />
+        <BellSlash className="h-4 w-4" />
         Notifications blocked
       </Button>
     );

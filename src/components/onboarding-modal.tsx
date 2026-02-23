@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { HelpCircle } from "lucide-react";
+import { Question } from "@phosphor-icons/react";
 
 const SEEN_KEY = "forecaster-onboarding-seen";
 const COMPLETED_KEY = "forecaster-onboarding-completed";
@@ -158,7 +158,7 @@ export function OnboardingModal() {
           onClick={openGuide}
           className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-40 flex items-center gap-1.5 rounded-full bg-primary text-primary-foreground shadow-lg px-3 py-2 text-xs font-medium hover:bg-primary/90 active:scale-95 transition-all"
         >
-          <HelpCircle className="h-3.5 w-3.5" />
+          <Question className="h-3.5 w-3.5" />
           How it works
         </button>
       )}

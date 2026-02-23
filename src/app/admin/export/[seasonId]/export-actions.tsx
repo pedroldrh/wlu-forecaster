@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { exportSeasonCSV, finalizeSeason, createPrizeClaims } from "@/actions/export";
 import { toast } from "sonner";
-import { Download, Lock, Trophy } from "lucide-react";
+import { DownloadSimple, Lock, Trophy } from "@phosphor-icons/react";
 
 export function ExportActions({ seasonId, status }: { seasonId: string; status: string }) {
   const [loading, setLoading] = useState(false);
@@ -68,7 +68,7 @@ export function ExportActions({ seasonId, status }: { seasonId: string; status: 
         </Button>
       )}
       <Button onClick={handleExport} disabled={loading}>
-        <Download className="mr-2 h-4 w-4" />
+        <DownloadSimple className="mr-2 h-4 w-4" />
         Export CSV
       </Button>
     </div>

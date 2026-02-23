@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { submitComment, deleteComment } from "@/actions/comments";
 import { toast } from "sonner";
-import { Trash2 } from "lucide-react";
+import { Trash } from "@phosphor-icons/react";
 import { UserAvatar } from "@/components/user-avatar";
 
 interface Comment {
@@ -126,7 +126,7 @@ export function CommentSection({ questionId, comments, currentUserId }: CommentS
                         className="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
                         disabled={isPending}
                       >
-                        <Trash2 className="h-3 w-3" />
+                        <Trash className="h-3 w-3" />
                       </button>
                     )}
                   </div>

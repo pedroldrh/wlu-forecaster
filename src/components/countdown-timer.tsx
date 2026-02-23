@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Clock } from "lucide-react";
+import { Clock } from "@phosphor-icons/react";
 
 interface CountdownTimerProps {
   targetDate: Date | string;

@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { BarChart3, RefreshCw, Home } from "lucide-react";
+import { ChartBar, ArrowsClockwise, House } from "@phosphor-icons/react";
 import Link from "next/link";
 
 export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
@@ -12,7 +12,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-5 px-4">
-      <BarChart3 className="h-12 w-12 text-muted-foreground" />
+      <ChartBar className="h-12 w-12 text-muted-foreground" />
       <div className="space-y-2">
         <h1 className="text-2xl font-bold">Something went wrong</h1>
         <p className="text-muted-foreground text-sm max-w-sm">
@@ -23,12 +23,12 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
       </div>
       <div className="flex gap-3">
         <Button onClick={reset} variant="outline" className="gap-2">
-          <RefreshCw className="h-4 w-4" />
+          <ArrowsClockwise className="h-4 w-4" />
           Try Again
         </Button>
         <Button asChild className="gap-2">
           <Link href="/">
-            <Home className="h-4 w-4" />
+            <House className="h-4 w-4" />
             Home
           </Link>
         </Button>

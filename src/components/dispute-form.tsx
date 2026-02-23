@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { submitDispute } from "@/actions/disputes";
 import { toast } from "sonner";
-import { AlertTriangle, X } from "lucide-react";
+import { Warning, X } from "@phosphor-icons/react";
 
 export function DisputeForm({ questionId }: { questionId: string }) {
   const [open, setOpen] = useState(false);
@@ -29,7 +29,7 @@ export function DisputeForm({ questionId }: { questionId: string }) {
   if (!open) {
     return (
       <Button variant="outline" size="sm" onClick={() => setOpen(true)} className="gap-2">
-        <AlertTriangle className="h-4 w-4" />
+        <Warning className="h-4 w-4" />
         Dispute Resolution
       </Button>
     );
@@ -40,7 +40,7 @@ export function DisputeForm({ questionId }: { questionId: string }) {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5" />
+            <Warning className="h-5 w-5" />
             Dispute Resolution
           </CardTitle>
           <Button variant="ghost" size="icon" onClick={() => setOpen(false)}>

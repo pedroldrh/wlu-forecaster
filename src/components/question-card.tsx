@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CountdownTimer } from "./countdown-timer";
 import { CATEGORY_LABELS, getQuestionEmoji } from "@/lib/constants";
-import { Users, CheckCircle, XCircle } from "lucide-react";
+import { UsersThree, CheckCircle, XCircle } from "@phosphor-icons/react/ssr";
 
 const CATEGORY_GRADIENTS: Record<string, string> = {
   SPORTS: "from-blue-500 to-blue-600",
@@ -94,7 +94,7 @@ export function QuestionCard({
           <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-3">
               <span className="flex items-center gap-1">
-                <Users className="h-3 w-3" />
+                <UsersThree className="h-3 w-3" />
                 {forecastCount}
               </span>
               {status === "OPEN" && (

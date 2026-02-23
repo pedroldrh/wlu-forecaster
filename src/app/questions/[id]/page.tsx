@@ -8,7 +8,7 @@ import { ForecastForm } from "./forecast-form";
 import { CommentSection } from "./comment-section";
 import { DisputeForm } from "@/components/dispute-form";
 import { ConsensusChart } from "@/components/consensus-chart";
-import { Users, CheckCircle, XCircle, ArrowLeft, Clock } from "lucide-react";
+import { UsersThree, CheckCircle, XCircle, ArrowLeft, Clock } from "@phosphor-icons/react/ssr";
 import { brierPoints } from "@/lib/scoring";
 import { AnimatedNumber } from "@/components/animated-number";
 import Link from "next/link";
@@ -146,7 +146,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
 
               <div className="flex items-center gap-4 mt-2.5 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1.5">
-                  <Users className="h-3.5 w-3.5" />
+                  <UsersThree className="h-3.5 w-3.5" />
                   {forecastCount || 0} forecast{forecastCount !== 1 ? "s" : ""}
                 </span>
                 {isOpen && <CountdownTimer targetDate={question.close_time} />}

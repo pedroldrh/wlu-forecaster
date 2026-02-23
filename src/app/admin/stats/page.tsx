@@ -14,13 +14,13 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import {
   ArrowLeft,
-  Users,
-  TrendingUp,
-  MessageSquare,
+  UsersThree,
+  TrendUp,
+  ChatText,
   Target,
-  Activity,
-  UserX,
-} from "lucide-react";
+  Pulse,
+  UserMinus,
+} from "@phosphor-icons/react/ssr";
 import { formatDateTime } from "@/lib/utils";
 import { QUESTION_STATUS_LABELS } from "@/lib/constants";
 
@@ -230,7 +230,7 @@ export default async function AdminStatsPage() {
         <h2 className="text-lg font-semibold mb-3">Overview</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard
-            icon={<Users className="h-4 w-4" />}
+            icon={<UsersThree className="h-4 w-4" />}
             label="Total Users"
             value={totalUsers}
           />
@@ -240,12 +240,12 @@ export default async function AdminStatsPage() {
             value={totalForecasts}
           />
           <StatCard
-            icon={<MessageSquare className="h-4 w-4" />}
+            icon={<ChatText className="h-4 w-4" />}
             label="Total Comments"
             value={totalComments}
           />
           <StatCard
-            icon={<TrendingUp className="h-4 w-4" />}
+            icon={<TrendUp className="h-4 w-4" />}
             label="Avg Forecasts/User"
             value={avgForecasts}
           />
@@ -260,7 +260,7 @@ export default async function AdminStatsPage() {
           <StatCard label="Forecasts" value={recentForecasts} highlight />
           <StatCard label="Comments" value={recentComments} highlight />
           <StatCard
-            icon={<Activity className="h-4 w-4" />}
+            icon={<Pulse className="h-4 w-4" />}
             label="Active Users"
             value={activeUsers}
             highlight
@@ -382,7 +382,7 @@ export default async function AdminStatsPage() {
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center gap-3">
-              <UserX className="h-5 w-5 text-muted-foreground" />
+              <UserMinus className="h-5 w-5 text-muted-foreground" />
               <div>
                 <p className="text-2xl font-bold">{disengagedCount}</p>
                 <p className="text-sm text-muted-foreground">

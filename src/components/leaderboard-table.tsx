@@ -5,7 +5,7 @@ import { cn, formatDollars } from "@/lib/utils";
 import { UserAvatar } from "@/components/user-avatar";
 import { AnimatedNumber } from "@/components/animated-number";
 import Link from "next/link";
-import { Crown, Trophy } from "lucide-react";
+import { Crown, Trophy } from "@phosphor-icons/react";
 
 interface LeaderboardEntry {
   rank: number;

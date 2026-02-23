@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { reviewDispute } from "@/actions/disputes";
 import { toast } from "sonner";
-import { Check, X } from "lucide-react";
+import { Check, X } from "@phosphor-icons/react";
 
 export function DisputeActions({ disputeId }: { disputeId: string }) {
   const [showReview, setShowReview] = useState(false);

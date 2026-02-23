@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { BarChart3, Home, ArrowLeft } from "lucide-react";
+import { ChartBar, House, ArrowLeft } from "@phosphor-icons/react/ssr";
 import Link from "next/link";
 
 export default function NotFound() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-5 px-4">
-      <BarChart3 className="h-12 w-12 text-muted-foreground" />
+      <ChartBar className="h-12 w-12 text-muted-foreground" />
       <div className="space-y-2">
         <h1 className="text-2xl font-bold">Page not found</h1>
         <p className="text-muted-foreground text-sm">
@@ -21,7 +21,7 @@ export default function NotFound() {
         </Button>
         <Button asChild className="gap-2">
           <Link href="/">
-            <Home className="h-4 w-4" />
+            <House className="h-4 w-4" />
             Home
           </Link>
         </Button>

@@ -1,7 +1,7 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { QuestionCard } from "@/components/question-card";
 import { SuggestQuestion } from "@/components/suggest-question";
-import { ShieldCheck, AlertCircle } from "lucide-react";
+import { ShieldCheck, WarningCircle } from "@phosphor-icons/react/ssr";
 
 export const metadata = {
   title: "Markets — Forecaster",
@@ -93,7 +93,7 @@ export default async function QuestionsPage() {
               {qualifies ? (
                 <ShieldCheck className="h-5 w-5 text-green-500 shrink-0" />
               ) : (
-                <AlertCircle className="h-5 w-5 text-amber-500 shrink-0" />
+                <WarningCircle className="h-5 w-5 text-amber-500 shrink-0" />
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 mb-1">

@@ -10,7 +10,7 @@ import {
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Lightbulb, Sparkles, ArrowRight, ArrowLeft, Send, CheckCircle } from "lucide-react";
+import { Lightbulb, Sparkle, ArrowRight, ArrowLeft, PaperPlaneTilt, CheckCircle } from "@phosphor-icons/react";
 
 const CATEGORY_OPTIONS = Object.entries(CATEGORY_LABELS).map(([value, label]) => ({
   value,
@@ -97,7 +97,7 @@ export function SuggestQuestion() {
                   Cancel
                 </button>
                 <div className="flex items-center gap-2.5 mb-1">
-                  <Sparkles className="h-5 w-5" />
+                  <Sparkle className="h-5 w-5" />
                   <h2 className="text-lg font-bold">Suggest a Market</h2>
                 </div>
                 <p className="text-sm text-white/80">
@@ -221,7 +221,7 @@ export function SuggestQuestion() {
                     disabled={isPending}
                     className="gap-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
                   >
-                    <Send className="h-3.5 w-3.5" />
+                    <PaperPlaneTilt className="h-3.5 w-3.5" />
                     {isPending ? "Submitting..." : "Submit"}
                   </Button>
                 )}

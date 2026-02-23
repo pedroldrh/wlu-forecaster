@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { seasonScore, brierPoints, rankUsers, UserScore } from "@/lib/scoring";
 import Link from "next/link";
-import { BarChart3, Trophy, ShieldCheck, Target } from "lucide-react";
+import { ChartBar, Trophy, ShieldCheck, Crosshair } from "@phosphor-icons/react/ssr";
 
 export default async function HomePage() {
   const supabase = await createAdminClient();
@@ -225,14 +225,14 @@ export default async function HomePage() {
           <CardContent>
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="flex gap-3">
-                <Target className="h-5 w-5 mt-0.5 shrink-0 text-red-500" />
+                <Crosshair className="h-5 w-5 mt-0.5 shrink-0 text-red-500" />
                 <div>
                   <p className="font-medium text-sm">Make Predictions</p>
                   <p className="text-sm text-muted-foreground">Assign probabilities (0-100%) to campus questions. Think it&apos;ll rain at formal? Say 70%.</p>
                 </div>
               </div>
               <div className="flex gap-3">
-                <BarChart3 className="h-5 w-5 mt-0.5 shrink-0 text-blue-500" />
+                <ChartBar className="h-5 w-5 mt-0.5 shrink-0 text-blue-500" />
                 <div>
                   <p className="font-medium text-sm">Brier Scoring</p>
                   <p className="text-sm text-muted-foreground">You&apos;re scored on accuracy. Confident and correct? Big points. Wrong? You lose points.</p>

@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { approveQuestionRequest, denyQuestionRequest } from "@/actions/question-requests";
 import { toast } from "sonner";
-import { Check, X } from "lucide-react";
+import { Check, X } from "@phosphor-icons/react";
 
 interface RequestActionsProps {
   requestId: string;

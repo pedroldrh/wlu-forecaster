@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Share2, Copy, Check } from "lucide-react";
+import { ShareNetwork, Copy, Check } from "@phosphor-icons/react";
 
 interface ReferralCardProps {
   userId: string;
@@ -54,7 +54,7 @@ export function ReferralCard({ userId, referralCount }: ReferralCardProps) {
             ) : (
               <>
                 {typeof navigator !== "undefined" && "share" in navigator ? (
-                  <Share2 className="h-4 w-4" />
+                  <ShareNetwork className="h-4 w-4" />
                 ) : (
                   <Copy className="h-4 w-4" />
                 )}

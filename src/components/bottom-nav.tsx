@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, BarChart3, Trophy, User } from "lucide-react";
+import { House, ChartBar, Trophy, User } from "@phosphor-icons/react";
 import { useUnvotedCount } from "@/hooks/use-unvoted-count";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -19,8 +19,8 @@ export function BottomNav() {
   }, []);
 
   const tabs = [
-    { href: "/", label: "Home", icon: Home },
-    { href: "/questions", label: "Markets", icon: BarChart3 },
+    { href: "/", label: "Home", icon: House },
+    { href: "/questions", label: "Markets", icon: ChartBar },
     { href: "/leaderboard", label: "Board", icon: Trophy },
     { href: userId ? `/u/${userId}` : "/signin", label: "Profile", icon: User },
   ];

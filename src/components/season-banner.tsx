@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDate, formatDollars } from "@/lib/utils";
 import { SEASON_STATUS_LABELS } from "@/lib/constants";
-import { Calendar, Zap } from "lucide-react";
+import { CalendarBlank, Lightning } from "@phosphor-icons/react";
 import { UserAvatar } from "@/components/user-avatar";
 
 interface SeasonBannerProps {
@@ -224,7 +224,7 @@ export function SeasonBanner({
                   }`}
                   style={{ animationDelay: "0.5s" }}
                 >
-                  <Zap className="h-3 w-3" />
+                  <Lightning className="h-3 w-3" />
                   {SEASON_STATUS_LABELS[status] || status}
                 </Badge>
               ) : (
@@ -235,7 +235,7 @@ export function SeasonBanner({
             </div>
             <span className="hidden sm:inline text-muted-foreground/40">|</span>
             <span className="flex items-center gap-1.5">
-              <Calendar className="h-3.5 w-3.5" />
+              <CalendarBlank className="h-3.5 w-3.5" />
               {formatDate(startDate)} — {formatDate(endDate)}
             </span>
           </div>

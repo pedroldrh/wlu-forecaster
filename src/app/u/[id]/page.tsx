@@ -9,7 +9,7 @@ import { ReferralCard } from "@/components/referral-card";
 import { ScoreCard } from "@/components/score-card";
 import { EnableNotificationsButton } from "@/components/enable-notifications-button";
 import { SignOutButton } from "@/components/sign-out-button";
-import { TrendingUp, Hash, Activity, Award, Crown, Shield } from "lucide-react";
+import { TrendUp, Hash, Pulse, Medal, Crown, Shield } from "@phosphor-icons/react/ssr";
 import Link from "next/link";
 import type { Metadata } from "next";
 
@@ -229,7 +229,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
             <Card className="h-full transition-colors hover:border-primary/30">
               <CardContent className="pt-4 pb-4">
                 <div className="flex items-center gap-2">
-                  <Activity className="h-4 w-4 text-green-500 shrink-0" />
+                  <Pulse className="h-4 w-4 text-green-500 shrink-0" />
                   <div>
                     <p className="text-2xl font-bold font-mono">{allForecasts.length}</p>
                     <p className="text-xs text-muted-foreground">Forecasts</p>
@@ -242,7 +242,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
             <Card className="h-full transition-colors hover:border-primary/30">
               <CardContent className="pt-4 pb-4">
                 <div className="flex items-center gap-2">
-                  <Award className="h-4 w-4 text-amber-500 shrink-0" />
+                  <Medal className="h-4 w-4 text-amber-500 shrink-0" />
                   <div>
                     <p className="text-2xl font-bold font-mono">{entries.length}</p>
                     <p className="text-xs text-muted-foreground">Seasons</p>

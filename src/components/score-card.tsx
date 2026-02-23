@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { TrendingUp } from "lucide-react";
+import { TrendUp } from "@phosphor-icons/react";
 import { AnimatedNumber } from "@/components/animated-number";
 
 interface ScoreCardProps {
@@ -22,7 +22,7 @@ export function ScoreCard({ score, hasBreakdown }: ScoreCardProps) {
     >
       <CardContent className="pt-4 pb-4">
         <div className="flex items-center gap-2">
-          <TrendingUp className="h-4 w-4 text-primary shrink-0" />
+          <TrendUp className="h-4 w-4 text-primary shrink-0" />
           <div>
             <p className="text-2xl font-bold font-mono"><AnimatedNumber value={score * 100} suffix="%" /></p>
             <p className="text-xs text-muted-foreground">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Bell } from "lucide-react";
+import { Bell } from "@phosphor-icons/react";
 import { createClient } from "@/lib/supabase/client";
 import { useNotificationCount } from "@/hooks/use-notification-count";
 import { markAllRead } from "@/actions/notifications";

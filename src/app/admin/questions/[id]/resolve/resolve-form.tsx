@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { resolveQuestion } from "@/actions/questions";
 import { toast } from "sonner";
-import { CheckCircle, XCircle, Users } from "lucide-react";
+import { CheckCircle, XCircle, UsersThree } from "@phosphor-icons/react";
 
 interface Question {
   id: string;
@@ -47,7 +47,7 @@ export function ResolveForm({ question, forecastCount }: { question: Question; f
             <p className="font-medium">{question.title}</p>
             <p className="text-sm text-muted-foreground mt-1">{question.description}</p>
             <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-              <Users className="h-4 w-4" />
+              <UsersThree className="h-4 w-4" />
               {forecastCount} forecast{forecastCount !== 1 ? "s" : ""}
             </div>
           </div>
