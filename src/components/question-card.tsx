@@ -51,7 +51,7 @@ export function QuestionCard({
           <span className="text-sm font-bold text-white uppercase tracking-wider">
             {CATEGORY_LABELS[category] || category}
           </span>
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-5xl opacity-[0.15] select-none pointer-events-none" aria-hidden="true">
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-5xl opacity-90 select-none pointer-events-none" aria-hidden="true">
             {emoji}
           </span>
         </div>
