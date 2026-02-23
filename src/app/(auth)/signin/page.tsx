@@ -37,12 +37,16 @@ export default function SignInPage() {
     }
   }
 
+  function wordStyle(globalIndex: number): React.CSSProperties {
+    return spotlight === globalIndex
+      ? { textShadow: "0 0 20px rgba(255,255,255,0.6), 0 0 40px rgba(255,255,255,0.3)" }
+      : {};
+  }
+
   function wordClass(globalIndex: number) {
     const isActive = spotlight === globalIndex;
     return `text-2xl sm:text-3xl font-semibold select-none transition-all duration-500 ${
-      isActive
-        ? "text-white scale-110 drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]"
-        : "text-white/30"
+      isActive ? "text-white scale-110" : "text-white/30"
     }`;
   }
 
@@ -68,7 +72,7 @@ export default function SignInPage() {
       {/* Floating words — top */}
       <div className="flex flex-col items-center gap-2 z-10 mt-4 sm:mt-8">
         {WORDS_TOP.map((word, i) => (
-          <span key={word} className={wordClass(i)}>
+          <span key={word} className={wordClass(i)} style={wordStyle(i)}>
             {word}
           </span>
         ))}
@@ -85,7 +89,7 @@ export default function SignInPage() {
       {/* Floating words — bottom */}
       <div className="flex flex-col items-center gap-2 z-10">
         {WORDS_BOTTOM.map((word, i) => (
-          <span key={word} className={wordClass(i + WORDS_TOP.length)}>
+          <span key={word} className={wordClass(i + WORDS_TOP.length)} style={wordStyle(i + WORDS_TOP.length)}>
             {word}
           </span>
         ))}
