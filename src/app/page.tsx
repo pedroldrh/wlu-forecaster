@@ -176,7 +176,7 @@ export default async function HomePage() {
           prizeCents: u.qualifiesForPrize && i < 5 ? prizeAmounts[i] : undefined,
           referralBonus: rawReferrals > 0 ? Math.min(rawReferrals, 3) : undefined,
           scoreDelta: deltaMap.get(u.userId),
-          isFounder: roleMap.get(u.userId) === "ADMIN",
+          isFounder: roleMap.get(u.userId) === "ADMIN" && u.name === "Forecast Founder",
         };
       });
     }

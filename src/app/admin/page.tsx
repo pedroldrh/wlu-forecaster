@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Users, HelpCircle, Calendar, Trophy, Lightbulb, AlertTriangle } from "lucide-react";
+import { Users, HelpCircle, Calendar, Trophy, Lightbulb, AlertTriangle, BarChart3 } from "lucide-react";
 
 export default async function AdminPage() {
   const supabase = await createClient();
@@ -74,6 +74,19 @@ export default async function AdminPage() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Stats
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link href="/admin/stats">View Engagement Stats</Link>
+            </Button>
+          </CardContent>
+        </Card>
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Seasons</CardTitle>

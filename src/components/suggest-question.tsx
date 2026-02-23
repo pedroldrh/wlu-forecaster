@@ -33,7 +33,7 @@ export function SuggestQuestion() {
 
   if (!open) {
     return (
-      <Button variant="outline" size="sm" onClick={() => setOpen(true)} className="gap-2">
+      <Button variant="default" size="sm" onClick={() => setOpen(true)} className="gap-2">
         <Lightbulb className="h-4 w-4" />
         Suggest a New Market
       </Button>
