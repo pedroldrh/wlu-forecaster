@@ -17,8 +17,21 @@ export default async function AdminRequestsPage() {
 
   const { data: requests } = await admin
     .from("question_requests")
-    .select("*, profiles:user_id(name, display_name, email)")
+    .select("*")
     .order("created_at", { ascending: false });
+
+  // Fetch profile names for each unique user_id (FK is to auth.users, not profiles)
+  const userIds = [...new Set((requests ?? []).map((r) => r.user_id))];
+  const profileMap = new Map<string, { name: string | null; display_name: string | null; email: string }>();
+  if (userIds.length > 0) {
+    const { data: profiles } = await admin
+      .from("profiles")
+      .select("id, name, display_name, email")
+      .in("id", userIds);
+    for (const p of profiles ?? []) {
+      profileMap.set(p.id, p);
+    }
+  }
 
   // Get the live season for approve action
   const { data: season } = await admin
@@ -42,7 +55,7 @@ export default async function AdminRequestsPage() {
       ) : (
         <div className="space-y-3">
           {pending.map((r) => {
-            const p = r.profiles as unknown as { name: string | null; display_name: string | null; email: string };
+            const p = profileMap.get(r.user_id);
             const userName = p?.display_name || p?.name || p?.email || "Unknown";
             return (
               <Card key={r.id}>
@@ -79,7 +92,7 @@ export default async function AdminRequestsPage() {
           <h2 className="font-semibold text-lg pt-4">Previously Reviewed</h2>
           <div className="space-y-3">
             {handled.map((r) => {
-              const p = r.profiles as unknown as { name: string | null; display_name: string | null; email: string };
+              const p = profileMap.get(r.user_id);
               const userName = p?.display_name || p?.name || p?.email || "Unknown";
               return (
                 <Card key={r.id} className="opacity-60">
