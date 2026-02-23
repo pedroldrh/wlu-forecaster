@@ -205,39 +205,45 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
       {season && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <ScoreCard score={score} hasBreakdown={resolvedForecasts.length > 0} />
-          <Card>
-            <CardContent className="pt-4 pb-4">
-              <div className="flex items-center gap-2">
-                <Hash className="h-4 w-4 text-blue-400 shrink-0" />
-                <div>
-                  <p className="text-2xl font-bold font-mono">{questionsPlayed}</p>
-                  <p className="text-xs text-muted-foreground">Resolved</p>
+          <Link href="#score-breakdown" className="block">
+            <Card className="h-full transition-colors hover:border-primary/30">
+              <CardContent className="pt-4 pb-4">
+                <div className="flex items-center gap-2">
+                  <Hash className="h-4 w-4 text-blue-400 shrink-0" />
+                  <div>
+                    <p className="text-2xl font-bold font-mono">{questionsPlayed}</p>
+                    <p className="text-xs text-muted-foreground">Resolved</p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4 pb-4">
-              <div className="flex items-center gap-2">
-                <Activity className="h-4 w-4 text-green-500 shrink-0" />
-                <div>
-                  <p className="text-2xl font-bold font-mono">{allForecasts.length}</p>
-                  <p className="text-xs text-muted-foreground">Forecasts</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="#recent-forecasts" className="block">
+            <Card className="h-full transition-colors hover:border-primary/30">
+              <CardContent className="pt-4 pb-4">
+                <div className="flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-green-500 shrink-0" />
+                  <div>
+                    <p className="text-2xl font-bold font-mono">{allForecasts.length}</p>
+                    <p className="text-xs text-muted-foreground">Forecasts</p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4 pb-4">
-              <div className="flex items-center gap-2">
-                <Award className="h-4 w-4 text-amber-500 shrink-0" />
-                <div>
-                  <p className="text-2xl font-bold font-mono">{entries.length}</p>
-                  <p className="text-xs text-muted-foreground">Seasons</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/leaderboard">
+            <Card className="h-full transition-colors hover:border-primary/30">
+              <CardContent className="pt-4 pb-4">
+                <div className="flex items-center gap-2">
+                  <Award className="h-4 w-4 text-amber-500 shrink-0" />
+                  <div>
+                    <p className="text-2xl font-bold font-mono">{entries.length}</p>
+                    <p className="text-xs text-muted-foreground">Seasons</p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
       )}
 
@@ -274,7 +280,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
       {/* Recent forecasts */}
       {allForecasts.length > 0 && (
-        <Card>
+        <Card id="recent-forecasts">
           <CardHeader>
             <CardTitle className="text-lg">Recent Forecasts</CardTitle>
           </CardHeader>
