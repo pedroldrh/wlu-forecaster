@@ -7,6 +7,7 @@ import { formatPercent, formatDate } from "@/lib/utils";
 import { UserAvatar } from "@/components/user-avatar";
 import { ReferralCard } from "@/components/referral-card";
 import { ScoreCard } from "@/components/score-card";
+import { EnableNotificationsButton } from "@/components/enable-notifications-button";
 import { TrendingUp, Hash, Activity, Award, Crown } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -196,6 +197,11 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
               <p className="text-sm text-muted-foreground mt-0.5">
                 Joined {formatDate(new Date(profile.created_at))}
               </p>
+              {isOwnProfile && (
+                <div className="mt-2">
+                  <EnableNotificationsButton />
+                </div>
+              )}
             </div>
           </div>
         </CardContent>
