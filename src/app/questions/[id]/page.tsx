@@ -62,19 +62,32 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
     userForecast = forecast;
   }
 
-  // Get comments with profiles
+  // Get comments (no FK join — comments.user_id -> auth.users, not profiles)
   const { data: rawComments } = await supabase
     .from("comments")
-    .select("id, content, created_at, user_id, profiles:user_id(name, display_name, avatar_url)")
+    .select("id, content, created_at, user_id")
     .eq("question_id", id)
     .order("created_at", { ascending: true });
+
+  // Fetch profiles for comment authors
+  const commentUserIds = [...new Set((rawComments ?? []).map((c) => c.user_id))];
+  const profileMap = new Map<string, { name: string | null; display_name: string | null; avatar_url: string | null }>();
+  if (commentUserIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, name, display_name, avatar_url")
+      .in("id", commentUserIds);
+    for (const p of profiles ?? []) {
+      profileMap.set(p.id, { name: p.name, display_name: p.display_name, avatar_url: p.avatar_url });
+    }
+  }
 
   const comments = (rawComments || []).map((c: any) => ({
     id: c.id,
     content: c.content,
     created_at: c.created_at,
     user_id: c.user_id,
-    profile: c.profiles,
+    profile: profileMap.get(c.user_id) ?? null,
   }));
 
   const isOpen = question.status === "OPEN" && new Date() < new Date(question.close_time);
