@@ -141,11 +141,17 @@ export function ConsensusChart({ data }: ConsensusChartProps) {
             Consensus
           </p>
           <p data-value className="text-3xl font-bold text-white font-mono tabular-nums">
-            {Math.round(latestValue * 100)}%
+            {data.length > 0 ? `${Math.round(latestValue * 100)}%` : "—"}
           </p>
           <p data-date className="text-xs text-white/40 mt-0.5 h-4" />
         </div>
-        <div ref={containerRef} className="-mt-4" />
+        {data.length > 0 ? (
+          <div ref={containerRef} className="-mt-4" />
+        ) : (
+          <div className="flex items-center justify-center h-[300px] -mt-4 text-white/20 text-sm">
+            No forecasts yet
+          </div>
+        )}
       </CardContent>
     </Card>
   );

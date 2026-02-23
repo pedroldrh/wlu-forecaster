@@ -95,7 +95,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
 
   // Compute consensus timeline: at each history point, avg of each user's latest probability
   const consensusTimeline: { time: string; value: number }[] = [];
-  if (historyRows && historyRows.length >= 2) {
+  if (historyRows && historyRows.length >= 1) {
     const latestByUser = new Map<string, number>();
     for (const row of historyRows) {
       latestByUser.set(row.user_id, row.probability);
@@ -167,9 +167,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
         {/* LEFT COLUMN: Chart, Description, Comments */}
         <div className="space-y-5 min-w-0">
           {/* Consensus chart */}
-          {consensusTimeline.length >= 2 && (
-            <ConsensusChart data={consensusTimeline} />
-          )}
+          <ConsensusChart data={consensusTimeline} />
 
           {/* Description */}
           {question.description && (
