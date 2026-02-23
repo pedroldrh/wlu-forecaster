@@ -407,6 +407,38 @@ export type Database = {
           },
         ];
       };
+      forecast_history: {
+        Row: {
+          id: string;
+          question_id: string;
+          user_id: string;
+          probability: number;
+          recorded_at: string;
+        };
+        Insert: {
+          id?: string;
+          question_id: string;
+          user_id: string;
+          probability: number;
+          recorded_at?: string;
+        };
+        Update: {
+          id?: string;
+          question_id?: string;
+          user_id?: string;
+          probability?: number;
+          recorded_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "forecast_history_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "questions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       notifications: {
         Row: {
           id: string;

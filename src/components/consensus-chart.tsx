@@ -1,0 +1,102 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import { createChart, type IChartApi, ColorType, AreaSeries } from "lightweight-charts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+interface ConsensusChartProps {
+  data: { time: string; value: number }[];
+}
+
+export function ConsensusChart({ data }: ConsensusChartProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<IChartApi | null>(null);
+
+  useEffect(() => {
+    if (!containerRef.current || data.length === 0) return;
+
+    const chart = createChart(containerRef.current, {
+      height: 220,
+      layout: {
+        background: { type: ColorType.Solid, color: "transparent" },
+        textColor: "#888",
+        fontFamily: "ui-monospace, monospace",
+        fontSize: 11,
+      },
+      grid: {
+        vertLines: { visible: false },
+        horzLines: { color: "rgba(136,136,136,0.15)" },
+      },
+      rightPriceScale: {
+        borderVisible: false,
+        scaleMargins: { top: 0.1, bottom: 0.05 },
+      },
+      timeScale: {
+        borderVisible: false,
+        fixLeftEdge: true,
+        fixRightEdge: true,
+      },
+      crosshair: {
+        horzLine: { visible: false, labelVisible: false },
+        vertLine: { labelVisible: true },
+      },
+      handleScroll: false,
+      handleScale: false,
+    });
+
+    const series = chart.addSeries(AreaSeries, {
+      lineColor: "hsl(221, 83%, 53%)",
+      topColor: "rgba(59, 130, 246, 0.35)",
+      bottomColor: "rgba(59, 130, 246, 0.02)",
+      lineWidth: 2,
+      priceFormat: {
+        type: "custom",
+        formatter: (price: number) => `${Math.round(price * 100)}%`,
+      },
+    });
+
+    // Convert ISO strings to YYYY-MM-DD for lightweight-charts
+    const chartData = data.map((d) => ({
+      time: d.time.slice(0, 10) as string,
+      value: d.value,
+    }));
+
+    series.setData(chartData as any);
+
+    // Set visible price range 0–1
+    series.applyOptions({
+      autoscaleInfoProvider: () => ({
+        priceRange: { minValue: 0, maxValue: 1 },
+      }),
+    });
+
+    chart.timeScale().fitContent();
+    chartRef.current = chart;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        chart.applyOptions({ width: entry.contentRect.width });
+      }
+    });
+    resizeObserver.observe(containerRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+      chart.remove();
+      chartRef.current = null;
+    };
+  }, [data]);
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm text-muted-foreground font-medium">
+          Consensus Over Time
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div ref={containerRef} />
+      </CardContent>
+    </Card>
+  );
+}

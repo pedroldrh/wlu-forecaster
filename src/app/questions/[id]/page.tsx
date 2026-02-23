@@ -7,6 +7,7 @@ import { CATEGORY_LABELS, CATEGORY_COLORS, getQuestionEmoji } from "@/lib/consta
 import { ForecastForm } from "./forecast-form";
 import { CommentSection } from "./comment-section";
 import { DisputeForm } from "@/components/dispute-form";
+import { ConsensusChart } from "@/components/consensus-chart";
 import { Users, CheckCircle, XCircle, ArrowLeft, TrendingUp, Clock } from "lucide-react";
 import { brierPoints } from "@/lib/scoring";
 import { AnimatedNumber } from "@/components/animated-number";
@@ -89,6 +90,25 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
     user_id: c.user_id,
     profile: profileMap.get(c.user_id) ?? null,
   }));
+
+  // Fetch forecast history for consensus chart
+  const { data: historyRows } = await supabase
+    .from("forecast_history")
+    .select("user_id, probability, recorded_at")
+    .eq("question_id", id)
+    .order("recorded_at", { ascending: true });
+
+  // Compute consensus timeline: at each history point, avg of each user's latest probability
+  const consensusTimeline: { time: string; value: number }[] = [];
+  if (historyRows && historyRows.length >= 2) {
+    const latestByUser = new Map<string, number>();
+    for (const row of historyRows) {
+      latestByUser.set(row.user_id, row.probability);
+      const values = Array.from(latestByUser.values());
+      const avg = values.reduce((s, v) => s + v, 0) / values.length;
+      consensusTimeline.push({ time: row.recorded_at, value: avg });
+    }
+  }
 
   const isOpen = question.status === "OPEN" && new Date() < new Date(question.close_time);
   const forecasts = allForecasts || [];
@@ -215,6 +235,11 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
           {consensusPct !== null && !userForecast && <div />}
           {consensusPct === null && userForecast && <div />}
         </div>
+      )}
+
+      {/* Consensus chart */}
+      {consensusTimeline.length >= 2 && (
+        <ConsensusChart data={consensusTimeline} />
       )}
 
       {/* Resolution result */}
