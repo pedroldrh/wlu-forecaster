@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { submitComment, deleteComment } from "@/actions/comments";
 import { toast } from "sonner";
@@ -43,6 +44,7 @@ function timeAgo(date: string): string {
 export function CommentSection({ questionId, comments, currentUserId }: CommentSectionProps) {
   const [content, setContent] = useState("");
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,6 +55,7 @@ export function CommentSection({ questionId, comments, currentUserId }: CommentS
         await submitComment(questionId, content);
         setContent("");
         toast.success("Comment posted");
+        router.refresh();
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Failed to post comment");
       }
@@ -64,6 +67,7 @@ export function CommentSection({ questionId, comments, currentUserId }: CommentS
       try {
         await deleteComment(commentId, questionId);
         toast.success("Comment deleted");
+        router.refresh();
       } catch (error) {
         toast.error("Failed to delete comment");
       }
