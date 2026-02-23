@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import type { Database } from "@/types/database";
-import webPush from "@/lib/web-push";
+import { getWebPush } from "@/lib/web-push";
 
 const MIN_FORECASTS = 5;
 
@@ -95,6 +95,7 @@ export async function GET(request: Request) {
   }
 
   // Send push to each subscription
+  const wp = getWebPush();
   let sent = 0;
   const toDelete: string[] = [];
 
@@ -110,7 +111,7 @@ export async function GET(request: Request) {
       });
 
       try {
-        await webPush.sendNotification(
+        await wp.sendNotification(
           { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
           payload
         );

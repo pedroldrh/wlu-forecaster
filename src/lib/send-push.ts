@@ -1,4 +1,4 @@
-import webPush from "@/lib/web-push";
+import { getWebPush } from "@/lib/web-push";
 import { createAdminClient } from "@/lib/supabase/server";
 
 interface PushPayload {
@@ -17,6 +17,7 @@ export async function sendPushToUser(userId: string, payload: PushPayload) {
 
   if (!subs || subs.length === 0) return;
 
+  const webPush = getWebPush();
   const results = await Promise.allSettled(
     subs.map((sub) =>
       webPush.sendNotification(
