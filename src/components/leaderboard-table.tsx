@@ -1,6 +1,9 @@
+"use client";
+
 import { Badge } from "@/components/ui/badge";
-import { cn, formatPercent, formatDollars } from "@/lib/utils";
+import { cn, formatDollars } from "@/lib/utils";
 import { UserAvatar } from "@/components/user-avatar";
+import { AnimatedNumber } from "@/components/animated-number";
 import Link from "next/link";
 import { Trophy } from "lucide-react";
 
@@ -15,6 +18,7 @@ interface LeaderboardEntry {
   qualifiesForPrize?: boolean;
   prizeCents?: number;
   referralBonus?: number;
+  scoreDelta?: number;
 }
 
 interface LeaderboardTableProps {
@@ -86,7 +90,14 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
 
           {/* Score */}
           <div className="shrink-0 text-right">
-            <div className="text-base font-bold font-mono">{formatPercent(entry.score)}</div>
+            <div className="text-base font-bold font-mono">
+              <AnimatedNumber value={entry.score * 100} suffix="%" />
+            </div>
+            {entry.scoreDelta != null && (
+              <div className="text-[10px] text-green-600 font-medium animate-in fade-in slide-in-from-bottom-1 duration-500">
+                +{entry.scoreDelta.toFixed(1)} pts
+              </div>
+            )}
             {entry.referralBonus ? (
               <div className="text-[10px] text-green-600" title="Referral bonus">+{entry.referralBonus} ref</div>
             ) : null}

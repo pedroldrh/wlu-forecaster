@@ -2,6 +2,7 @@
 
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { createNotification } from "@/actions/notifications";
+import { brierPoints } from "@/lib/scoring";
 import { revalidatePath } from "next/cache";
 
 async function requireAdmin() {
@@ -89,21 +90,22 @@ export async function resolveQuestion(id: string, outcome: boolean) {
   }).eq("id", id);
   if (error) throw new Error("Failed to resolve question");
 
-  // Notify all forecasters on this question
+  // Notify all forecasters on this question with their score
   const adminSupabase = await createAdminClient();
   const { data: forecasts } = await adminSupabase
     .from("forecasts")
-    .select("user_id")
+    .select("user_id, probability")
     .eq("question_id", id);
   const notifiedIds = new Set<string>();
   for (const f of forecasts ?? []) {
     if (notifiedIds.has(f.user_id)) continue;
     notifiedIds.add(f.user_id);
+    const pts = (brierPoints(f.probability, outcome) * 100).toFixed(1);
     await createNotification(
       f.user_id,
       "resolution",
       "Market resolved",
-      `"${question.title}" resolved ${outcome ? "YES" : "NO"}. Check your score!`,
+      `"${question.title}" resolved ${outcome ? "YES" : "NO"}. You scored ${pts} pts!`,
       `/questions/${id}`
     );
   }

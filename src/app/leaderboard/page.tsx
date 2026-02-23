@@ -1,7 +1,7 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { LeaderboardTable } from "@/components/leaderboard-table";
 import { Card, CardContent } from "@/components/ui/card";
-import { seasonScore, rankUsers, UserScore } from "@/lib/scoring";
+import { seasonScore, brierPoints, rankUsers, UserScore } from "@/lib/scoring";
 
 export const metadata = {
   title: "Leaderboard — Forecaster",
@@ -40,12 +40,13 @@ export default async function LeaderboardPage() {
     .eq("season_id", season.id)
     .in("status", ["PAID", "JOINED"]);
 
-  // Get resolved questions for this season
+  // Get resolved questions for this season (sorted by resolution date for delta calc)
   const { data: resolvedQuestions } = await supabase
     .from("questions")
-    .select("id, resolved_outcome")
+    .select("id, resolved_outcome, resolved_at")
     .eq("season_id", season.id)
-    .eq("status", "RESOLVED");
+    .eq("status", "RESOLVED")
+    .order("resolved_at", { ascending: false });
 
   const resolvedQuestionIds = (resolvedQuestions ?? []).map((q) => q.id);
   const resolvedCount = resolvedQuestionIds.length;
@@ -107,6 +108,18 @@ export default async function LeaderboardPage() {
     referralCounts.set(id, (referralCounts.get(id) || 0) + 1);
   }
 
+  // Compute score deltas from the most recently resolved question
+  const latestResolved = (resolvedQuestions ?? [])[0];
+  const deltaMap = new Map<string, number>();
+  if (latestResolved) {
+    const latestOutcome = latestResolved.resolved_outcome as boolean;
+    for (const f of forecasts ?? []) {
+      if (f.question_id === latestResolved.id) {
+        deltaMap.set(f.user_id, brierPoints(f.probability, latestOutcome) * 100);
+      }
+    }
+  }
+
   const leaderboardEntries = ranked.map((u, i) => {
     const rawReferrals = referralCounts.get(u.userId) || 0;
     const referralBonus = Math.min(rawReferrals, 3) * 0.01;
@@ -121,6 +134,7 @@ export default async function LeaderboardPage() {
       qualifiesForPrize: u.qualifiesForPrize,
       prizeCents: u.qualifiesForPrize && i < 5 ? prizeAmounts[i] : undefined,
       referralBonus: rawReferrals > 0 ? Math.min(rawReferrals, 3) : undefined,
+      scoreDelta: deltaMap.get(u.userId),
     };
   });
 

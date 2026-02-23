@@ -9,6 +9,7 @@ import { CommentSection } from "./comment-section";
 import { DisputeForm } from "@/components/dispute-form";
 import { Users, CheckCircle, XCircle, ArrowLeft, TrendingUp, Clock } from "lucide-react";
 import { brierPoints } from "@/lib/scoring";
+import { AnimatedNumber } from "@/components/animated-number";
 import Link from "next/link";
 import type { Metadata } from "next";
 
@@ -181,7 +182,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
                   <div className="mt-2 flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Score</span>
                     <span className="font-mono font-bold text-primary">
-                      {(brierPoints(userForecast.probability, question.resolved_outcome!) * 100).toFixed(1)} pts
+                      <AnimatedNumber value={brierPoints(userForecast.probability, question.resolved_outcome!) * 100} suffix=" pts" />
                     </span>
                   </div>
                 )}

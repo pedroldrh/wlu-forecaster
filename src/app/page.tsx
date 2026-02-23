@@ -4,7 +4,7 @@ import { QuestionCard } from "@/components/question-card";
 import { LeaderboardTable } from "@/components/leaderboard-table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { seasonScore, rankUsers, UserScore } from "@/lib/scoring";
+import { seasonScore, brierPoints, rankUsers, UserScore } from "@/lib/scoring";
 import Link from "next/link";
 import { BarChart3, Trophy, ShieldCheck, Target } from "lucide-react";
 
@@ -82,9 +82,10 @@ export default async function HomePage() {
     if (entries && entries.length > 0) {
       const { data: resolvedQuestions } = await supabase
         .from("questions")
-        .select("id, resolved_outcome")
+        .select("id, resolved_outcome, resolved_at")
         .eq("season_id", season.id)
-        .eq("status", "RESOLVED");
+        .eq("status", "RESOLVED")
+        .order("resolved_at", { ascending: false });
 
       const resolvedIds = resolvedQuestions?.map((q) => q.id) || [];
       const resolvedMap = new Map(resolvedQuestions?.map((q) => [q.id, q.resolved_outcome]) || []);
@@ -141,6 +142,18 @@ export default async function HomePage() {
         referralCounts.set(id, (referralCounts.get(id) || 0) + 1);
       }
 
+      // Compute score deltas from the most recently resolved question
+      const latestResolved = resolvedQuestions?.[0];
+      const deltaMap = new Map<string, number>();
+      if (latestResolved) {
+        const latestOutcome = latestResolved.resolved_outcome as boolean;
+        for (const f of allForecasts) {
+          if (f.question_id === latestResolved.id) {
+            deltaMap.set(f.user_id, brierPoints(f.probability, latestOutcome) * 100);
+          }
+        }
+      }
+
       leaderboardEntries = ranked.slice(0, 5).map((u, i) => {
         const rawReferrals = referralCounts.get(u.userId) || 0;
         const referralBonus = Math.min(rawReferrals, 3) * 0.01;
@@ -155,6 +168,7 @@ export default async function HomePage() {
           qualifiesForPrize: u.qualifiesForPrize,
           prizeCents: u.qualifiesForPrize && i < 5 ? prizeAmounts[i] : undefined,
           referralBonus: rawReferrals > 0 ? Math.min(rawReferrals, 3) : undefined,
+          scoreDelta: deltaMap.get(u.userId),
         };
       });
     }
