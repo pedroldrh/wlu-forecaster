@@ -76,7 +76,7 @@ export function CommentSection({ questionId, comments, currentUserId }: CommentS
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 pb-20">
       <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
         Discussion{comments.length > 0 && (
           <span className="ml-1.5 text-foreground">{comments.length}</span>
