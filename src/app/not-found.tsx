@@ -1,11 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { ChartBar, House, ArrowLeft } from "@phosphor-icons/react/ssr";
+import { House, ArrowLeft } from "@phosphor-icons/react/ssr";
+import { ForecasterLogo } from "@/components/forecaster-logo";
 import Link from "next/link";
 
 export default function NotFound() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-5 px-4">
-      <ChartBar className="h-12 w-12 text-muted-foreground" />
+      <ForecasterLogo className="h-12 w-12 text-muted-foreground" />
       <div className="space-y-2">
         <h1 className="text-2xl font-bold">Page not found</h1>
         <p className="text-muted-foreground text-sm">

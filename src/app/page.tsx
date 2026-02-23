@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { seasonScore, brierPoints, rankUsers, UserScore } from "@/lib/scoring";
 import Link from "next/link";
-import { ChartBar, Trophy, ShieldCheck, Crosshair } from "@phosphor-icons/react/ssr";
+import { Trophy, ShieldCheck, Crosshair } from "@phosphor-icons/react/ssr";
+import { ForecasterLogo } from "@/components/forecaster-logo";
 
 export default async function HomePage() {
   const supabase = await createAdminClient();
@@ -232,7 +233,7 @@ export default async function HomePage() {
                 </div>
               </div>
               <div className="flex gap-3">
-                <ChartBar className="h-5 w-5 mt-0.5 shrink-0 text-blue-500" />
+                <ForecasterLogo className="h-5 w-5 mt-0.5 shrink-0 text-blue-500" />
                 <div>
                   <p className="font-medium text-sm">Brier Scoring</p>
                   <p className="text-sm text-muted-foreground">You&apos;re scored on accuracy. Confident and correct? Big points. Wrong? You lose points.</p>

@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Crosshair, ChartBar, Trophy, ShieldCheck, Question, CalendarBlank } from "@phosphor-icons/react/ssr";
+import { Crosshair, Trophy, ShieldCheck, Question, CalendarBlank } from "@phosphor-icons/react/ssr";
+import { ForecasterLogo } from "@/components/forecaster-logo";
 import { createClient } from "@/lib/supabase/server";
 import { formatDollars } from "@/lib/utils";
 
@@ -61,7 +62,7 @@ export default async function HowItWorksPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <ChartBar className="h-5 w-5 text-blue-500" />
+              <ForecasterLogo className="h-5 w-5 text-blue-500" />
               <CardTitle className="text-lg">Scoring (Brier Score)</CardTitle>
             </div>
           </CardHeader>

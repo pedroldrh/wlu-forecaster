@@ -2,7 +2,8 @@
 
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { ChartBar, ArrowsClockwise, House } from "@phosphor-icons/react";
+import { ArrowsClockwise, House } from "@phosphor-icons/react";
+import { ForecasterLogo } from "@/components/forecaster-logo";
 import Link from "next/link";
 
 export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
@@ -12,7 +13,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-5 px-4">
-      <ChartBar className="h-12 w-12 text-muted-foreground" />
+      <ForecasterLogo className="h-12 w-12 text-muted-foreground" />
       <div className="space-y-2">
         <h1 className="text-2xl font-bold">Something went wrong</h1>
         <p className="text-muted-foreground text-sm max-w-sm">

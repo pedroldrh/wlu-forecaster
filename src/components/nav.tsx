@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChartBar } from "@phosphor-icons/react";
+import { ForecasterLogo } from "@/components/forecaster-logo";
 import { UserAvatar } from "@/components/user-avatar";
 import { NotificationBell } from "@/components/notification-bell";
 import { useState, useEffect, Suspense } from "react";
@@ -105,7 +105,7 @@ export function Nav() {
         <div className="max-w-7xl mx-auto px-4 h-14 md:h-20 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 md:gap-3 font-bold text-xl md:text-2xl">
-            <ChartBar className="h-6 w-6 md:h-8 md:w-8 text-primary" />
+            <ForecasterLogo className="h-6 w-6 md:h-8 md:w-8 text-primary" />
             <span className="bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">Forecaster</span>
           </Link>
 

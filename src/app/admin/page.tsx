@@ -3,7 +3,8 @@ import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { UsersThree, Question, CalendarBlank, Trophy, Lightbulb, Warning, ChartBar } from "@phosphor-icons/react/ssr";
+import { UsersThree, Question, CalendarBlank, Trophy, Lightbulb, Warning } from "@phosphor-icons/react/ssr";
+import { ForecasterLogo } from "@/components/forecaster-logo";
 
 export default async function AdminPage() {
   const supabase = await createClient();
@@ -77,7 +78,7 @@ export default async function AdminPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <ChartBar className="h-5 w-5" />
+              <ForecasterLogo className="h-5 w-5" />
               Stats
             </CardTitle>
           </CardHeader>

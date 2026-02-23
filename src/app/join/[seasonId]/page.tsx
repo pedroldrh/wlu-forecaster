@@ -2,7 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDate, formatDollars } from "@/lib/utils";
-import { Trophy, ChartBar, UsersThree, ShieldCheck } from "@phosphor-icons/react/ssr";
+import { Trophy, UsersThree, ShieldCheck } from "@phosphor-icons/react/ssr";
+import { ForecasterLogo } from "@/components/forecaster-logo";
 import { JoinButton } from "./join-button";
 
 export default async function JoinPage({ params }: { params: Promise<{ seasonId: string }> }) {
@@ -70,7 +71,7 @@ export default async function JoinPage({ params }: { params: Promise<{ seasonId:
 
           <div className="space-y-3">
             <div className="flex items-start gap-3">
-              <ChartBar className="h-5 w-5 mt-0.5 text-muted-foreground" />
+              <ForecasterLogo className="h-5 w-5 mt-0.5 text-muted-foreground" />
               <div>
                 <p className="font-medium">Make Predictions</p>
                 <p className="text-sm text-muted-foreground">Submit probability forecasts on campus questions</p>
