@@ -9,6 +9,24 @@ import { ReferralCard } from "@/components/referral-card";
 import { ScoreCard } from "@/components/score-card";
 import { TrendingUp, Hash, Activity, Award } from "lucide-react";
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const supabase = await createAdminClient();
+  const { data: profile } = await supabase.from("profiles").select("name, display_name").eq("id", id).single();
+  if (!profile) return { title: "User Not Found" };
+
+  const name = profile.display_name || profile.name || "Anonymous";
+  return {
+    title: `${name} — Forecaster`,
+    description: `${name}'s forecasting profile on Forecaster`,
+    openGraph: {
+      title: `${name} — Forecaster`,
+      description: `${name}'s forecasting profile on Forecaster`,
+    },
+  };
+}
 
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

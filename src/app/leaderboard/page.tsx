@@ -3,6 +3,11 @@ import { LeaderboardTable } from "@/components/leaderboard-table";
 import { Card, CardContent } from "@/components/ui/card";
 import { seasonScore, rankUsers, UserScore } from "@/lib/scoring";
 
+export const metadata = {
+  title: "Leaderboard — Forecaster",
+  description: "See who's leading the W&L campus forecasting tournament.",
+};
+
 export default async function LeaderboardPage() {
   const supabase = await createAdminClient();
   let user: { id: string } | null = null;

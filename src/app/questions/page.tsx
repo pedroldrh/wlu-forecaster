@@ -3,6 +3,11 @@ import { QuestionCard } from "@/components/question-card";
 import { SuggestQuestion } from "@/components/suggest-question";
 import { ShieldCheck, AlertCircle } from "lucide-react";
 
+export const metadata = {
+  title: "Markets — Forecaster",
+  description: "Browse and forecast on campus prediction markets at W&L.",
+};
+
 export default async function QuestionsPage() {
   const supabase = await createAdminClient();
   const authClient = await createClient();

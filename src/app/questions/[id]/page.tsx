@@ -10,6 +10,24 @@ import { DisputeForm } from "@/components/dispute-form";
 import { Users, CheckCircle, XCircle, ArrowLeft, TrendingUp, Clock } from "lucide-react";
 import { brierPoints } from "@/lib/scoring";
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const supabase = await createClient();
+  const { data: question } = await supabase.from("questions").select("title, description, status").eq("id", id).single();
+  if (!question) return { title: "Market Not Found" };
+
+  const statusLabel = question.status === "RESOLVED" ? "Resolved" : question.status === "OPEN" ? "Open" : "Closed";
+  return {
+    title: `${question.title} — Forecaster`,
+    description: question.description || `${statusLabel} market on Forecaster`,
+    openGraph: {
+      title: question.title,
+      description: question.description || `${statusLabel} market on Forecaster`,
+    },
+  };
+}
 
 export default async function QuestionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
