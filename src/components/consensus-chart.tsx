@@ -19,17 +19,17 @@ export function ConsensusChart({ data }: ConsensusChartProps) {
     if (!containerRef.current || data.length === 0) return;
 
     const chart = createChart(containerRef.current, {
-      height: 300,
+      height: 280,
       layout: {
         background: { type: ColorType.Solid, color: "transparent" },
-        textColor: "rgba(255, 255, 255, 0.5)",
+        textColor: "rgba(255, 255, 255, 0.35)",
         fontFamily: "ui-monospace, SFMono-Regular, monospace",
         fontSize: 11,
         attributionLogo: false,
       },
       grid: {
         vertLines: { visible: false },
-        horzLines: { visible: false },
+        horzLines: { color: "rgba(255, 255, 255, 0.04)", style: 1 },
       },
       rightPriceScale: {
         borderVisible: false,
@@ -44,14 +44,14 @@ export function ConsensusChart({ data }: ConsensusChartProps) {
         horzLine: {
           visible: true,
           style: 3,
-          color: "rgba(0, 210, 210, 0.4)",
+          color: "rgba(129, 140, 248, 0.4)",
           labelVisible: true,
-          labelBackgroundColor: "rgb(0, 210, 210)",
+          labelBackgroundColor: "rgb(99, 102, 241)",
         },
         vertLine: {
           visible: true,
           style: 3,
-          color: "rgba(255, 255, 255, 0.15)",
+          color: "rgba(255, 255, 255, 0.08)",
           labelVisible: true,
         },
       },
@@ -60,17 +60,17 @@ export function ConsensusChart({ data }: ConsensusChartProps) {
     });
 
     const series = chart.addSeries(AreaSeries, {
-      lineColor: "rgb(0, 210, 210)",
-      topColor: "rgba(0, 210, 210, 0.4)",
-      bottomColor: "rgba(0, 210, 210, 0.02)",
+      lineColor: "rgb(129, 140, 248)",
+      topColor: "rgba(129, 140, 248, 0.3)",
+      bottomColor: "rgba(129, 140, 248, 0.01)",
       lineWidth: 2,
       crosshairMarkerVisible: true,
       crosshairMarkerRadius: 4,
-      crosshairMarkerBackgroundColor: "rgb(0, 210, 210)",
-      crosshairMarkerBorderColor: "rgb(0, 210, 210)",
+      crosshairMarkerBackgroundColor: "rgb(129, 140, 248)",
+      crosshairMarkerBorderColor: "rgb(129, 140, 248)",
       lastValueVisible: true,
       priceLineVisible: true,
-      priceLineColor: "rgba(0, 210, 210, 0.5)",
+      priceLineColor: "rgba(129, 140, 248, 0.35)",
       priceLineStyle: 2,
       priceFormat: {
         type: "custom",
@@ -98,7 +98,7 @@ export function ConsensusChart({ data }: ConsensusChartProps) {
 
       if (!param.time || !param.seriesData.size) {
         valueEl.textContent = `${Math.round(latestValue * 100)}%`;
-        dateEl.textContent = "";
+        dateEl.textContent = "Latest";
         return;
       }
 
@@ -133,22 +133,26 @@ export function ConsensusChart({ data }: ConsensusChartProps) {
   }, [data, latestValue]);
 
   return (
-    <Card className="overflow-hidden bg-[#0a0e17] border-white/10">
+    <Card className="overflow-hidden bg-[#0f1319] border-border/40">
       <CardContent className="p-0">
         {/* Legend overlay */}
-        <div ref={legendRef} className="px-5 pt-4 pb-0 relative z-10">
-          <p className="text-xs uppercase tracking-wider text-white/40 mb-1">
-            Consensus
+        <div ref={legendRef} className="px-5 pt-5 pb-0 relative z-10">
+          <p className="text-[11px] uppercase tracking-widest text-white/30 font-medium">
+            Community Consensus
           </p>
-          <p data-value className="text-3xl font-bold text-white font-mono tabular-nums">
-            {data.length > 0 ? `${Math.round(latestValue * 100)}%` : "—"}
-          </p>
-          <p data-date className="text-xs text-white/40 mt-0.5 h-4" />
+          <div className="flex items-baseline gap-2 mt-1">
+            <p data-value className="text-4xl font-bold text-white font-mono tabular-nums">
+              {data.length > 0 ? `${Math.round(latestValue * 100)}%` : "\u2014"}
+            </p>
+            <p data-date className="text-xs text-white/30 h-4">
+              {data.length > 0 ? "Latest" : ""}
+            </p>
+          </div>
         </div>
         {data.length > 0 ? (
-          <div ref={containerRef} className="-mt-4" />
+          <div ref={containerRef} className="-mt-2" />
         ) : (
-          <div className="flex items-center justify-center h-[300px] -mt-4 text-white/20 text-sm">
+          <div className="flex items-center justify-center h-[280px] -mt-4 text-white/20 text-sm">
             No forecasts yet
           </div>
         )}

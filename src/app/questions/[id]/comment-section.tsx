@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { submitComment, deleteComment } from "@/actions/comments";
 import { toast } from "sonner";
-import { Trash } from "@phosphor-icons/react";
+import { Trash, PaperPlaneTilt, ChatDots } from "@phosphor-icons/react";
 import { UserAvatar } from "@/components/user-avatar";
+import Link from "next/link";
 
 interface Comment {
   id: string;
@@ -75,36 +76,55 @@ export function CommentSection({ questionId, comments, currentUserId }: CommentS
   };
 
   return (
-    <div className="space-y-4">
-      <h3 className="font-semibold text-lg">
-        Comments {comments.length > 0 && <span className="text-muted-foreground font-normal text-sm">({comments.length})</span>}
+    <div className="space-y-5">
+      <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+        Discussion{comments.length > 0 && (
+          <span className="ml-1.5 text-foreground">{comments.length}</span>
+        )}
       </h3>
 
       {currentUserId ? (
-        <form onSubmit={handleSubmit} className="space-y-2">
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Share your thoughts..."
-            maxLength={500}
-            rows={2}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
-          />
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">{content.length}/500</span>
-            <Button type="submit" size="sm" disabled={isPending || !content.trim()}>
-              {isPending ? "Posting..." : "Post"}
-            </Button>
+        <form onSubmit={handleSubmit} className="flex items-end gap-2">
+          <div className="flex-1 relative">
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Share your take..."
+              maxLength={500}
+              rows={1}
+              className="w-full rounded-2xl border border-input bg-muted/30 px-4 py-2.5 text-sm placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:bg-background resize-none min-h-[42px] max-h-32 transition-colors"
+              onInput={(e) => {
+                const target = e.target as HTMLTextAreaElement;
+                target.style.height = "auto";
+                target.style.height = Math.min(target.scrollHeight, 128) + "px";
+              }}
+            />
           </div>
+          <Button
+            type="submit"
+            size="icon"
+            disabled={isPending || !content.trim()}
+            className="rounded-full h-[42px] w-[42px] shrink-0"
+          >
+            <PaperPlaneTilt className="h-4 w-4" weight="fill" />
+          </Button>
         </form>
       ) : (
-        <p className="text-sm text-muted-foreground">Sign in to comment.</p>
+        <p className="text-sm text-muted-foreground">
+          <Link href="/signin" className="text-primary hover:underline">Sign in</Link> to join the discussion.
+        </p>
       )}
 
       {comments.length === 0 ? (
-        <p className="text-sm text-muted-foreground py-4 text-center">No comments yet. Be the first to share your take.</p>
+        <div className="text-center py-8">
+          <div className="h-12 w-12 mx-auto rounded-full bg-muted/50 flex items-center justify-center mb-3">
+            <ChatDots className="h-5 w-5 text-muted-foreground/30" />
+          </div>
+          <p className="text-sm text-muted-foreground">No comments yet</p>
+          <p className="text-xs text-muted-foreground/60 mt-0.5">Be the first to share your take</p>
+        </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {comments.map((comment) => {
             const name = comment.profile?.display_name || comment.profile?.name || "Anonymous";
             const isOwn = comment.user_id === currentUserId;
@@ -119,18 +139,18 @@ export function CommentSection({ questionId, comments, currentUserId }: CommentS
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">{name}</span>
-                    <span className="text-xs text-muted-foreground">{timeAgo(comment.created_at)}</span>
+                    <span className="text-xs text-muted-foreground/50">{timeAgo(comment.created_at)}</span>
                     {isOwn && (
                       <button
                         onClick={() => handleDelete(comment.id)}
                         className="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
                         disabled={isPending}
                       >
-                        <Trash className="h-3 w-3" />
+                        <Trash className="h-3.5 w-3.5" />
                       </button>
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap break-words">{comment.content}</p>
+                  <p className="text-sm text-foreground/80 whitespace-pre-wrap break-words mt-0.5 leading-relaxed">{comment.content}</p>
                 </div>
               </div>
             );
