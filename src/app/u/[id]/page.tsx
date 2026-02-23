@@ -320,7 +320,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
       {/* Own profile actions */}
       {isOwnProfile && (
-        <div className="space-y-3">
+        <div className="space-y-3 pb-8">
           {profile.role === "ADMIN" && (
             <Link href="/admin" className="flex items-center justify-center gap-2 w-full rounded-md border border-primary/30 bg-primary/5 px-4 py-2.5 text-sm font-medium text-primary hover:bg-primary/10 transition-colors">
               <Shield className="h-4 w-4" />
