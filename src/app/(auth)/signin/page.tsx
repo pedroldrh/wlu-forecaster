@@ -51,7 +51,7 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-b from-blue-600 via-indigo-600 to-blue-700 flex flex-col items-center overflow-hidden">
+    <div className="relative h-screen bg-gradient-to-b from-blue-600 via-indigo-600 to-blue-700 flex flex-col items-center overflow-hidden touch-none overscroll-none">
       {/* Close button */}
       <button
         onClick={() => router.push("/")}
