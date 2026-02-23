@@ -207,6 +207,7 @@ export default async function HomePage() {
           prize5thCents={season.prize_5th_cents}
           prizeBonusCents={season.prize_bonus_cents}
           status={season.status}
+          participantIds={allRanked.map((u) => u.userId)}
         />
       ) : (
         <Card>

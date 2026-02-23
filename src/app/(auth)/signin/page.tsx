@@ -52,6 +52,13 @@ export default function SignInPage() {
 
   return (
     <div className="relative h-screen bg-gradient-to-b from-blue-600 via-indigo-600 to-blue-700 flex flex-col items-center overflow-hidden touch-none overscroll-none">
+      {/* Campus photo background */}
+      <img
+        src="/campus.jpg"
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover blur-xl opacity-15 pointer-events-none scale-110"
+      />
+
       {/* Close button */}
       <button
         onClick={() => router.push("/")}

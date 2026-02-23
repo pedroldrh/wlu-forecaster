@@ -190,3 +190,26 @@
 .animate-hero-fade-in {
   animation: hero-fade-in 0.8s ease-out both;
 }
+
+/* Confetti animation */
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-120px) rotate(var(--confetti-rotate, 360deg)) scale(0);
+    opacity: 0;
+  }
+}
+
+@keyframes confetti-spread {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--confetti-x, 30px), var(--confetti-y, -80px)) rotate(var(--confetti-rotate, 270deg));
+    opacity: 0;
+  }
+}
