@@ -82,11 +82,12 @@ export async function resolveQuestion(id: string, outcome: boolean) {
   if (!question) throw new Error("Question not found");
   if (question.status === "RESOLVED") throw new Error("Already resolved");
 
-  await supabase.from("questions").update({
+  const { error } = await supabase.from("questions").update({
     status: "RESOLVED",
     resolved_outcome: outcome,
     resolved_at: new Date().toISOString(),
   }).eq("id", id);
+  if (error) throw new Error("Failed to resolve question");
 
   // Notify all forecasters on this question
   const adminSupabase = await createAdminClient();

@@ -10,13 +10,14 @@ export async function createNotification(
   link?: string
 ) {
   const admin = await createAdminClient();
-  await admin.from("notifications").insert({
+  const { error } = await admin.from("notifications").insert({
     user_id: userId,
     type,
     title,
     body,
     link: link ?? null,
   });
+  if (error) console.error("Failed to create notification:", error.message);
 }
 
 export async function markAllRead() {
@@ -24,9 +25,10 @@ export async function markAllRead() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");
 
-  await supabase
+  const { error } = await supabase
     .from("notifications")
     .update({ read: true })
     .eq("user_id", user.id)
     .eq("read", false);
+  if (error) throw new Error("Failed to mark notifications as read");
 }

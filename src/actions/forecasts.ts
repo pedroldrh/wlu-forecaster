@@ -25,17 +25,19 @@ export async function submitForecast(questionId: string, probability: number) {
     .single();
 
   if (!entry) {
-    await supabase.from("season_entries").insert({
+    const { error: joinError } = await supabase.from("season_entries").insert({
       user_id: user.id,
       season_id: question.season_id,
       status: "JOINED",
     });
+    if (joinError) throw new Error("Failed to join season");
   } else if (entry.status === "PENDING") {
-    await supabase
+    const { error: joinError } = await supabase
       .from("season_entries")
       .update({ status: "JOINED" })
       .eq("user_id", user.id)
       .eq("season_id", question.season_id);
+    if (joinError) throw new Error("Failed to join season");
   }
 
   // Upsert forecast
@@ -47,16 +49,18 @@ export async function submitForecast(questionId: string, probability: number) {
     .single();
 
   if (existing) {
-    await supabase
+    const { error } = await supabase
       .from("forecasts")
       .update({ probability, submitted_at: new Date().toISOString(), updated_at: new Date().toISOString() })
       .eq("id", existing.id);
+    if (error) throw new Error("Failed to update forecast");
   } else {
-    await supabase.from("forecasts").insert({
+    const { error } = await supabase.from("forecasts").insert({
       user_id: user.id,
       question_id: questionId,
       probability,
     });
+    if (error) throw new Error("Failed to submit forecast");
   }
 
   revalidatePath(`/questions/${questionId}`);

@@ -30,17 +30,19 @@ export async function joinSeason(seasonId: string) {
 
   if (existing) {
     // Update PENDING entry to JOINED
-    await supabase
+    const { error } = await supabase
       .from("season_entries")
       .update({ status: "JOINED" })
       .eq("user_id", user.id)
       .eq("season_id", seasonId);
+    if (error) throw new Error("Failed to join season");
   } else {
-    await supabase.from("season_entries").insert({
+    const { error } = await supabase.from("season_entries").insert({
       user_id: user.id,
       season_id: seasonId,
       status: "JOINED",
     });
+    if (error) throw new Error("Failed to join season");
   }
 
   revalidatePath("/");
