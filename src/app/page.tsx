@@ -75,7 +75,7 @@ export default async function HomePage() {
   if (season) {
     const { data: entries } = await supabase
       .from("season_entries")
-      .select("user_id, created_at, profiles(id, name, display_name)")
+      .select("user_id, created_at, profiles(id, name, display_name, role)")
       .eq("season_id", season.id)
       .in("status", ["PAID", "JOINED"]);
 
@@ -108,7 +108,7 @@ export default async function HomePage() {
           probability: f.probability,
           outcome: resolvedMap.get(f.question_id)!,
         }));
-        const profile = entry.profiles as unknown as { id: string; name: string; display_name: string | null };
+        const profile = entry.profiles as unknown as { id: string; name: string; display_name: string | null; role: string | null };
         const participationPct = totalResolved > 0 ? (userForecasts.length / totalResolved) * 100 : 0;
         const avgSubmissionTime = userForecasts.length > 0
           ? userForecasts.reduce((sum: number, f: any) => sum + new Date(f.submitted_at).getTime(), 0) / userForecasts.length
@@ -154,6 +154,13 @@ export default async function HomePage() {
         }
       }
 
+      // Build role map for founder badge
+      const roleMap = new Map<string, string>();
+      for (const entry of entries) {
+        const p = entry.profiles as unknown as { id: string; role: string | null } | null;
+        if (p?.role) roleMap.set(entry.user_id, p.role);
+      }
+
       leaderboardEntries = ranked.slice(0, 5).map((u, i) => {
         const rawReferrals = referralCounts.get(u.userId) || 0;
         const referralBonus = Math.min(rawReferrals, 3) * 0.01;
@@ -169,6 +176,7 @@ export default async function HomePage() {
           prizeCents: u.qualifiesForPrize && i < 5 ? prizeAmounts[i] : undefined,
           referralBonus: rawReferrals > 0 ? Math.min(rawReferrals, 3) : undefined,
           scoreDelta: deltaMap.get(u.userId),
+          isFounder: roleMap.get(u.userId) === "ADMIN",
         };
       });
     }

@@ -7,7 +7,7 @@ import { formatPercent, formatDate } from "@/lib/utils";
 import { UserAvatar } from "@/components/user-avatar";
 import { ReferralCard } from "@/components/referral-card";
 import { ScoreCard } from "@/components/score-card";
-import { TrendingUp, Hash, Activity, Award } from "lucide-react";
+import { TrendingUp, Hash, Activity, Award, Crown } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
 
@@ -182,7 +182,13 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
             <UserAvatar userId={id} size="lg" />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
+                {profile.role === "ADMIN" && <Crown className="h-5 w-5 text-amber-500 shrink-0" />}
                 <h1 className="text-2xl font-bold break-words">{displayName}</h1>
+                {profile.role === "ADMIN" && (
+                  <Badge variant="secondary" className="shrink-0 bg-amber-500/10 text-amber-600 border-amber-500/20">
+                    Forecaster Founder
+                  </Badge>
+                )}
                 {badges.map((b) => (
                   <Badge key={b} variant="secondary" className="shrink-0">{b}</Badge>
                 ))}

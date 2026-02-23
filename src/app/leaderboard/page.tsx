@@ -36,7 +36,7 @@ export default async function LeaderboardPage() {
   // Get entries with PAID or JOINED status
   const { data: entries } = await supabase
     .from("season_entries")
-    .select("user_id, paid_at, created_at, profiles(id, name, display_name)")
+    .select("user_id, paid_at, created_at, profiles(id, name, display_name, role)")
     .eq("season_id", season.id)
     .in("status", ["PAID", "JOINED"]);
 
@@ -74,7 +74,7 @@ export default async function LeaderboardPage() {
   }
 
   const users: UserScore[] = (entries ?? []).map((entry) => {
-    const profile = entry.profiles as unknown as { id: string; name: string | null; display_name: string | null } | null;
+    const profile = entry.profiles as unknown as { id: string; name: string | null; display_name: string | null; role: string | null } | null;
     const userForecasts = forecastsByUser.get(entry.user_id) ?? [];
     const participationPct = resolvedCount > 0 ? (userForecasts.length / resolvedCount) * 100 : 0;
     const avgSubmissionTime = userForecasts.length > 0
@@ -92,6 +92,13 @@ export default async function LeaderboardPage() {
       avgSubmissionTime,
     };
   });
+
+  // Build role map for founder badge
+  const roleMap = new Map<string, string>();
+  for (const entry of entries ?? []) {
+    const profile = entry.profiles as unknown as { id: string; role: string | null } | null;
+    if (profile?.role) roleMap.set(entry.user_id, profile.role);
+  }
 
   const ranked = rankUsers(users);
   const prizeAmounts = [season.prize_1st_cents, season.prize_2nd_cents, season.prize_3rd_cents, season.prize_4th_cents, season.prize_5th_cents];
@@ -135,6 +142,7 @@ export default async function LeaderboardPage() {
       prizeCents: u.qualifiesForPrize && i < 5 ? prizeAmounts[i] : undefined,
       referralBonus: rawReferrals > 0 ? Math.min(rawReferrals, 3) : undefined,
       scoreDelta: deltaMap.get(u.userId),
+      isFounder: roleMap.get(u.userId) === "ADMIN",
     };
   });
 

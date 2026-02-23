@@ -5,7 +5,7 @@ import { cn, formatDollars } from "@/lib/utils";
 import { UserAvatar } from "@/components/user-avatar";
 import { AnimatedNumber } from "@/components/animated-number";
 import Link from "next/link";
-import { Trophy } from "lucide-react";
+import { Crown, Trophy } from "lucide-react";
 
 interface LeaderboardEntry {
   rank: number;
@@ -19,6 +19,7 @@ interface LeaderboardEntry {
   prizeCents?: number;
   referralBonus?: number;
   scoreDelta?: number;
+  isFounder?: boolean;
 }
 
 interface LeaderboardTableProps {
@@ -70,7 +71,13 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
           {/* Name + meta */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
+              {entry.isFounder && <Crown className="h-3.5 w-3.5 text-amber-500 shrink-0" />}
               <span className="font-medium text-sm truncate">{entry.name}</span>
+              {entry.isFounder && (
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 shrink-0 bg-amber-500/10 text-amber-600 border-amber-500/20">
+                  Founder
+                </Badge>
+              )}
               {entry.isCurrentUser && (
                 <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0">
                   You
