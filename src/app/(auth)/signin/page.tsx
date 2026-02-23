@@ -1,16 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 
-const FLOATING_WORDS_TOP = ["sports", "campus", "greek life"];
-const FLOATING_WORDS_BOTTOM = ["dining", "weather", "academics"];
+const WORDS_TOP = ["sports", "campus", "greek life"];
+const WORDS_BOTTOM = ["dining", "weather", "academics"];
+const ALL_WORDS = [...WORDS_TOP, ...WORDS_BOTTOM];
 
 export default function SignInPage() {
   const [loading, setLoading] = useState(false);
+  const [spotlight, setSpotlight] = useState(0);
   const supabase = createClient();
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSpotlight((prev) => (prev + 1) % ALL_WORDS.length);
+    }, 1200);
+    return () => clearInterval(interval);
+  }, []);
 
   async function handleSignIn() {
     setLoading(true);
@@ -26,6 +35,15 @@ export default function SignInPage() {
     }
   }
 
+  function wordClass(globalIndex: number) {
+    const isActive = spotlight === globalIndex;
+    return `text-2xl sm:text-3xl font-semibold select-none transition-all duration-500 ${
+      isActive
+        ? "text-white scale-110 drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]"
+        : "text-white/30"
+    }`;
+  }
+
   return (
     <div className="relative min-h-[calc(100vh-3.5rem)] md:min-h-[calc(100vh-5rem)] bg-gradient-to-b from-blue-600 via-indigo-600 to-blue-700 flex flex-col items-center overflow-hidden">
       {/* Brand */}
@@ -38,12 +56,8 @@ export default function SignInPage() {
 
       {/* Floating words — top */}
       <div className="flex flex-col items-center gap-2 z-10 mt-4 sm:mt-8">
-        {FLOATING_WORDS_TOP.map((word, i) => (
-          <span
-            key={word}
-            className="animate-float-word text-2xl sm:text-3xl font-semibold text-white/20 select-none"
-            style={{ animationDelay: `${i * 0.6}s` }}
-          >
+        {WORDS_TOP.map((word, i) => (
+          <span key={word} className={wordClass(i)}>
             {word}
           </span>
         ))}
@@ -59,19 +73,15 @@ export default function SignInPage() {
 
       {/* Floating words — bottom */}
       <div className="flex flex-col items-center gap-2 z-10">
-        {FLOATING_WORDS_BOTTOM.map((word, i) => (
-          <span
-            key={word}
-            className="animate-float-word text-2xl sm:text-3xl font-semibold text-white/20 select-none"
-            style={{ animationDelay: `${(i + 3) * 0.6}s` }}
-          >
+        {WORDS_BOTTOM.map((word, i) => (
+          <span key={word} className={wordClass(i + WORDS_TOP.length)}>
             {word}
           </span>
         ))}
       </div>
 
       {/* Sign in section — pushed to bottom */}
-      <div className="mt-auto w-full max-w-sm mx-auto px-6 pb-10 sm:pb-14 z-10 flex flex-col items-center gap-5">
+      <div className="mt-auto w-full max-w-sm mx-auto px-6 pb-10 sm:pb-14 z-10 flex flex-col items-center">
         <button
           onClick={handleSignIn}
           disabled={loading}
@@ -97,12 +107,6 @@ export default function SignInPage() {
           </svg>
           {loading ? "Redirecting..." : "Continue with Google"}
         </button>
-
-        <p className="text-sm text-white/50 text-center">
-          Use your @mail.wlu.edu account to sign in.
-          <br />
-          No spam, ever.
-        </p>
       </div>
 
       {/* Background glow effects */}
