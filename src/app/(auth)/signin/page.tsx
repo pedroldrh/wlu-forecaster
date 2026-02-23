@@ -44,15 +44,6 @@ export default function SignInPage() {
           {loading === "google" ? "Redirecting..." : "Sign in with Google"}
         </Button>
 
-        <Button
-          className="w-full"
-          variant="outline"
-          onClick={() => handleOAuthSignIn("azure")}
-          disabled={loading !== null}
-        >
-          {loading === "microsoft" ? "Redirecting..." : "Sign in with Microsoft"}
-        </Button>
-
         <p className="text-sm font-medium text-center pt-2">
           No spam, ever. We only email you if you win a prize.
         </p>
