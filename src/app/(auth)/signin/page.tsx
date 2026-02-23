@@ -80,8 +80,8 @@ export default function SignInPage() {
         ))}
       </div>
 
-      {/* Sign in section — pushed to bottom */}
-      <div className="mt-auto w-full max-w-sm mx-auto px-6 pb-10 sm:pb-14 z-10 flex flex-col items-center">
+      {/* Sign in section — centered between words and bottom */}
+      <div className="flex-1 flex items-center w-full max-w-sm mx-auto px-6 z-10">
         <button
           onClick={handleSignIn}
           disabled={loading}
