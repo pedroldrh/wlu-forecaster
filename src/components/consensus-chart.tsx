@@ -22,6 +22,7 @@ export function ConsensusChart({ data }: ConsensusChartProps) {
         textColor: "#888",
         fontFamily: "ui-monospace, monospace",
         fontSize: 11,
+        attributionLogo: false,
       },
       grid: {
         vertLines: { visible: false },
@@ -29,7 +30,7 @@ export function ConsensusChart({ data }: ConsensusChartProps) {
       },
       rightPriceScale: {
         borderVisible: false,
-        scaleMargins: { top: 0.1, bottom: 0.05 },
+        scaleMargins: { top: 0.05, bottom: 0.05 },
       },
       timeScale: {
         borderVisible: false,
@@ -44,6 +45,7 @@ export function ConsensusChart({ data }: ConsensusChartProps) {
       handleScale: false,
     });
 
+    // Store data as 0–100 so the y-axis labels are plain integers with "%" suffix
     const series = chart.addSeries(AreaSeries, {
       lineColor: "hsl(221, 83%, 53%)",
       topColor: "rgba(59, 130, 246, 0.35)",
@@ -51,24 +53,20 @@ export function ConsensusChart({ data }: ConsensusChartProps) {
       lineWidth: 2,
       priceFormat: {
         type: "custom",
-        formatter: (price: number) => `${Math.round(price * 100)}%`,
+        formatter: (price: number) => `${Math.round(price)}%`,
+        minMove: 1,
       },
+      autoscaleInfoProvider: () => ({
+        priceRange: { minValue: 0, maxValue: 100 },
+      }),
     });
 
-    // Convert ISO strings to Unix timestamps (seconds) — avoids duplicate-date errors
     const chartData = data.map((d) => ({
       time: Math.floor(new Date(d.time).getTime() / 1000),
-      value: d.value,
+      value: d.value * 100,
     }));
 
     series.setData(chartData as any);
-
-    // Set visible price range 0–1
-    series.applyOptions({
-      autoscaleInfoProvider: () => ({
-        priceRange: { minValue: 0, maxValue: 1 },
-      }),
-    });
 
     chart.timeScale().fitContent();
     chartRef.current = chart;
