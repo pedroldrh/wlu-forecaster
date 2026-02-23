@@ -253,25 +253,6 @@
 .splash-logo {
   width: 80px;
   height: 80px;
-  opacity: 0;
-  animation: splash-fade-in 300ms ease-out 200ms both;
-}
-
-/* Diagonal reflection band clipped to bar shapes */
-.splash-reflection {
-  animation: splash-shine 600ms ease-in-out 600ms both;
-}
-
-/* Keyframes */
-
-@keyframes splash-fade-in {
-  from { opacity: 0; transform: scale(0.85); }
-  to   { opacity: 1; transform: scale(1); }
-}
-
-@keyframes splash-shine {
-  0%   { transform: rotate(-30deg) translate(-14px, 8px); }
-  100% { transform: rotate(-30deg) translate(22px, -8px); }
 }
 
 @keyframes splash-exit {
@@ -285,11 +266,8 @@
   }
 }
 
-/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .splash-overlay,
-  .splash-logo,
-  .splash-reflection {
+  .splash-overlay {
     animation-duration: 0.01ms !important;
     animation-delay: 0ms !important;
   }

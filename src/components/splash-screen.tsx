@@ -14,16 +14,14 @@ export function SplashScreen() {
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    // Remove the inline pre-splash blocker
-    document.getElementById("splash-pre")?.remove();
-    document.body.style.background = "";
-
     if (!isPWA() || sessionStorage.getItem("splash-shown")) {
+      document.body.style.background = "";
       setVisible(false);
       return;
     }
     const timer = setTimeout(() => {
       sessionStorage.setItem("splash-shown", "1");
+      document.body.style.background = "";
       setVisible(false);
     }, 1800);
     return () => clearTimeout(timer);
@@ -39,17 +37,17 @@ export function SplashScreen() {
         className="splash-logo"
       >
         <defs>
-          <clipPath id="splash-bars-clip">
+          <clipPath id="splash-clip">
             <rect x="3" y="13" width="4" height="8" rx="2" />
             <rect x="10" y="3" width="4" height="18" rx="2" />
             <rect x="17" y="8" width="4" height="13" rx="2" />
           </clipPath>
-          <linearGradient id="splash-shine-grad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="rgba(255,255,255,0)" />
-            <stop offset="35%" stopColor="rgba(255,255,255,0.4)" />
-            <stop offset="50%" stopColor="rgba(255,255,255,0.9)" />
-            <stop offset="65%" stopColor="rgba(255,255,255,0.4)" />
-            <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+          <linearGradient id="splash-grad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="white" stopOpacity="0" />
+            <stop offset="35%" stopColor="white" stopOpacity="0.5" />
+            <stop offset="50%" stopColor="white" stopOpacity="1" />
+            <stop offset="65%" stopColor="white" stopOpacity="0.5" />
+            <stop offset="100%" stopColor="white" stopOpacity="0" />
           </linearGradient>
         </defs>
         {/* White bars */}
@@ -58,16 +56,21 @@ export function SplashScreen() {
           <rect x="10" y="3" width="4" height="18" rx="2" />
           <rect x="17" y="8" width="4" height="13" rx="2" />
         </g>
-        {/* Diagonal reflection clipped to bar shapes */}
-        <g clipPath="url(#splash-bars-clip)">
-          <rect
-            className="splash-reflection"
-            x="0"
-            y="-6"
-            width="6"
-            height="36"
-            fill="url(#splash-shine-grad)"
-          />
+        {/* Diagonal shine clipped to bar shapes */}
+        <g clipPath="url(#splash-clip)">
+          <g transform="rotate(-25 12 12)">
+            <rect x="-8" y="-8" width="8" height="42" fill="url(#splash-grad)">
+              <animateTransform
+                attributeName="transform"
+                type="translate"
+                from="0 0"
+                to="36 0"
+                dur="0.6s"
+                begin="0.4s"
+                fill="freeze"
+              />
+            </rect>
+          </g>
         </g>
       </svg>
     </div>
