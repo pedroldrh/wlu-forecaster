@@ -44,14 +44,17 @@ export function NotificationBell({ userId }: { userId: string }) {
   // PWA install prompt state
   const [standalone, setStandalone] = useState(true);
   const [showInstallDialog, setShowInstallDialog] = useState(false);
+  const [hasOpenedBell, setHasOpenedBell] = useState(true);
   const platform = useMemo(detectPlatform, []);
 
   useEffect(() => {
     setStandalone(isStandalone());
+    setHasOpenedBell(!!localStorage.getItem("forecaster-bell-opened"));
   }, []);
 
   const showInstallCard = !standalone;
   const badgeCount = count + (showInstallCard ? 1 : 0);
+  const shouldRing = showInstallCard && !hasOpenedBell && !open;
 
   function handleOpenInstallDialog() {
     setOpen(false);
@@ -78,7 +81,13 @@ export function NotificationBell({ userId }: { userId: string }) {
   const handleOpen = () => {
     const next = !open;
     setOpen(next);
-    if (next) fetchNotifications();
+    if (next) {
+      fetchNotifications();
+      if (!hasOpenedBell) {
+        localStorage.setItem("forecaster-bell-opened", "true");
+        setHasOpenedBell(true);
+      }
+    }
   };
 
   useEffect(() => {
@@ -99,7 +108,7 @@ export function NotificationBell({ userId }: { userId: string }) {
           className="relative flex items-center justify-center h-9 w-9 rounded-full hover:bg-accent transition-colors"
           aria-label="Notifications"
         >
-          <Bell className="h-5 w-5" />
+          <Bell className={`h-5 w-5 ${shouldRing ? "animate-bell-ring" : ""}`} />
           {badgeCount > 0 && (
             <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white px-1">
               {badgeCount > 99 ? "99+" : badgeCount}
