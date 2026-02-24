@@ -8,6 +8,8 @@ import { toast } from "sonner";
 
 async function subscribeToPush() {
   const reg = await navigator.serviceWorker.ready;
+  // iOS needs a brief pause after granting permission before pushManager is ready
+  await new Promise((r) => setTimeout(r, 500));
   const sub = await reg.pushManager.subscribe({
     userVisibleOnly: true,
     applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
@@ -41,9 +43,10 @@ export function EnableNotificationsButton() {
         await subscribeToPush();
         setStatus("granted");
         toast.success("Notifications enabled!");
-      } catch {
+      } catch (err) {
         // Permission granted but subscription failed — let them retry
         setStatus("prompt");
+        console.error("Push subscription failed:", err);
         toast.error("Something went wrong. Try again.");
       }
     } else if (perm === "denied") {

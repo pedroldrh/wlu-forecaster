@@ -6,6 +6,8 @@ import { savePushSubscription } from "@/actions/push-subscriptions";
 
 async function subscribeToPush() {
   const reg = await navigator.serviceWorker.ready;
+  // iOS needs a brief pause after granting permission before pushManager is ready
+  await new Promise((r) => setTimeout(r, 500));
   const sub = await reg.pushManager.subscribe({
     userVisibleOnly: true,
     applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
