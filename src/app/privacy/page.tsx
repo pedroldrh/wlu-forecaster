@@ -19,7 +19,7 @@ export default function PrivacyPage() {
           <li>
             <strong className="text-foreground">Google account info:</strong> your name, email
             address, and profile picture, provided via Google OAuth when you sign in with your
-            W&amp;L account.
+            Google account.
           </li>
           <li>
             <strong className="text-foreground">Forecasting activity:</strong> every forecast you
@@ -50,8 +50,8 @@ export default function PrivacyPage() {
         <h2 className="text-lg font-semibold text-foreground">3. Display Name Privacy</h2>
         <p>
           When you first sign in, you are assigned a random anonymous display name. Your real name
-          and email are never shown publicly. You can change your display name at any time from your
-          profile. Other players only see your display name, avatar, forecasts, and comments.
+          and email are never shown publicly. Other players only see your display name, avatar,
+          forecasts, and comments.
         </p>
       </section>
 
@@ -74,10 +74,6 @@ export default function PrivacyPage() {
           <li>
             <strong className="text-foreground">Authentication:</strong> Supabase session cookies to
             keep you signed in
-          </li>
-          <li>
-            <strong className="text-foreground">Preferences:</strong> theme selection (dark/light
-            mode) stored in localStorage
           </li>
         </ul>
         <p>We do not use advertising or tracking cookies.</p>
@@ -127,10 +123,8 @@ export default function PrivacyPage() {
       <section className="space-y-3">
         <h2 className="text-lg font-semibold text-foreground">10. Contact</h2>
         <p>
-          To request data deletion or ask about your privacy, email{" "}
-          <a href="mailto:plironderobles@mail.wlu.edu" className="text-primary underline underline-offset-2">
-            plironderobles@mail.wlu.edu
-          </a>.
+          A dedicated contact email for Forecaster will be available soon. In the meantime, if you
+          need to request data deletion or have privacy questions, reach out through the platform.
         </p>
       </section>
     </div>
