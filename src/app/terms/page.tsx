@@ -31,24 +31,14 @@ export default function TermsPage() {
       <section className="space-y-3">
         <h2 className="text-lg font-semibold text-foreground">2. Eligibility</h2>
         <p>
-          To use Forecaster you must be a current student, faculty member, or staff member at
-          Washington &amp; Lee University with a valid <code>@mail.wlu.edu</code> Google account.
-          You must be at least 18 years old. By signing in, you confirm that you meet these
-          requirements.
+          To use Forecaster you must be a current student at Washington &amp; Lee University.
+          You can sign in with any Google account (including your personal Gmail). By signing in,
+          you confirm that you are a current W&amp;L student.
         </p>
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold text-foreground">3. Accounts</h2>
-        <p>
-          You sign in with Google OAuth using your W&amp;L email. Each person may hold only one
-          account. You are assigned a random anonymous display name which you may change at any time.
-          You are responsible for all activity under your account.
-        </p>
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold text-foreground">4. How Forecasting Works</h2>
+        <h2 className="text-lg font-semibold text-foreground">3. How Forecasting Works</h2>
         <p>
           Each market poses a yes/no question about a future campus event. You submit a probability
           (0&ndash;100%) representing your confidence that the event will happen. You may update your
@@ -66,7 +56,7 @@ export default function TermsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold text-foreground">5. Prizes</h2>
+        <h2 className="text-lg font-semibold text-foreground">4. Prizes</h2>
         <p>
           Prizes are awarded to the top forecasters at the end of each biweekly season cycle. Prize
           amounts are displayed on the How It Works page and may change between cycles. To qualify
@@ -82,7 +72,7 @@ export default function TermsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold text-foreground">6. Prohibited Conduct</h2>
+        <h2 className="text-lg font-semibold text-foreground">5. Prohibited Conduct</h2>
         <p>You agree not to:</p>
         <ul className="list-disc list-inside space-y-1.5 ml-2">
           <li>Create or operate multiple accounts</li>
@@ -99,7 +89,7 @@ export default function TermsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold text-foreground">7. Disputes &amp; Resolutions</h2>
+        <h2 className="text-lg font-semibold text-foreground">6. Disputes &amp; Resolutions</h2>
         <p>
           If you believe a market was resolved incorrectly, you may submit a dispute through the
           market page within 48 hours of resolution. The operator will review disputes and make a
@@ -108,7 +98,7 @@ export default function TermsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold text-foreground">8. Disclaimers</h2>
+        <h2 className="text-lg font-semibold text-foreground">7. Disclaimers</h2>
         <p>
           Forecaster is provided &quot;as is&quot; without warranties of any kind. We do not guarantee
           uptime, accuracy of scoring, or availability of prizes. The platform may be modified,
@@ -117,7 +107,7 @@ export default function TermsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold text-foreground">9. Limitation of Liability</h2>
+        <h2 className="text-lg font-semibold text-foreground">8. Limitation of Liability</h2>
         <p>
           To the fullest extent permitted by law, the operator of Forecaster shall not be liable for
           any indirect, incidental, or consequential damages arising from your use of the platform.
@@ -126,7 +116,7 @@ export default function TermsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold text-foreground">10. Changes to These Terms</h2>
+        <h2 className="text-lg font-semibold text-foreground">9. Changes to These Terms</h2>
         <p>
           We may update these Terms at any time. Continued use of Forecaster after changes are posted
           constitutes acceptance of the updated Terms. Material changes will be announced on the
@@ -135,12 +125,10 @@ export default function TermsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold text-foreground">11. Contact</h2>
+        <h2 className="text-lg font-semibold text-foreground">10. Contact</h2>
         <p>
-          Questions about these Terms? Email{" "}
-          <a href="mailto:plironderobles@mail.wlu.edu" className="text-primary underline underline-offset-2">
-            plironderobles@mail.wlu.edu
-          </a>.
+          A dedicated contact email for Forecaster will be available soon. In the meantime, if you
+          have questions about these Terms, reach out through the platform.
         </p>
       </section>
     </div>
