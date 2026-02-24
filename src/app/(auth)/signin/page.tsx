@@ -53,10 +53,12 @@ export default function SignInPage() {
 
   return (
     <div
-      className="fixed left-0 right-0 bottom-0 z-50 bg-gradient-to-b from-blue-600 via-indigo-600 to-blue-700 flex flex-col items-center justify-center overflow-hidden touch-none overscroll-none"
+      className="fixed inset-0 z-50 bg-gradient-to-b from-blue-600 via-indigo-600 to-blue-700 flex flex-col items-center justify-center overflow-hidden touch-none overscroll-none"
       style={{
         top: "calc(-1 * env(safe-area-inset-top, 0px))",
+        bottom: "calc(-1 * env(safe-area-inset-bottom, 0px))",
         paddingTop: "env(safe-area-inset-top, 0px)",
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
       }}
     >
       {/* Campus photo background */}
