@@ -9,7 +9,7 @@ import { ReferralCard } from "@/components/referral-card";
 import { ScoreCard } from "@/components/score-card";
 import { EnableNotificationsButton } from "@/components/enable-notifications-button";
 import { SignOutButton } from "@/components/sign-out-button";
-import { TrendUp, Hash, Pulse, Medal, Crown, Shield } from "@phosphor-icons/react/ssr";
+import { TrendUp, Hash, Pulse, Medal, Crown, Shield, ShieldCheck } from "@phosphor-icons/react/ssr";
 import Link from "next/link";
 import type { Metadata } from "next";
 
@@ -152,6 +152,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   // Badges
   const badges: string[] = [];
   if (profile.is_wlu_verified) badges.push("W&L Verified");
+  const qualifiesForPrizes = allForecasts.length >= 5;
 
   if (season) {
     const { count: totalResolved } = await supabase
@@ -207,6 +208,16 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           </div>
         </CardContent>
       </Card>
+
+      {/* Prize qualification */}
+      {season && qualifiesForPrizes && (
+        <div className="flex items-center gap-3 rounded-lg border border-green-500/30 bg-green-500/5 px-4 py-3 text-sm">
+          <ShieldCheck className="h-5 w-5 text-green-500 shrink-0" weight="fill" />
+          <span className="font-medium">
+            Qualifies for {season.name} prizes
+          </span>
+        </div>
+      )}
 
       {/* Stats grid */}
       {season && (

@@ -88,25 +88,19 @@ export default async function QuestionsPage() {
       {/* Participation tracker + Suggest a Market */}
       {user && (
         <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3">
-          {totalMarkets > 0 && (
-            <div className={`flex items-center gap-3 rounded-lg border px-4 py-3 text-sm ${qualifies ? "border-green-500/30 bg-green-500/5" : "border-amber-500/30 bg-amber-500/5"}`}>
-              {qualifies ? (
-                <ShieldCheck className="h-5 w-5 text-green-500 shrink-0" />
-              ) : (
-                <WarningCircle className="h-5 w-5 text-amber-500 shrink-0" />
-              )}
+          {totalMarkets > 0 && !qualifies && (
+            <div className="flex items-center gap-3 rounded-lg border px-4 py-3 text-sm border-amber-500/30 bg-amber-500/5">
+              <WarningCircle className="h-5 w-5 text-amber-500 shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 mb-1">
                   <span className="font-medium">
-                    {qualifies
-                      ? `You qualify for prizes! (${forecastedCount}/${totalMarkets} markets)`
-                      : `Forecast on ${remaining} more market${remaining !== 1 ? "s" : ""} to qualify for prizes`}
+                    Forecast on {remaining} more market{remaining !== 1 ? "s" : ""} to qualify for prizes
                   </span>
-                  <span className="text-muted-foreground shrink-0">{forecastedCount}/{totalMarkets}</span>
+                  <span className="text-muted-foreground shrink-0">{forecastedCount}/{minRequired}</span>
                 </div>
                 <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                   <div
-                    className={`h-full rounded-full transition-all ${qualifies ? "bg-green-500" : "bg-amber-500"}`}
+                    className="h-full rounded-full transition-all bg-amber-500"
                     style={{ width: `${pct}%` }}
                   />
                 </div>
