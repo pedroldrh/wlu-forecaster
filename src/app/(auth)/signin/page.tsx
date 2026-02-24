@@ -24,6 +24,18 @@ export default function SignInPage() {
     return () => clearInterval(interval);
   }, []);
 
+  // Lock body scroll and paint background to match gradient so no gaps show
+  useEffect(() => {
+    const prevOverflow = document.body.style.overflow;
+    const prevBg = document.documentElement.style.backgroundColor;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.backgroundColor = "#3730a3"; // indigo-800
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.documentElement.style.backgroundColor = prevBg;
+    };
+  }, []);
+
   async function handleSignIn() {
     setLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
@@ -53,13 +65,7 @@ export default function SignInPage() {
 
   return (
     <div
-      className="fixed top-0 left-0 w-full z-50 bg-gradient-to-b from-blue-600 via-indigo-600 to-blue-700 flex flex-col items-center justify-center overflow-hidden touch-none overscroll-none"
-      style={{
-        height: "100dvh",
-        minHeight: "-webkit-fill-available",
-        paddingTop: "env(safe-area-inset-top, 0px)",
-        paddingBottom: "env(safe-area-inset-bottom, 0px)",
-      }}
+      className="fixed inset-0 z-50 bg-gradient-to-b from-blue-600 via-indigo-600 to-blue-700 flex flex-col items-center justify-center overflow-hidden touch-none overscroll-none"
     >
       {/* Campus photo background */}
       <img
