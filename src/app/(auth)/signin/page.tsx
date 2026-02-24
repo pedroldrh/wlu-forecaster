@@ -24,16 +24,19 @@ export default function SignInPage() {
     return () => clearInterval(interval);
   }, []);
 
-  // Lock body scroll and paint background to match gradient so no gaps show
+  // Inject a style that forces html+body background to match the gradient bottom,
+  // kills scroll, and covers the iOS home indicator area behind the overlay
   useEffect(() => {
-    const prevOverflow = document.body.style.overflow;
-    const prevBg = document.documentElement.style.backgroundColor;
-    document.body.style.overflow = "hidden";
-    document.documentElement.style.backgroundColor = "#3730a3"; // indigo-800
-    return () => {
-      document.body.style.overflow = prevOverflow;
-      document.documentElement.style.backgroundColor = prevBg;
-    };
+    const style = document.createElement("style");
+    style.id = "signin-override";
+    style.textContent = `
+      html, body {
+        background-color: #1e3a8a !important;
+        overflow: hidden !important;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => style.remove();
   }, []);
 
   async function handleSignIn() {
