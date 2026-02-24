@@ -13,6 +13,7 @@ import { brierPoints } from "@/lib/scoring";
 import { AnimatedNumber } from "@/components/animated-number";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { ShareButton } from "@/components/share-button";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
@@ -211,11 +212,14 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      {/* Back navigation */}
-      <Link href="/questions" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft className="h-4 w-4" />
-        All Markets
-      </Link>
+      {/* Back navigation + share */}
+      <div className="flex items-center justify-between">
+        <Link href="/questions" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft className="h-4 w-4" />
+          All Markets
+        </Link>
+        <ShareButton title={question.title} url={`https://wluforcaster.com/questions/${id}`} />
+      </div>
 
       {/* Hero header */}
       <div>
