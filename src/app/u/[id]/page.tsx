@@ -289,7 +289,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                   </div>
                   <div className="ml-4 shrink-0">
                     <Badge variant={f.points >= 0.75 ? "default" : "secondary"} className="font-mono">
-                      {(f.points * 100).toFixed(1)}/100
+                      {(f.points * 100).toFixed(1)}%
                     </Badge>
                   </div>
                 </Link>
