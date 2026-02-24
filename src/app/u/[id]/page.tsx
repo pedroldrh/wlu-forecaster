@@ -275,7 +275,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
       {resolvedForecasts.length > 0 && (
         <Card id="score-breakdown">
           <CardHeader>
-            <CardTitle className="text-lg">Score Breakdown</CardTitle>
+            <CardTitle className="text-lg">Accuracy on Resolved Markets</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="divide-y">
@@ -289,7 +289,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                   </div>
                   <div className="ml-4 shrink-0">
                     <Badge variant={f.points >= 0.75 ? "default" : "secondary"} className="font-mono">
-                      {(f.points * 100).toFixed(1)} pts
+                      {(f.points * 100).toFixed(1)}/100
                     </Badge>
                   </div>
                 </Link>
