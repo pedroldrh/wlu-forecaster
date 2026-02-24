@@ -18,16 +18,36 @@ import { ShareButton } from "@/components/share-button";
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   const supabase = await createAdminClient();
-  const { data: question } = await supabase.from("questions").select("title, description, status").eq("id", id).single();
+  const { data: question } = await supabase.from("questions").select("title, description, status, resolved_outcome").eq("id", id).single();
   if (!question) return { title: "Market Not Found" };
 
-  const statusLabel = question.status === "RESOLVED" ? "Resolved" : question.status === "OPEN" ? "Open" : "Closed";
+  // Fetch forecast count + consensus for the description
+  const { data: forecasts } = await supabase
+    .from("forecasts")
+    .select("probability")
+    .eq("question_id", id);
+  const forecastCount = forecasts?.length ?? 0;
+  let consensus: number | null = null;
+  if (forecastCount > 0) {
+    const sum = forecasts!.reduce((s, f) => s + f.probability, 0);
+    consensus = Math.round((sum / forecastCount) * 100);
+  }
+
+  let description: string;
+  if (question.status === "RESOLVED") {
+    description = `Resolved ${question.resolved_outcome ? "YES" : "NO"}. ${forecastCount} forecaster${forecastCount !== 1 ? "s" : ""} predicted this market on Forecaster.`;
+  } else if (consensus !== null) {
+    description = `${consensus}% consensus from ${forecastCount} forecaster${forecastCount !== 1 ? "s" : ""}. Make your prediction on Forecaster — W&L's free forecasting game.`;
+  } else {
+    description = `Be the first to predict. Forecaster — W&L's free campus forecasting game with real prizes.`;
+  }
+
   return {
     title: `${question.title} — Forecaster`,
-    description: question.description || `${statusLabel} market on Forecaster`,
+    description,
     openGraph: {
       title: question.title,
-      description: question.description || `${statusLabel} market on Forecaster`,
+      description,
     },
     twitter: {
       card: "summary_large_image",

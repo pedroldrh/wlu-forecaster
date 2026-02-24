@@ -21,6 +21,10 @@ export default async function OGImage({ params }: { params: Promise<{ id: string
     .eq("id", id)
     .single();
 
+  const fontData = await fetch(
+    new URL("../../../fonts/Sora-VariableFont_wght.ttf", import.meta.url)
+  ).then((res) => res.arrayBuffer());
+
   if (!question) {
     return new ImageResponse(
       (
@@ -40,7 +44,7 @@ export default async function OGImage({ params }: { params: Promise<{ id: string
           Market not found
         </div>
       ),
-      { ...size }
+      { ...size, fonts: [{ name: "Sora", data: fontData, style: "normal" as const, weight: 400 }] }
     );
   }
 
@@ -60,27 +64,26 @@ export default async function OGImage({ params }: { params: Promise<{ id: string
   const emoji = getQuestionEmoji(question.title, question.category);
   const categoryLabel = CATEGORY_LABELS[question.category] || question.category;
 
-  // Status badge
+  // Status config
   let statusText: string;
-  let statusBg: string;
   let statusColor: string;
+  let statusDot: string;
   if (question.status === "RESOLVED") {
-    statusText = `Resolved ${question.resolved_outcome ? "YES" : "NO"}`;
-    statusBg = question.resolved_outcome ? "#16a34a20" : "#dc262620";
+    statusText = question.resolved_outcome ? "YES" : "NO";
     statusColor = question.resolved_outcome ? "#22c55e" : "#ef4444";
+    statusDot = statusColor;
   } else if (question.status === "OPEN") {
     statusText = "Open";
-    statusBg = "#16a34a20";
     statusColor = "#22c55e";
+    statusDot = "#22c55e";
   } else {
     statusText = "Closed";
-    statusBg = "#71717a20";
     statusColor = "#a1a1aa";
+    statusDot = "#a1a1aa";
   }
 
-  const fontData = await fetch(
-    new URL("../../../fonts/Sora-VariableFont_wght.ttf", import.meta.url)
-  ).then((res) => res.arrayBuffer());
+  // Dynamic font size based on title length
+  const titleSize = question.title.length > 90 ? 36 : question.title.length > 60 ? 42 : question.title.length > 40 ? 48 : 54;
 
   return new ImageResponse(
     (
@@ -91,110 +94,150 @@ export default async function OGImage({ params }: { params: Promise<{ id: string
           width: "100%",
           height: "100%",
           backgroundColor: "#0a0a0a",
-          padding: "48px 56px",
           fontFamily: "Sora",
+          position: "relative",
+          overflow: "hidden",
         }}
       >
-        {/* Top row: logo + status */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          {/* Logo */}
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <svg
-              width="36"
-              height="36"
-              viewBox="0 0 24 24"
-              fill="#3b82f6"
+        {/* Background gradient accent */}
+        <div
+          style={{
+            position: "absolute",
+            top: -200,
+            right: -200,
+            width: 600,
+            height: 600,
+            borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%)",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            bottom: -150,
+            left: -150,
+            width: 500,
+            height: 500,
+            borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%)",
+          }}
+        />
+
+        {/* Content */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            flex: 1,
+            padding: "52px 60px",
+            position: "relative",
+          }}
+        >
+          {/* Top bar: logo + category + status */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="#3b82f6">
+                <rect x="3" y="13" width="4" height="8" rx="2" />
+                <rect x="10" y="3" width="4" height="18" rx="2" />
+                <rect x="17" y="8" width="4" height="13" rx="2" />
+              </svg>
+              <span style={{ fontSize: 24, fontWeight: 700, color: "#3b82f6", letterSpacing: "-0.02em" }}>
+                Forecaster
+              </span>
+              <div style={{ display: "flex", width: 1, height: 24, backgroundColor: "#ffffff15", marginLeft: 4, marginRight: 4 }} />
+              <span style={{ fontSize: 18, color: "#71717a" }}>
+                {emoji} {categoryLabel}
+              </span>
+            </div>
+
+            {/* Status pill */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                borderRadius: "9999px",
+                padding: "6px 18px",
+                fontSize: 18,
+                fontWeight: 600,
+                color: statusColor,
+                border: `1.5px solid ${statusColor}50`,
+                backgroundColor: `${statusColor}12`,
+              }}
             >
-              <rect x="3" y="13" width="4" height="8" rx="2" />
-              <rect x="10" y="3" width="4" height="18" rx="2" />
-              <rect x="17" y="8" width="4" height="13" rx="2" />
-            </svg>
-            <span style={{ fontSize: 28, fontWeight: 700, color: "#3b82f6" }}>Forecaster</span>
+              <div style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: statusDot }} />
+              {question.status === "RESOLVED" ? `Resolved ${statusText}` : statusText}
+            </div>
           </div>
 
-          {/* Status badge */}
+          {/* Question title — centered vertically */}
           <div
             style={{
               display: "flex",
+              flex: 1,
               alignItems: "center",
-              gap: "8px",
-              backgroundColor: statusBg,
-              border: `1px solid ${statusColor}40`,
-              borderRadius: "9999px",
-              padding: "8px 20px",
-              fontSize: 20,
-              fontWeight: 600,
-              color: statusColor,
+              paddingRight: 40,
             }}
           >
+            <span
+              style={{
+                fontSize: titleSize,
+                fontWeight: 700,
+                color: "#ffffff",
+                lineHeight: 1.25,
+                letterSpacing: "-0.02em",
+              }}
+            >
+              {question.title}
+            </span>
+          </div>
+
+          {/* Bottom bar: consensus/forecasts + CTA + domain */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: "12px" }}>
+              {consensus !== null ? (
+                <>
+                  <span style={{ fontSize: 60, fontWeight: 700, color: "#3b82f6", letterSpacing: "-0.03em" }}>
+                    {consensus}%
+                  </span>
+                  <span style={{ fontSize: 20, fontWeight: 500, color: "#71717a" }}>
+                    consensus from {forecastCount} forecaster{forecastCount !== 1 ? "s" : ""}
+                  </span>
+                </>
+              ) : (
+                <span style={{ fontSize: 24, fontWeight: 500, color: "#71717a" }}>
+                  No predictions yet — be the first
+                </span>
+              )}
+            </div>
+
             <div
               style={{
-                width: 10,
-                height: 10,
-                borderRadius: "50%",
-                backgroundColor: statusColor,
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                backgroundColor: "#3b82f6",
+                borderRadius: "9999px",
+                padding: "10px 24px",
+                fontSize: 18,
+                fontWeight: 600,
+                color: "#ffffff",
               }}
-            />
-            {statusText}
+            >
+              Make your prediction
+            </div>
           </div>
         </div>
 
-        {/* Category */}
+        {/* Bottom accent line */}
         <div
           style={{
             display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            marginTop: "48px",
-            fontSize: 22,
-            color: "#a1a1aa",
+            width: "100%",
+            height: 4,
+            background: "linear-gradient(90deg, #3b82f6, #6366f1, #3b82f6)",
           }}
-        >
-          <span>{emoji}</span>
-          <span>{categoryLabel}</span>
-        </div>
-
-        {/* Question title */}
-        <div
-          style={{
-            display: "flex",
-            flex: 1,
-            alignItems: "center",
-            marginTop: "16px",
-          }}
-        >
-          <span
-            style={{
-              fontSize: question.title.length > 80 ? 40 : question.title.length > 50 ? 48 : 56,
-              fontWeight: 700,
-              color: "#ffffff",
-              lineHeight: 1.2,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {question.title}
-          </span>
-        </div>
-
-        {/* Bottom row: consensus + domain */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-          <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
-            {consensus !== null ? (
-              <>
-                <span style={{ fontSize: 64, fontWeight: 700, color: "#3b82f6" }}>
-                  {consensus}%
-                </span>
-                <span style={{ fontSize: 22, color: "#71717a" }}>consensus</span>
-              </>
-            ) : (
-              <span style={{ fontSize: 28, color: "#71717a" }}>
-                {forecastCount} forecast{forecastCount !== 1 ? "s" : ""}
-              </span>
-            )}
-          </div>
-          <span style={{ fontSize: 20, color: "#52525b" }}>wluforcaster.com</span>
-        </div>
+        />
       </div>
     ),
     {
@@ -203,7 +246,7 @@ export default async function OGImage({ params }: { params: Promise<{ id: string
         {
           name: "Sora",
           data: fontData,
-          style: "normal",
+          style: "normal" as const,
           weight: 400,
         },
       ],
