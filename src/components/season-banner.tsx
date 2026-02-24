@@ -7,6 +7,7 @@ import { formatDate, formatDollars } from "@/lib/utils";
 import { SEASON_STATUS_LABELS } from "@/lib/constants";
 import { CalendarBlank, Lightning } from "@phosphor-icons/react";
 import { UserAvatar } from "@/components/user-avatar";
+import Link from "next/link";
 
 interface SeasonBannerProps {
   id: string;
@@ -172,8 +173,9 @@ export function SeasonBanner({
   const extraCount = participantIds.length - visibleAvatars.length;
 
   return (
+    <Link href="/leaderboard" className="block">
     <Card
-      className={`overflow-hidden border-primary/20 bg-gradient-to-br from-primary/8 via-transparent to-amber-500/8 transition-all duration-500 ${
+      className={`overflow-hidden border-primary/20 bg-gradient-to-br from-primary/8 via-transparent to-amber-500/8 transition-all duration-500 hover:border-primary/40 ${
         mounted ? "animate-glow-pulse" : ""
       }`}
     >
@@ -271,5 +273,6 @@ export function SeasonBanner({
         </div>
       </CardContent>
     </Card>
+    </Link>
   );
 }
