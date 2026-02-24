@@ -62,7 +62,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
     .from("comments")
     .select("id, content, created_at, user_id")
     .eq("question_id", id)
-    .order("created_at", { ascending: true });
+    .order("created_at", { ascending: false });
 
   // Fetch profiles for comment authors
   const commentUserIds = [...new Set((rawComments ?? []).map((c) => c.user_id))];
