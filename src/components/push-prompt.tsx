@@ -17,6 +17,25 @@ async function subscribeToPush() {
   });
 }
 
+function showPushToast() {
+  localStorage.setItem("push-prompted", "1");
+  toast("Get notified about new markets and results?", {
+    duration: 15000,
+    action: {
+      label: "Enable",
+      onClick: () => {
+        Notification.requestPermission().then((perm) => {
+          if (perm === "granted") subscribeToPush().catch(() => {});
+        });
+      },
+    },
+    cancel: {
+      label: "Not now",
+      onClick: () => {},
+    },
+  });
+}
+
 export function PushPrompt() {
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -32,25 +51,23 @@ export function PushPrompt() {
     if (Notification.permission === "denied") return;
     if (localStorage.getItem("push-prompted")) return;
 
-    const timer = setTimeout(() => {
-      localStorage.setItem("push-prompted", "1");
-      toast("Get notified about new markets and results?", {
-        duration: 15000,
-        action: {
-          label: "Enable",
-          onClick: () => {
-            Notification.requestPermission().then((perm) => {
-              if (perm === "granted") subscribeToPush().catch(() => {});
-            });
-          },
-        },
-        cancel: {
-          label: "Not now",
-          onClick: () => {},
-        },
-      });
-    }, 5000);
+    // Check if onboarding is still pending (not yet seen/completed)
+    const onboardingSeen = localStorage.getItem("forecaster-onboarding-seen");
+    const onboardingCompleted = localStorage.getItem("forecaster-onboarding-completed");
+    const onboardingPending = !onboardingSeen && !onboardingCompleted;
 
+    if (onboardingPending) {
+      // Wait for onboarding to close, then show after 3s delay
+      function handleOnboardingClosed() {
+        window.removeEventListener("onboarding-closed", handleOnboardingClosed);
+        setTimeout(showPushToast, 3000);
+      }
+      window.addEventListener("onboarding-closed", handleOnboardingClosed);
+      return () => window.removeEventListener("onboarding-closed", handleOnboardingClosed);
+    }
+
+    // Onboarding already done — show after normal delay
+    const timer = setTimeout(showPushToast, 5000);
     return () => clearTimeout(timer);
   }, []);
 

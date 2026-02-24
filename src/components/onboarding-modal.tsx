@@ -82,6 +82,7 @@ export function OnboardingModal() {
     if (!localStorage.getItem(COMPLETED_KEY)) {
       setShowFab(true);
     }
+    window.dispatchEvent(new Event("onboarding-closed"));
   }, []);
 
   const complete = useCallback(() => {
@@ -90,6 +91,7 @@ export function OnboardingModal() {
     setOpen(false);
     setStep(0);
     setShowFab(false);
+    window.dispatchEvent(new Event("onboarding-closed"));
   }, []);
 
   const openGuide = useCallback(() => {

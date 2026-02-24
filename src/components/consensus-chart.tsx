@@ -55,7 +55,7 @@ export function ConsensusChart({ data }: ConsensusChartProps) {
           labelVisible: true,
         },
       },
-      handleScroll: true,
+      handleScroll: false,
       handleScale: false,
     });
 

@@ -17,8 +17,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-const INSTALL_DISMISS_KEY = "install-prompt-dismissed-v2";
-
 type InstallPlatform = "ios" | "android" | "desktop";
 
 function detectPlatform(): InstallPlatform {
@@ -44,34 +42,20 @@ export function NotificationBell({ userId }: { userId: string }) {
   const panelRef = useRef<HTMLDivElement>(null);
 
   // PWA install prompt state
-  const [installDismissed, setInstallDismissed] = useState(true);
   const [standalone, setStandalone] = useState(true);
   const [showInstallDialog, setShowInstallDialog] = useState(false);
   const platform = useMemo(detectPlatform, []);
 
   useEffect(() => {
     setStandalone(isStandalone());
-    if (!isStandalone()) {
-      setInstallDismissed(localStorage.getItem(INSTALL_DISMISS_KEY) === "true");
-    }
   }, []);
 
-  const showInstallCard = !standalone && !installDismissed;
+  const showInstallCard = !standalone;
   const badgeCount = count + (showInstallCard ? 1 : 0);
-
-  function handleDismissInstall() {
-    localStorage.setItem(INSTALL_DISMISS_KEY, "true");
-    setInstallDismissed(true);
-  }
 
   function handleOpenInstallDialog() {
     setOpen(false);
     setShowInstallDialog(true);
-  }
-
-  function handleCloseInstallDialog() {
-    setShowInstallDialog(false);
-    handleDismissInstall();
   }
 
   async function fetchNotifications() {
@@ -177,7 +161,7 @@ export function NotificationBell({ userId }: { userId: string }) {
       </div>
 
       {/* Install instructions dialog */}
-      <Dialog open={showInstallDialog} onOpenChange={(v) => { if (!v) handleCloseInstallDialog(); }}>
+      <Dialog open={showInstallDialog} onOpenChange={(v) => { if (!v) setShowInstallDialog(false); }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
