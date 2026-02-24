@@ -143,7 +143,7 @@ export function Nav() {
               <Link href={`/u/${user.id}`} className="flex items-center gap-2 rounded-full pl-1 pr-3 py-1 hover:bg-accent active:bg-accent/80 transition-colors outline-none">
                 <UserAvatar userId={user.id} size="sm" />
                 {userStats && userStats.resolved > 0 ? (
-                  <span className="text-sm font-bold font-mono text-primary">{userStats.score.toFixed(1)}</span>
+                  <span className="text-sm font-bold font-mono text-primary">{userStats.score.toFixed(1)}%</span>
                 ) : userStats && userStats.forecasts > 0 ? (
                   <span className="text-xs text-muted-foreground">{userStats.forecasts} bet{userStats.forecasts !== 1 ? "s" : ""}</span>
                 ) : null}
