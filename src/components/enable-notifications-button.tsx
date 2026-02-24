@@ -36,15 +36,18 @@ export function EnableNotificationsButton() {
 
   async function handleEnable() {
     const perm = await Notification.requestPermission();
-    setStatus(perm as "granted" | "denied" | "prompt");
     if (perm === "granted") {
       try {
         await subscribeToPush();
+        setStatus("granted");
         toast.success("Notifications enabled!");
       } catch {
+        // Permission granted but subscription failed — let them retry
+        setStatus("prompt");
         toast.error("Something went wrong. Try again.");
       }
     } else if (perm === "denied") {
+      setStatus("denied");
       toast.error("Notifications blocked. You can change this in your browser settings.");
     }
   }
