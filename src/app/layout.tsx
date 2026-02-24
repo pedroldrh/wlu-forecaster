@@ -59,7 +59,7 @@ export default function RootLayout({
         <Providers>
           <InAppBrowserGate />
           <Nav />
-          <main className="max-w-7xl mx-auto px-4 py-6 pb-20 md:pb-6">{children}</main>
+          <main className="max-w-7xl mx-auto px-4 py-6">{children}</main>
           <Footer />
           <BottomNav />
         </Providers>
