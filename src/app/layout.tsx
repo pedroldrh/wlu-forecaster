@@ -56,8 +56,8 @@ export default function RootLayout({
       <body
         className={`${sora.variable} antialiased`}
       >
-        {/* Sync script — runs before first paint to prevent white flash on /signin */}
-        <script dangerouslySetInnerHTML={{ __html: `if(location.pathname==='/signin'){document.body.style.backgroundColor='#1e3a8a';document.body.style.overflow='hidden'}` }} />
+        {/* Sync script — blue body matches OS splash, cleared once CSS paints */}
+        <script dangerouslySetInnerHTML={{ __html: `document.body.style.backgroundColor='#3b82f6';requestAnimationFrame(function(){document.body.style.backgroundColor=''});if(location.pathname==='/signin'){document.body.style.setProperty('background-color','#1e3a8a','important');document.body.style.overflow='hidden'}` }} />
         <Providers>
           <InAppBrowserGate />
           <Nav />
