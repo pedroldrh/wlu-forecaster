@@ -6,6 +6,8 @@ import { Nav } from "@/components/nav";
 import { BottomNav } from "@/components/bottom-nav";
 import { Footer } from "@/components/footer";
 import { InAppBrowserGate } from "@/components/in-app-browser-gate";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const sora = localFont({
   src: "../fonts/Sora-VariableFont_wght.ttf",
@@ -64,6 +66,8 @@ export default function RootLayout({
           <Footer />
           <BottomNav />
         </Providers>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
