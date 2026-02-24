@@ -11,8 +11,10 @@ export function BottomNav() {
   const pathname = usePathname();
   const unvotedCount = useUnvotedCount();
   const [userId, setUserId] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     createClient().auth.getUser().then(({ data: { user } }) => {
       setUserId(user?.id ?? null);
     });
@@ -25,7 +27,7 @@ export function BottomNav() {
     { href: userId ? `/u/${userId}` : "/signin", label: "Profile", icon: User },
   ];
 
-  if (pathname === "/signin") return null;
+  if (!mounted || pathname === "/signin") return null;
 
   return (
     <nav className="fixed bottom-0 inset-x-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden pb-[env(safe-area-inset-bottom,0px)]">
