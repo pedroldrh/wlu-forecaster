@@ -1,7 +1,7 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { LeaderboardTable } from "@/components/leaderboard-table";
-import { Card, CardContent } from "@/components/ui/card";
 import { seasonScore, brierPoints, rankUsers, UserScore } from "@/lib/scoring";
+import { formatDollars } from "@/lib/utils";
 
 export const metadata = {
   title: "Leaderboard — Forecaster",
@@ -146,14 +146,18 @@ export default async function LeaderboardPage() {
     };
   });
 
+  const totalPrizeCents = prizeAmounts.reduce((sum: number, val) => sum + (val || 0), 0);
+
   return (
     <div className="space-y-6">
-      <Card>
-        <CardContent className="pt-6">
-          <h1 className="text-2xl font-bold tracking-tight text-center mb-4">Spring 2026 Leaderboard</h1>
-          <LeaderboardTable entries={leaderboardEntries} />
-        </CardContent>
-      </Card>
+      <div className="text-center space-y-1">
+        <h1 className="text-2xl font-bold tracking-tight">{season.name} Leaderboard</h1>
+        <p className="text-sm text-muted-foreground">
+          {resolvedCount} question{resolvedCount !== 1 ? "s" : ""} resolved
+          {totalPrizeCents > 0 && ` · ${formatDollars(totalPrizeCents)} prize pool`}
+        </p>
+      </div>
+      <LeaderboardTable entries={leaderboardEntries} />
     </div>
   );
 }
