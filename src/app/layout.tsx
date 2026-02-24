@@ -55,9 +55,8 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${sora.variable} antialiased`}
+        style={{ backgroundColor: '#3b82f6' }}
       >
-        {/* Sync script — blue body matches OS splash, cleared once CSS paints */}
-        <script dangerouslySetInnerHTML={{ __html: `document.body.style.backgroundColor='#3b82f6';requestAnimationFrame(function(){document.body.style.backgroundColor=''});if(location.pathname==='/signin'){document.body.style.setProperty('background-color','#1e3a8a','important');document.body.style.overflow='hidden'}` }} />
         <Providers>
           <InAppBrowserGate />
           <Nav />

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { OnboardingModal } from "@/components/onboarding-modal";
 import { VoteReminder } from "@/components/vote-reminder";
@@ -8,6 +9,11 @@ import { PushPrompt } from "@/components/push-prompt";
 import { SplashScreen } from "@/components/splash-screen";
 
 export function Providers({ children }: { children: React.ReactNode }) {
+  // Clear the inline blue background set on <body> for PWA splash continuity
+  useEffect(() => {
+    document.body.style.backgroundColor = "";
+  }, []);
+
   return (
     <>
       <SplashScreen />
