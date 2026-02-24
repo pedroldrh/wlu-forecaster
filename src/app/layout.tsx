@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Nav } from "@/components/nav";
 import { BottomNav } from "@/components/bottom-nav";
+import { Footer } from "@/components/footer";
 import { InAppBrowserGate } from "@/components/in-app-browser-gate";
 
 const sora = localFont({
@@ -59,6 +60,7 @@ export default function RootLayout({
           <InAppBrowserGate />
           <Nav />
           <main className="max-w-7xl mx-auto px-4 py-6 pb-20 md:pb-6">{children}</main>
+          <Footer />
           <BottomNav />
         </Providers>
       </body>

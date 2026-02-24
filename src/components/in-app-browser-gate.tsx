@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 function isInAppBrowser(): boolean {
   if (typeof navigator === "undefined") return false;
   const ua = navigator.userAgent || navigator.vendor || "";
-  return /snapchat|FBAN|FBAV|Instagram|Twitter|LinkedInApp|BytedanceWebview|TikTok|musical_ly/i.test(ua);
+  return /snapchat|FBAN|FBAV|Instagram|Twitter|LinkedInApp|BytedanceWebview|TikTok|musical_ly|GroupMe|Discord|Reddit|Slack|MicroMessenger|Pinterest/i.test(ua);
 }
 
 function isIOS(): boolean {
@@ -25,6 +25,12 @@ function getAppName(): string {
   if (/Twitter/i.test(ua)) return "Twitter";
   if (/TikTok|musical_ly|BytedanceWebview/i.test(ua)) return "TikTok";
   if (/LinkedInApp/i.test(ua)) return "LinkedIn";
+  if (/GroupMe/i.test(ua)) return "GroupMe";
+  if (/Discord/i.test(ua)) return "Discord";
+  if (/Reddit/i.test(ua)) return "Reddit";
+  if (/Slack/i.test(ua)) return "Slack";
+  if (/MicroMessenger/i.test(ua)) return "WeChat";
+  if (/Pinterest/i.test(ua)) return "Pinterest";
   return "this app";
 }
 

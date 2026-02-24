@@ -151,6 +151,12 @@ export default function SignInPage() {
           </svg>
           {loading ? "Redirecting..." : "Continue with Google"}
         </button>
+        <p className="text-center text-white/50 text-xs mt-4">
+          By signing in, you agree to our{" "}
+          <a href="/terms" className="underline underline-offset-2 text-white/70 hover:text-white/90">Terms</a>
+          {" "}and{" "}
+          <a href="/privacy" className="underline underline-offset-2 text-white/70 hover:text-white/90">Privacy Policy</a>.
+        </p>
       </div>
 
       {/* Background glow effects */}

@@ -28,6 +28,9 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       title: question.title,
       description: question.description || `${statusLabel} market on Forecaster`,
     },
+    twitter: {
+      card: "summary_large_image",
+    },
   };
 }
 
