@@ -140,6 +140,11 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
         </Card>
       )}
 
+      {/* Dispute — top of resolved sidebar */}
+      {question.status === "RESOLVED" && user && userForecast && (
+        <DisputeForm questionId={id} />
+      )}
+
       {/* Your prediction result */}
       {userForecast && (
         <Card className={question.status === "RESOLVED" ? "border-primary/20" : ""}>
@@ -198,12 +203,6 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
         </div>
       )}
 
-      {/* Dispute */}
-      {question.status === "RESOLVED" && user && userForecast && (
-        <div className="flex justify-end">
-          <DisputeForm questionId={id} />
-        </div>
-      )}
     </>
   );
 
