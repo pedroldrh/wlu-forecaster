@@ -78,7 +78,7 @@ const KEYWORD_EMOJI: [RegExp, string][] = [
   [/game|season|match|roster/i, "🏅"],
   // Weather / nature
   [/rain|storm|weather|snow|hurricane|flood/i, "🌧️"],
-  [/sun(?:ny)?|hot|heat|warm|temperature/i, "☀️"],
+  [/sun(?:ny)?|hot|heat|warm|temperature|\d+\s*[°]?\s*[fF]/i, "☀️"],
   [/cold|freeze|ice/i, "🥶"],
   // Campus life
   [/formal|dance|prom|ball\b/i, "💃"],
