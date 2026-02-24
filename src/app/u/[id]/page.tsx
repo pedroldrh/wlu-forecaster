@@ -9,6 +9,7 @@ import { ReferralCard } from "@/components/referral-card";
 import { ScoreCard } from "@/components/score-card";
 import { EnableNotificationsButton } from "@/components/enable-notifications-button";
 import { SignOutButton } from "@/components/sign-out-button";
+import { HowItWorksButton } from "@/components/how-it-works-button";
 import { TrendUp, Hash, Pulse, Medal, Crown, Shield, ShieldCheck } from "@phosphor-icons/react/ssr";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -208,6 +209,8 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           </div>
         </CardContent>
       </Card>
+
+      <HowItWorksButton />
 
       {/* Prize qualification */}
       {season && qualifiesForPrizes && (

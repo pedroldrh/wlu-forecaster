@@ -74,6 +74,16 @@ export function OnboardingModal() {
     });
   }, []);
 
+  // Listen for external "open-onboarding" events (e.g. from profile page button)
+  useEffect(() => {
+    function handleOpenOnboarding() {
+      setStep(0);
+      setOpen(true);
+    }
+    window.addEventListener("open-onboarding", handleOpenOnboarding);
+    return () => window.removeEventListener("open-onboarding", handleOpenOnboarding);
+  }, []);
+
   const dismiss = useCallback(() => {
     localStorage.setItem(SEEN_KEY, "true");
     setOpen(false);
