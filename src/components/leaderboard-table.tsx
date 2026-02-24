@@ -34,7 +34,6 @@ const PODIUM_CONFIG = {
     color: "text-yellow-500",
     ring: "ring-2 ring-yellow-500/30",
     label: "1st",
-    step: "bg-yellow-500 h-2",
   },
   2: {
     gradient: "from-zinc-400/15 via-zinc-300/10 to-transparent",
@@ -42,7 +41,6 @@ const PODIUM_CONFIG = {
     color: "text-zinc-400",
     ring: "ring-2 ring-zinc-400/25",
     label: "2nd",
-    step: "bg-zinc-400 h-1.5",
   },
   3: {
     gradient: "from-amber-700/15 via-amber-600/10 to-transparent",
@@ -50,7 +48,6 @@ const PODIUM_CONFIG = {
     color: "text-amber-700",
     ring: "ring-2 ring-amber-700/25",
     label: "3rd",
-    step: "bg-amber-700 h-1",
   },
 } as const;
 
@@ -76,19 +73,19 @@ function Podium({ entries }: { entries: LeaderboardEntry[] }) {
             )}>
               <CardContent className={cn(
                 "flex flex-col items-center text-center px-2 sm:px-3",
-                isFirst ? "pt-5 pb-3" : "pt-4 pb-2"
+                isFirst ? "pt-4 pb-2" : "pt-3 pb-1.5"
               )}>
-                <span className={cn("text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-2", c.color)}>
+                <span className={cn("text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-1.5", c.color)}>
                   {c.label}
                 </span>
                 <UserAvatar
                   userId={entry.userId}
                   size={isFirst ? "lg" : "md"}
-                  className={cn(isFirst && "h-12 w-12", c.ring, "mb-2")}
+                  className={cn(isFirst && "h-10 w-10", c.ring, "mb-1.5")}
                 />
                 <div className="flex items-center gap-1 max-w-full">
                   {entry.isFounder && <Crown className="h-3 w-3 text-amber-500 shrink-0" weight="fill" />}
-                  <span className={cn("font-semibold truncate", isFirst ? "text-sm" : "text-xs")}>
+                  <span className={cn("font-semibold text-center leading-tight", isFirst ? "text-sm" : "text-xs")}>
                     {entry.name}
                   </span>
                 </div>
@@ -111,7 +108,6 @@ function Podium({ entries }: { entries: LeaderboardEntry[] }) {
                   {entry.questionsPlayed} prediction{entry.questionsPlayed !== 1 ? "s" : ""}
                 </span>
               </CardContent>
-              <div className={cn("w-full", c.step)} />
             </Card>
           </Link>
         );
@@ -122,9 +118,9 @@ function Podium({ entries }: { entries: LeaderboardEntry[] }) {
 
 function YourRankBanner({ entry }: { entry: LeaderboardEntry }) {
   return (
-    <Link href={`/u/${entry.userId}`}>
+    <Link href={`/u/${entry.userId}`} className="block max-w-sm mx-auto">
       <Card className="border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors">
-        <CardContent className="flex items-center gap-3 py-3 px-4">
+        <CardContent className="flex items-center gap-2.5 py-2.5 px-3">
           <span className="text-sm font-mono font-bold text-primary w-7 text-center">#{entry.rank}</span>
           <UserAvatar userId={entry.userId} size="sm" className="shrink-0" />
           <div className="flex-1 min-w-0">
