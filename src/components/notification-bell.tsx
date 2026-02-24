@@ -117,7 +117,7 @@ export function NotificationBell({ userId }: { userId: string }) {
             {showInstallCard && (
               <button
                 onClick={handleOpenInstallDialog}
-                className="w-full text-left px-4 py-3 border-b bg-primary/5 hover:bg-primary/10 transition-colors"
+                className="w-full text-left px-4 py-3 border-b bg-primary/5 hover:bg-primary/10 active:bg-primary/15 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <div className="flex-shrink-0 h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
@@ -125,11 +125,10 @@ export function NotificationBell({ userId }: { userId: string }) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold leading-snug">Get the Forecaster app</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Tap here to learn how to install
-                    </p>
                   </div>
-                  <span className="text-primary text-lg">›</span>
+                </div>
+                <div className="mt-2.5 w-full rounded-lg bg-primary text-primary-foreground text-xs font-semibold text-center py-2">
+                  Tap to install
                 </div>
               </button>
             )}
