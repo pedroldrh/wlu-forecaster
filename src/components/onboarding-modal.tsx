@@ -8,7 +8,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Question } from "@phosphor-icons/react";
 
 const SEEN_KEY = "forecaster-onboarding-seen";
 const COMPLETED_KEY = "forecaster-onboarding-completed";
@@ -49,15 +48,13 @@ const slides = [
 export function OnboardingModal() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
-  const [showFab, setShowFab] = useState(false);
 
   useEffect(() => {
     const seen = localStorage.getItem(SEEN_KEY);
     const completed = localStorage.getItem(COMPLETED_KEY);
 
     if (seen && !completed) {
-      // Dismissed without completing — show the floating button
-      setShowFab(true);
+      // Dismissed without completing — don't auto-open
       return;
     }
     if (completed) {
@@ -88,10 +85,6 @@ export function OnboardingModal() {
     localStorage.setItem(SEEN_KEY, "true");
     setOpen(false);
     setStep(0);
-    // Only show fab if they didn't finish all slides
-    if (!localStorage.getItem(COMPLETED_KEY)) {
-      setShowFab(true);
-    }
     window.dispatchEvent(new Event("onboarding-closed"));
   }, []);
 
@@ -100,14 +93,7 @@ export function OnboardingModal() {
     localStorage.setItem(COMPLETED_KEY, "true");
     setOpen(false);
     setStep(0);
-    setShowFab(false);
     window.dispatchEvent(new Event("onboarding-closed"));
-  }, []);
-
-  const openGuide = useCallback(() => {
-    setStep(0);
-    setShowFab(false);
-    setOpen(true);
   }, []);
 
   const current = slides[step];
@@ -164,16 +150,6 @@ export function OnboardingModal() {
         </DialogContent>
       </Dialog>
 
-      {/* Floating "How it works" — only if user dismissed without completing */}
-      {showFab && !open && (
-        <button
-          onClick={openGuide}
-          className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-40 flex items-center gap-1.5 rounded-full bg-primary text-primary-foreground shadow-lg px-3 py-2 text-xs font-medium hover:bg-primary/90 active:scale-95 transition-all"
-        >
-          <Question className="h-3.5 w-3.5" />
-          How it works
-        </button>
-      )}
     </>
   );
 }
