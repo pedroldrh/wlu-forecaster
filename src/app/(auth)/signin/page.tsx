@@ -24,20 +24,6 @@ export default function SignInPage() {
     return () => clearInterval(interval);
   }, []);
 
-  // Inject a style that forces html+body background to match the gradient bottom,
-  // kills scroll, and covers the iOS home indicator area behind the overlay
-  useEffect(() => {
-    const style = document.createElement("style");
-    style.id = "signin-override";
-    style.textContent = `
-      html, body {
-        background-color: #1e3a8a !important;
-        overflow: hidden !important;
-      }
-    `;
-    document.head.appendChild(style);
-    return () => style.remove();
-  }, []);
 
   async function handleSignIn() {
     setLoading(true);
@@ -67,6 +53,9 @@ export default function SignInPage() {
   }
 
   return (
+    <>
+    {/* SSR-rendered style — applied before first paint, no white flash */}
+    <style>{`html,body{background-color:#1e3a8a!important;overflow:hidden!important}`}</style>
     <div
       className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-blue-600 via-indigo-600 to-blue-700 flex flex-col items-center justify-center overflow-hidden touch-none overscroll-none"
       style={{ bottom: "calc(-1 * env(safe-area-inset-bottom, 34px))" }}
@@ -163,5 +152,6 @@ export default function SignInPage() {
       <div className="absolute top-1/4 -left-32 w-64 h-64 bg-blue-400/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 -right-32 w-64 h-64 bg-indigo-400/20 rounded-full blur-3xl pointer-events-none" />
     </div>
+    </>
   );
 }
