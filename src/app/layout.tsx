@@ -28,6 +28,10 @@ export const metadata: Metadata = {
   description:
     "Free campus forecasting tournament at Washington & Lee. Predict campus events, compete on the leaderboard, and win prizes every 2 weeks.",
   metadataBase: new URL("https://wluforcaster.com"),
+  icons: {
+    icon: "/icon.svg",
+    apple: "/apple-icon",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
