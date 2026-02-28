@@ -9,10 +9,10 @@ import { InAppBrowserGate } from "@/components/in-app-browser-gate";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
-const sora = localFont({
-  src: "../fonts/Sora-VariableFont_wght.ttf",
+const ferron = localFont({
+  src: "../fonts/Ferron-Regular-BF69052e0a86c53.otf",
   variable: "--font-geist-sans",
-  weight: "100 800",
+  weight: "400",
 });
 
 export const viewport: Viewport = {
@@ -60,7 +60,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${sora.variable} antialiased`}
+        className={`${ferron.variable} antialiased`}
         style={{ backgroundColor: '#3b82f6' }}
       >
         <Providers>
