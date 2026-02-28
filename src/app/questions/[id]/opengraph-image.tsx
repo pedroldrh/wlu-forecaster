@@ -22,7 +22,7 @@ export default async function OGImage({ params }: { params: Promise<{ id: string
     .single();
 
   const fontData = await fetch(
-    new URL("../../../fonts/Ferron-Regular-BF69052e0a86c53.otf", import.meta.url)
+    new URL("../../../fonts/Sora-VariableFont_wght.ttf", import.meta.url)
   ).then((res) => res.arrayBuffer());
 
   if (!question) {
@@ -38,13 +38,13 @@ export default async function OGImage({ params }: { params: Promise<{ id: string
             backgroundColor: "#0a0a0a",
             color: "#fff",
             fontSize: 48,
-            fontFamily: "Ferron",
+            fontFamily: "Sora",
           }}
         >
           Market not found
         </div>
       ),
-      { ...size, fonts: [{ name: "Ferron", data: fontData, style: "normal" as const, weight: 400 }] }
+      { ...size, fonts: [{ name: "Sora", data: fontData, style: "normal" as const, weight: 400 }] }
     );
   }
 
@@ -94,7 +94,7 @@ export default async function OGImage({ params }: { params: Promise<{ id: string
           width: "100%",
           height: "100%",
           backgroundColor: "#0a0a0a",
-          fontFamily: "Ferron",
+          fontFamily: "Sora",
           position: "relative",
           overflow: "hidden",
         }}
@@ -244,7 +244,7 @@ export default async function OGImage({ params }: { params: Promise<{ id: string
       ...size,
       fonts: [
         {
-          name: "Ferron",
+          name: "Sora",
           data: fontData,
           style: "normal" as const,
           weight: 400,
