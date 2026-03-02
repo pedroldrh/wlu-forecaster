@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Clock } from "@phosphor-icons/react";
+import { cn } from "@/lib/utils";
 
 interface CountdownTimerProps {
   targetDate: Date | string;
@@ -10,6 +11,7 @@ interface CountdownTimerProps {
 
 export function CountdownTimer({ targetDate, className }: CountdownTimerProps) {
   const [timeLeft, setTimeLeft] = useState("");
+  const [urgency, setUrgency] = useState<"normal" | "soon" | "critical" | "closed">("normal");
 
   useEffect(() => {
     const update = () => {
@@ -19,6 +21,7 @@ export function CountdownTimer({ targetDate, className }: CountdownTimerProps) {
 
       if (diff <= 0) {
         setTimeLeft("Closed");
+        setUrgency("closed");
         return;
       }
 
@@ -30,11 +33,14 @@ export function CountdownTimer({ targetDate, className }: CountdownTimerProps) {
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
       if (days > 0) {
-        setTimeLeft(`${days}d ${hours}h ${minutes}m`);
+        setUrgency("normal");
+        setTimeLeft(`Closes in ${days}d ${hours}h`);
       } else if (hours > 0) {
-        setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
+        setUrgency("soon");
+        setTimeLeft(`${hours}h ${minutes}m left`);
       } else {
-        setTimeLeft(`${minutes}m ${seconds}s`);
+        setUrgency("critical");
+        setTimeLeft(`${minutes}m ${seconds}s left`);
       }
     };
 
@@ -43,9 +49,18 @@ export function CountdownTimer({ targetDate, className }: CountdownTimerProps) {
     return () => clearInterval(interval);
   }, [targetDate]);
 
+  const urgencyClass =
+    urgency === "critical"
+      ? "text-red-600 bg-red-500/10 border-red-500/30"
+      : urgency === "soon"
+        ? "text-amber-600 bg-amber-500/10 border-amber-500/30"
+        : urgency === "closed"
+          ? "text-muted-foreground bg-muted border-border"
+          : "text-muted-foreground bg-muted/40 border-border/60";
+
   return (
-    <span className={className}>
-      <Clock className="inline h-3.5 w-3.5 mr-1" />
+    <span className={cn("inline-flex items-center rounded-full border px-2 py-0.5", urgencyClass, className)}>
+      <Clock className="inline h-3.5 w-3.5 mr-1 shrink-0" />
       {timeLeft}
     </span>
   );

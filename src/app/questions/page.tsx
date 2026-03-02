@@ -1,7 +1,7 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { QuestionCard } from "@/components/question-card";
 import { SuggestQuestion } from "@/components/suggest-question";
-import { ShieldCheck, WarningCircle } from "@phosphor-icons/react/ssr";
+import { WarningCircle } from "@phosphor-icons/react/ssr";
 
 export const metadata = {
   title: "Markets — Forecaster",
@@ -127,6 +127,7 @@ export default async function QuestionsPage() {
               resolvedOutcome={q.resolved_outcome}
               userProbability={q.user_probability}
               consensus={q.consensus}
+              canQuickForecast={!!user}
             />
           ))}
         </div>

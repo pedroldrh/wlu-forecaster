@@ -286,7 +286,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
       </div>
 
       {/* Consensus chart — full width */}
-      <ConsensusChart data={consensusTimeline} />
+      <ConsensusChart data={consensusTimeline} userProbability={userForecast?.probability ?? null} />
 
       {/* Two-column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 lg:items-start">

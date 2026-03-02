@@ -1,19 +1,25 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { createChart, type IChartApi, ColorType, AreaSeries } from "lightweight-charts";
+import { createChart, type IChartApi, ColorType, AreaSeries, type UTCTimestamp } from "lightweight-charts";
 import { Card, CardContent } from "@/components/ui/card";
+import { TrendUp, TrendDown } from "@phosphor-icons/react";
 
 interface ConsensusChartProps {
   data: { time: string; value: number }[];
+  userProbability?: number | null;
 }
 
-export function ConsensusChart({ data }: ConsensusChartProps) {
+export function ConsensusChart({ data, userProbability = null }: ConsensusChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const legendRef = useRef<HTMLDivElement>(null);
 
   const latestValue = data.length > 0 ? data[data.length - 1].value : 0;
+  const latestTimestamp = data.length > 0 ? new Date(data[data.length - 1].time).getTime() : 0;
+  const oneDayAgo = latestTimestamp - 24 * 60 * 60 * 1000;
+  const value24hAgo = [...data].reverse().find((d) => new Date(d.time).getTime() <= oneDayAgo)?.value ?? data[0]?.value ?? latestValue;
+  const delta24h = latestValue - value24hAgo;
 
   useEffect(() => {
     if (!containerRef.current || data.length === 0) return;
@@ -22,14 +28,14 @@ export function ConsensusChart({ data }: ConsensusChartProps) {
       height: 280,
       layout: {
         background: { type: ColorType.Solid, color: "transparent" },
-        textColor: "rgba(255, 255, 255, 0.35)",
+        textColor: "rgba(100, 116, 139, 0.85)",
         fontFamily: "ui-monospace, SFMono-Regular, monospace",
         fontSize: 11,
         attributionLogo: false,
       },
       grid: {
         vertLines: { visible: false },
-        horzLines: { color: "rgba(255, 255, 255, 0.04)", style: 1 },
+        horzLines: { color: "rgba(148, 163, 184, 0.18)", style: 1 },
       },
       rightPriceScale: {
         borderVisible: false,
@@ -44,14 +50,14 @@ export function ConsensusChart({ data }: ConsensusChartProps) {
         horzLine: {
           visible: true,
           style: 3,
-          color: "rgba(129, 140, 248, 0.4)",
+          color: "rgba(59, 130, 246, 0.35)",
           labelVisible: true,
-          labelBackgroundColor: "rgb(99, 102, 241)",
+          labelBackgroundColor: "rgb(37, 99, 235)",
         },
         vertLine: {
           visible: true,
           style: 3,
-          color: "rgba(255, 255, 255, 0.08)",
+          color: "rgba(100, 116, 139, 0.2)",
           labelVisible: true,
         },
       },
@@ -60,17 +66,17 @@ export function ConsensusChart({ data }: ConsensusChartProps) {
     });
 
     const series = chart.addSeries(AreaSeries, {
-      lineColor: "rgb(129, 140, 248)",
-      topColor: "rgba(129, 140, 248, 0.3)",
-      bottomColor: "rgba(129, 140, 248, 0.01)",
+      lineColor: "rgb(37, 99, 235)",
+      topColor: "rgba(37, 99, 235, 0.24)",
+      bottomColor: "rgba(37, 99, 235, 0.02)",
       lineWidth: 2,
       crosshairMarkerVisible: true,
       crosshairMarkerRadius: 4,
-      crosshairMarkerBackgroundColor: "rgb(129, 140, 248)",
-      crosshairMarkerBorderColor: "rgb(129, 140, 248)",
+      crosshairMarkerBackgroundColor: "rgb(37, 99, 235)",
+      crosshairMarkerBorderColor: "rgb(37, 99, 235)",
       lastValueVisible: true,
       priceLineVisible: true,
-      priceLineColor: "rgba(129, 140, 248, 0.35)",
+      priceLineColor: "rgba(37, 99, 235, 0.35)",
       priceLineStyle: 2,
       priceFormat: {
         type: "custom",
@@ -83,11 +89,22 @@ export function ConsensusChart({ data }: ConsensusChartProps) {
     });
 
     const chartData = data.map((d) => ({
-      time: Math.floor(new Date(d.time).getTime() / 1000),
+      time: Math.floor(new Date(d.time).getTime() / 1000) as UTCTimestamp,
       value: d.value * 100,
     }));
 
-    series.setData(chartData as any);
+    series.setData(chartData);
+
+    if (userProbability !== null && userProbability !== undefined) {
+      series.createPriceLine({
+        price: userProbability * 100,
+        color: "rgba(16, 185, 129, 0.9)",
+        lineWidth: 2,
+        lineStyle: 2,
+        axisLabelVisible: true,
+        title: "Your forecast",
+      });
+    }
 
     // Update legend on crosshair move
     chart.subscribeCrosshairMove((param) => {
@@ -130,29 +147,40 @@ export function ConsensusChart({ data }: ConsensusChartProps) {
       chart.remove();
       chartRef.current = null;
     };
-  }, [data, latestValue]);
+  }, [data, latestValue, userProbability]);
 
   return (
-    <Card className="overflow-hidden bg-[#0f1319] border-border/40">
+    <Card className="overflow-hidden border-border/60">
       <CardContent className="p-0">
         {/* Legend overlay */}
         <div ref={legendRef} className="px-5 pt-5 pb-0 relative z-10">
-          <p className="text-[11px] uppercase tracking-widest text-white/30 font-medium">
+          <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-medium">
             Community Consensus
           </p>
-          <div className="flex items-baseline gap-2 mt-1">
-            <p data-value className="text-4xl font-bold text-white font-mono tabular-nums">
+          <div className="flex flex-wrap items-end gap-x-3 gap-y-1 mt-1">
+            <p data-value className="text-4xl font-bold text-foreground font-mono tabular-nums">
               {data.length > 0 ? `${Math.round(latestValue * 100)}%` : "\u2014"}
             </p>
-            <p data-date className="text-xs text-white/30 h-4">
+            <p data-date className="text-xs text-muted-foreground h-4">
               {data.length > 0 ? "Latest" : ""}
             </p>
+            <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${
+              delta24h >= 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-rose-500/10 text-rose-600"
+            }`}>
+              {delta24h >= 0 ? <TrendUp className="h-3 w-3" /> : <TrendDown className="h-3 w-3" />}
+              {delta24h >= 0 ? "+" : ""}{(delta24h * 100).toFixed(1)} pts (24h)
+            </span>
+            {userProbability !== null && userProbability !== undefined && (
+              <span className="inline-flex items-center rounded-full bg-emerald-500/10 text-emerald-700 px-2 py-0.5 text-[11px] font-medium">
+                You: {Math.round(userProbability * 100)}%
+              </span>
+            )}
           </div>
         </div>
         {data.length > 0 ? (
           <div ref={containerRef} className="-mt-2" />
         ) : (
-          <div className="flex items-center justify-center h-[280px] -mt-4 text-white/20 text-sm">
+          <div className="flex items-center justify-center h-[280px] -mt-4 text-muted-foreground text-sm">
             No forecasts yet
           </div>
         )}
