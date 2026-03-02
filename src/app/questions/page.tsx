@@ -127,7 +127,6 @@ export default async function QuestionsPage() {
               resolvedOutcome={q.resolved_outcome}
               userProbability={q.user_probability}
               consensus={q.consensus}
-              canQuickForecast={!!user}
             />
           ))}
         </div>

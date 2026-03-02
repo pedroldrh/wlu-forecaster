@@ -1,15 +1,9 @@
-"use client";
-
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CountdownTimer } from "./countdown-timer";
 import { CATEGORY_LABELS, getQuestionEmoji } from "@/lib/constants";
 import { UsersThree, CheckCircle, XCircle } from "@phosphor-icons/react/ssr";
-import { submitForecast } from "@/actions/forecasts";
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { toast } from "sonner";
 
 const CATEGORY_GRADIENTS: Record<string, string> = {
   SPORTS: "from-blue-500 to-blue-600",
@@ -29,7 +23,6 @@ interface QuestionCardProps {
   resolvedOutcome?: boolean | null;
   userProbability?: number | null;
   consensus?: number | null;
-  canQuickForecast?: boolean;
 }
 
 export function QuestionCard({
@@ -42,33 +35,13 @@ export function QuestionCard({
   resolvedOutcome,
   userProbability,
   consensus,
-  canQuickForecast = false,
 }: QuestionCardProps) {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const [localUserProbability, setLocalUserProbability] = useState(userProbability ?? null);
   const consensusPct = consensus !== null && consensus !== undefined
     ? Math.round(consensus * 100)
     : null;
 
   const gradient = CATEGORY_GRADIENTS[category] || CATEGORY_GRADIENTS.OTHER;
   const emoji = getQuestionEmoji(title, category);
-  const canShowQuickVote = status === "OPEN" && canQuickForecast;
-
-  const handleQuickVote = (pct: number, e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    startTransition(async () => {
-      try {
-        await submitForecast(id, pct / 100);
-        setLocalUserProbability(pct / 100);
-        toast.success(`Forecast saved at ${pct}%`);
-        router.refresh();
-      } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Failed to submit forecast");
-      }
-    });
-  };
 
   return (
     <Link href={`/questions/${id}`}>
@@ -127,9 +100,9 @@ export function QuestionCard({
                 <span className="text-yellow-500">Awaiting resolution</span>
               )}
             </div>
-            {localUserProbability !== null && localUserProbability !== undefined ? (
+            {userProbability !== null && userProbability !== undefined ? (
               <span className="font-mono font-medium text-foreground">
-                You: {Math.round(localUserProbability * 100)}%
+                You: {Math.round(userProbability * 100)}%
               </span>
             ) : status === "OPEN" && (
               <span className="text-amber-500 font-medium">
@@ -137,30 +110,6 @@ export function QuestionCard({
               </span>
             )}
           </div>
-
-          {canShowQuickVote && (
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] text-muted-foreground">
-                {localUserProbability === null ? "Quick vote:" : "Quick update:"}
-              </span>
-              {[20, 50, 80].map((pct) => (
-                <button
-                  key={pct}
-                  type="button"
-                  onClick={(e) => handleQuickVote(pct, e)}
-                  disabled={isPending}
-                  className={`rounded-full border px-2 py-0.5 text-[11px] font-medium transition-colors disabled:opacity-50 ${
-                    localUserProbability !== null && Math.round(localUserProbability * 100) === pct
-                      ? "border-primary/60 text-primary bg-primary/10"
-                      : "text-muted-foreground hover:text-foreground hover:border-primary/50"
-                  }`}
-                >
-                  {pct}%
-                </button>
-              ))}
-              <span className="text-[11px] text-primary/80 ml-auto">Tap card for full slider</span>
-            </div>
-          )}
         </CardContent>
       </Card>
     </Link>

@@ -278,7 +278,6 @@ export default async function HomePage() {
                 forecastCount={q.forecast_count}
                 userProbability={q.user_probability}
                 consensus={q.consensus}
-                canQuickForecast={!!user}
               />
             ))}
           </div>
