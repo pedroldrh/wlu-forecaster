@@ -53,7 +53,7 @@ export function QuestionCard({
 
   const gradient = CATEGORY_GRADIENTS[category] || CATEGORY_GRADIENTS.OTHER;
   const emoji = getQuestionEmoji(title, category);
-  const canShowQuickVote = status === "OPEN" && localUserProbability === null && canQuickForecast;
+  const canShowQuickVote = status === "OPEN" && canQuickForecast;
 
   const handleQuickVote = (pct: number, e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -140,14 +140,20 @@ export function QuestionCard({
 
           {canShowQuickVote && (
             <div className="flex items-center gap-2">
-              <span className="text-[11px] text-muted-foreground">Quick vote:</span>
+              <span className="text-[11px] text-muted-foreground">
+                {localUserProbability === null ? "Quick vote:" : "Quick update:"}
+              </span>
               {[20, 50, 80].map((pct) => (
                 <button
                   key={pct}
                   type="button"
                   onClick={(e) => handleQuickVote(pct, e)}
                   disabled={isPending}
-                  className="rounded-full border px-2 py-0.5 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors disabled:opacity-50"
+                  className={`rounded-full border px-2 py-0.5 text-[11px] font-medium transition-colors disabled:opacity-50 ${
+                    localUserProbability !== null && Math.round(localUserProbability * 100) === pct
+                      ? "border-primary/60 text-primary bg-primary/10"
+                      : "text-muted-foreground hover:text-foreground hover:border-primary/50"
+                  }`}
                 >
                   {pct}%
                 </button>
