@@ -35,7 +35,7 @@ export default async function HomePage() {
       .eq("status", "OPEN")
       .gt("close_time", new Date().toISOString())
       .order("close_time", { ascending: true })
-      .limit(3);
+      .limit(4);
 
     if (data) {
       for (const q of data) {
