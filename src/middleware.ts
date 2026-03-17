@@ -2,6 +2,12 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
+  if (request.nextUrl.hostname === "www.wluforcaster.com") {
+    const url = request.nextUrl.clone();
+    url.hostname = "wluforcaster.com";
+    return NextResponse.redirect(url, 308);
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(

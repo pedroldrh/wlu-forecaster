@@ -29,10 +29,15 @@ export default function SignInPage() {
   async function handleSignIn() {
     setLoading(true);
     const next = searchParams.get("next") ?? "/";
+    const callbackOrigin =
+      window.location.hostname === "www.wluforcaster.com"
+        ? "https://wluforcaster.com"
+        : window.location.origin;
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(next)}`,
+        redirectTo: `${callbackOrigin}/api/auth/callback?next=${encodeURIComponent(next)}`,
       },
     });
     if (error) {
