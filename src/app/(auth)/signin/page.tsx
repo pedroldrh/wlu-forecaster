@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { X } from "@phosphor-icons/react";
 import { ForecasterLogo } from "@/components/forecaster-logo";
@@ -15,6 +15,7 @@ export default function SignInPage() {
   const [loading, setLoading] = useState(false);
   const [spotlight, setSpotlight] = useState(0);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
 
   useEffect(() => {
@@ -27,10 +28,11 @@ export default function SignInPage() {
 
   async function handleSignIn() {
     setLoading(true);
+    const next = searchParams.get("next") ?? "/";
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/api/auth/callback`,
+        redirectTo: `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(next)}`,
       },
     });
     if (error) {

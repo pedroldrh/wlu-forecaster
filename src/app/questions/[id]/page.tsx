@@ -141,25 +141,17 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
   const sidebarContent = (
     <>
       {/* Forecast form */}
-      {isOpen && user && (
+      {isOpen && (
         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-blue-500/5">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">Your Forecast</CardTitle>
           </CardHeader>
           <CardContent>
-            <ForecastForm questionId={id} currentProbability={userForecast?.probability ?? null} />
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Sign in prompt */}
-      {isOpen && !user && (
-        <Card className="border-dashed">
-          <CardContent className="py-8 text-center">
-            <p className="text-muted-foreground mb-3">Sign in to make your prediction</p>
-            <Link href="/signin" className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors">
-              Sign in
-            </Link>
+            <ForecastForm
+              questionId={id}
+              currentProbability={userForecast?.probability ?? null}
+              redirectTo={!user ? `/questions/${id}` : undefined}
+            />
           </CardContent>
         </Card>
       )}

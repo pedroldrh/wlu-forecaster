@@ -8,12 +8,18 @@ import { toast } from "sonner";
 interface ForecastFormProps {
   questionId: string;
   currentProbability: number | null;
+  redirectTo?: string;
 }
 
-export function ForecastForm({ questionId, currentProbability }: ForecastFormProps) {
+export function ForecastForm({ questionId, currentProbability, redirectTo }: ForecastFormProps) {
   const router = useRouter();
 
   const handleSubmit = async (probability: number) => {
+    if (redirectTo) {
+      router.push(`/signin?next=${encodeURIComponent(redirectTo)}`);
+      return;
+    }
+
     try {
       await submitForecast(questionId, probability);
       toast.success("Forecast submitted!");
