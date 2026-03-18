@@ -15,12 +15,13 @@ import { Lightbulb, Sparkle, ArrowRight, ArrowLeft, PaperPlaneTilt, CheckCircle 
 const CATEGORY_OPTIONS = Object.entries(CATEGORY_LABELS).map(([value, label]) => ({
   value,
   label,
-  emoji: { SPORTS: "🏅", CAMPUS: "🏛️", ACADEMICS: "📚", GREEK: "🎉", OTHER: "❓" }[value] || "❓",
+  emoji: { SPORTS: "🏅", CAMPUS: "🏛️", ACADEMICS: "📚", GREEK: "🎉", LAW_SCHOOL: "⚖️", OTHER: "❓" }[value] || "❓",
   gradient: {
     SPORTS: "from-blue-500 to-blue-600",
     CAMPUS: "from-purple-500 to-purple-600",
     ACADEMICS: "from-amber-500 to-amber-600",
     GREEK: "from-emerald-500 to-emerald-600",
+    LAW_SCHOOL: "from-red-500 to-red-600",
     OTHER: "from-zinc-500 to-zinc-600",
   }[value] || "from-zinc-500 to-zinc-600",
 }));
