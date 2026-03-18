@@ -10,6 +10,7 @@ const CATEGORY_GRADIENTS: Record<string, string> = {
   CAMPUS: "from-purple-500 to-purple-600",
   ACADEMICS: "from-amber-500 to-amber-600",
   GREEK: "from-emerald-500 to-emerald-600",
+  LAW_SCHOOL: "from-red-500 to-red-600",
   OTHER: "from-zinc-500 to-zinc-600",
 };
 

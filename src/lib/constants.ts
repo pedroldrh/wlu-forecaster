@@ -3,6 +3,7 @@ export const CATEGORIES = [
   "CAMPUS",
   "ACADEMICS",
   "GREEK",
+  "LAW_SCHOOL",
   "OTHER",
 ] as const;
 
@@ -11,6 +12,7 @@ export const CATEGORY_LABELS: Record<string, string> = {
   CAMPUS: "Campus",
   ACADEMICS: "Academics",
   GREEK: "Greek Life",
+  LAW_SCHOOL: "Law School",
   OTHER: "Other",
 };
 
@@ -49,6 +51,7 @@ export const CATEGORY_EMOJI: Record<string, string> = {
   CAMPUS: "🏛️",
   ACADEMICS: "📚",
   GREEK: "🏛️",
+  LAW_SCHOOL: "⚖️",
   OTHER: "❓",
 };
 
@@ -76,6 +79,14 @@ const KEYWORD_EMOJI: [RegExp, string][] = [
   [/cycling|bike/i, "🚴"],
   [/ncaa|tournament|march madness|playoff|championship/i, "🏆"],
   [/game|season|match|roster/i, "🏅"],
+  // Law school
+  [/\bbar\b.*passage|bar\s*exam/i, "⚖️"],
+  [/moot\s*court/i, "🏛️"],
+  [/law\s*review|journal|law\s*rev/i, "📜"],
+  [/clerk/i, "👨‍⚖️"],
+  [/\b1l\b|\b2l\b|\b3l\b|law\s*school|law\s*student/i, "⚖️"],
+  [/sba|student\s*bar/i, "🤝"],
+  [/mock\s*trial.*law|thurgood|blsa/i, "⚖️"],
   // Weather / nature
   [/rain|storm|weather|snow|hurricane|flood/i, "🌧️"],
   [/sun(?:ny)?|hot|heat|warm|temperature|\d+\s*[°]?\s*[fF]/i, "☀️"],
@@ -128,5 +139,6 @@ export const CATEGORY_COLORS: Record<string, string> = {
   CAMPUS: "bg-purple-500/15 text-purple-500",
   ACADEMICS: "bg-amber-500/15 text-amber-500",
   GREEK: "bg-emerald-500/15 text-emerald-500",
+  LAW_SCHOOL: "bg-red-500/15 text-red-500",
   OTHER: "bg-zinc-500/15 text-zinc-400",
 };
