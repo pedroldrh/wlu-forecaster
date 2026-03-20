@@ -69,11 +69,13 @@ export default async function QuestionsPage() {
   const sortByVoted = <T extends { user_probability: number | null }>(arr: T[]) =>
     [...arr].sort((a, b) => (a.user_probability !== null ? 1 : 0) - (b.user_probability !== null ? 1 : 0));
 
-  const open = sortByVoted(enriched.filter((q) => q.status === "OPEN"));
+  const now = new Date().toISOString();
+  const open = sortByVoted(enriched.filter((q) => q.status === "OPEN" && q.close_time > now));
+  const expired = sortByVoted(enriched.filter((q) => q.status === "OPEN" && q.close_time <= now));
   const closed = sortByVoted(enriched.filter((q) => q.status === "CLOSED"));
   const resolved = sortByVoted(enriched.filter((q) => q.status === "RESOLVED"));
 
-  const allVisible = [...open, ...resolved, ...closed];
+  const allVisible = [...open, ...resolved, ...expired, ...closed];
 
   // Participation tracking for logged-in users
   const totalMarkets = allVisible.length;
