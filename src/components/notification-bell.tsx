@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Bell, Download } from "@phosphor-icons/react";
+import { Bell, BellRinging, Download } from "@phosphor-icons/react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useNotificationCount } from "@/hooks/use-notification-count";
 import { markAllRead } from "@/actions/notifications";
+import { savePushSubscription } from "@/actions/push-subscriptions";
 import { InstallInstructionsDialog } from "@/components/install-instructions-dialog";
+import { toast } from "sonner";
 
 function isStandalone(): boolean {
   if (typeof window === "undefined") return false;
@@ -23,15 +25,51 @@ export function NotificationBell({ userId }: { userId: string }) {
   const [standalone, setStandalone] = useState(true);
   const [showInstallDialog, setShowInstallDialog] = useState(false);
   const [hasOpenedBell, setHasOpenedBell] = useState(true);
+  const [pushStatus, setPushStatus] = useState<"loading" | "granted" | "prompt" | "denied" | "unsupported">("loading");
+  const [pushEnabling, setPushEnabling] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setStandalone(isStandalone());
     setHasOpenedBell(!!localStorage.getItem("forecaster-bell-opened"));
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+      setPushStatus("unsupported");
+    } else {
+      setPushStatus(Notification.permission as "granted" | "denied" | "prompt");
+    }
   }, []);
 
+  async function handleEnablePush() {
+    setPushEnabling(true);
+    try {
+      const perm = await Notification.requestPermission();
+      if (perm === "granted") {
+        const reg = await navigator.serviceWorker.ready;
+        await new Promise((r) => setTimeout(r, 500));
+        const sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
+        });
+        const json = sub.toJSON();
+        await savePushSubscription({
+          endpoint: json.endpoint!,
+          keys: { p256dh: json.keys!.p256dh!, auth: json.keys!.auth! },
+        });
+        setPushStatus("granted");
+        toast.success("Push notifications enabled!");
+      } else {
+        setPushStatus(perm as "denied" | "prompt");
+        if (perm === "denied") toast.error("Notifications blocked. Check browser settings.");
+      }
+    } catch {
+      toast.error("Something went wrong. Try again.");
+    }
+    setPushEnabling(false);
+  }
+
   const showInstallCard = !standalone;
-  const badgeCount = count + (showInstallCard ? 1 : 0);
+  const showPushCard = pushStatus === "prompt";
+  const badgeCount = count + (showInstallCard ? 1 : 0) + (showPushCard ? 1 : 0);
   const shouldRing = showInstallCard && !hasOpenedBell && !open;
 
   function handleOpenInstallDialog() {
@@ -115,6 +153,24 @@ export function NotificationBell({ userId }: { userId: string }) {
                 </div>
                 <div className="mt-2.5 w-full rounded-lg bg-primary text-primary-foreground text-xs font-semibold text-center py-2">
                   Tap to install
+                </div>
+              </button>
+            )}
+
+            {pushStatus === "prompt" && (
+              <button
+                onClick={handleEnablePush}
+                disabled={pushEnabling}
+                className="w-full text-left px-4 py-3 border-b bg-blue-500/5 hover:bg-blue-500/10 active:bg-blue-500/15 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0 h-9 w-9 rounded-full bg-blue-500/10 flex items-center justify-center">
+                    <BellRinging className="h-4 w-4 text-blue-500" weight="bold" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold leading-snug">Enable push notifications</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Get alerts even when the app is closed</p>
+                  </div>
                 </div>
               </button>
             )}
