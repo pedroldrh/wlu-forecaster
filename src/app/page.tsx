@@ -1,10 +1,10 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { SeasonBanner } from "@/components/season-banner";
 import { QuestionCard } from "@/components/question-card";
-import { LeaderboardTable } from "@/components/leaderboard-table";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { seasonScore, brierPoints, rankUsers, UserScore } from "@/lib/scoring";
+import { seasonScore, rankUsers, UserScore } from "@/lib/scoring";
 import Link from "next/link";
 import { Trophy, ShieldCheck, Crosshair } from "@phosphor-icons/react/ssr";
 import { ForecasterLogo } from "@/components/forecaster-logo";
@@ -70,23 +70,21 @@ export default async function HomePage() {
     }
   }
 
-  // Get top 5 leaderboard from season entries
-  let leaderboardEntries: any[] = [];
+  // Get participant IDs for season banner
   let allRanked: UserScore[] = [];
   if (season) {
     const { data: entries } = await supabase
       .from("season_entries")
-      .select("user_id, created_at, profiles(id, name, display_name, role)")
+      .select("user_id, created_at, profiles(id, name, display_name)")
       .eq("season_id", season.id)
       .in("status", ["PAID", "JOINED"]);
 
     if (entries && entries.length > 0) {
       const { data: resolvedQuestions } = await supabase
         .from("questions")
-        .select("id, resolved_outcome, resolved_at")
+        .select("id, resolved_outcome")
         .eq("season_id", season.id)
-        .eq("status", "RESOLVED")
-        .order("resolved_at", { ascending: false });
+        .eq("status", "RESOLVED");
 
       const resolvedIds = resolvedQuestions?.map((q) => q.id) || [];
       const resolvedMap = new Map(resolvedQuestions?.map((q) => [q.id, q.resolved_outcome]) || []);
@@ -103,13 +101,12 @@ export default async function HomePage() {
       const totalResolved = resolvedIds.length;
 
       const users: UserScore[] = entries.map((entry) => {
-        const userForecasts = allForecasts
-          .filter((f) => f.user_id === entry.user_id);
+        const userForecasts = allForecasts.filter((f) => f.user_id === entry.user_id);
         const scoringForecasts = userForecasts.map((f: any) => ({
           probability: f.probability,
           outcome: resolvedMap.get(f.question_id)!,
         }));
-        const profile = entry.profiles as unknown as { id: string; name: string; display_name: string | null; role: string | null };
+        const profile = entry.profiles as unknown as { id: string; name: string; display_name: string | null };
         const participationPct = totalResolved > 0 ? (userForecasts.length / totalResolved) * 100 : 0;
         const avgSubmissionTime = userForecasts.length > 0
           ? userForecasts.reduce((sum: number, f: any) => sum + new Date(f.submitted_at).getTime(), 0) / userForecasts.length
@@ -127,59 +124,7 @@ export default async function HomePage() {
         };
       });
 
-      const ranked = rankUsers(users);
-      allRanked = ranked;
-      const prizeAmounts = [season.prize_1st_cents, season.prize_2nd_cents, season.prize_3rd_cents, season.prize_4th_cents, season.prize_5th_cents];
-
-      // Query referral counts
-      const { data: referralRows } = await supabase
-        .from("profiles")
-        .select("referred_by")
-        .not("referred_by", "is", null);
-
-      const referralCounts = new Map<string, number>();
-      for (const row of referralRows ?? []) {
-        const id = row.referred_by as string;
-        referralCounts.set(id, (referralCounts.get(id) || 0) + 1);
-      }
-
-      // Compute score deltas from the most recently resolved question
-      const latestResolved = resolvedQuestions?.[0];
-      const deltaMap = new Map<string, number>();
-      if (latestResolved) {
-        const latestOutcome = latestResolved.resolved_outcome as boolean;
-        for (const f of allForecasts) {
-          if (f.question_id === latestResolved.id) {
-            deltaMap.set(f.user_id, brierPoints(f.probability, latestOutcome) * 100);
-          }
-        }
-      }
-
-      // Build role map for founder badge
-      const roleMap = new Map<string, string>();
-      for (const entry of entries) {
-        const p = entry.profiles as unknown as { id: string; role: string | null } | null;
-        if (p?.role) roleMap.set(entry.user_id, p.role);
-      }
-
-      leaderboardEntries = ranked.slice(0, 5).map((u, i) => {
-        const rawReferrals = referralCounts.get(u.userId) || 0;
-        const referralBonus = Math.min(rawReferrals, 3) * 0.01;
-        return {
-          rank: i + 1,
-          userId: u.userId,
-          name: u.name,
-          score: u.score + referralBonus,
-          questionsPlayed: u.questionsPlayed,
-          isCurrentUser: u.userId === user?.id,
-          participationPct: u.participationPct,
-          qualifiesForPrize: u.qualifiesForPrize,
-          prizeCents: u.qualifiesForPrize && i < 5 ? prizeAmounts[i] : undefined,
-          referralBonus: rawReferrals > 0 ? Math.min(rawReferrals, 3) : undefined,
-          scoreDelta: deltaMap.get(u.userId),
-          isFounder: roleMap.get(u.userId) === "ADMIN" && u.name === "Forecast Founder",
-        };
-      });
+      allRanked = rankUsers(users);
     }
   }
 
@@ -284,21 +229,64 @@ export default async function HomePage() {
         </div>
       )}
 
-      {leaderboardEntries.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-lg">Leaderboard</h2>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/leaderboard">Full leaderboard</Link>
-            </Button>
-          </div>
-          <Card>
-            <CardContent className="pt-4">
-              <LeaderboardTable entries={leaderboardEntries} />
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      <div className="space-y-3">
+        <h2 className="font-semibold text-lg">How Forecasting Works</h2>
+        <Card>
+          <CardContent className="pt-5 space-y-5">
+            <div className="space-y-2">
+              <p className="font-semibold text-sm flex items-center gap-2">
+                <Crosshair className="h-4 w-4 text-primary shrink-0" />
+                What are you predicting?
+              </p>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Each market is a yes-or-no question about something that might happen at W&amp;L. Your job is to guess <span className="text-foreground font-medium">how likely</span> it is to happen — not just &quot;yes&quot; or &quot;no,&quot; but a number from 0% to 100%.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <p className="font-semibold text-sm flex items-center gap-2">
+                <ForecasterLogo className="h-4 w-4 text-primary shrink-0" />
+                What does the percentage mean?
+              </p>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Think of it like this: if you say <span className="text-foreground font-medium">80%</span>, you&apos;re saying &quot;if this exact situation happened 10 times, I think it would come true about 8 of those times.&quot; Saying 50% means you genuinely have no idea — it&apos;s a coin flip. Saying 95% means you&apos;re almost certain it&apos;ll happen.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <p className="font-semibold text-sm flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
+                How do you score points?
+              </p>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                When a question resolves (the answer is revealed), you get scored based on how close your probability was to what actually happened. If you said 90% and it happened — great score. If you said 90% and it didn&apos;t happen — ouch. The key: <span className="text-foreground font-medium">being confident and right earns the most, being confident and wrong costs the most.</span> Playing it safe at 50% always gives you a medium score.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <p className="font-semibold text-sm flex items-center gap-2">
+                <Trophy className="h-4 w-4 text-primary shrink-0" />
+                What&apos;s the consensus line on the graph?
+              </p>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                The graph on each market shows the <span className="text-foreground font-medium">average of everyone&apos;s predictions over time</span>. If the line is at 70%, that means the crowd collectively thinks there&apos;s a 70% chance it happens. You can use this to see if you agree with everyone else — or if you think the crowd is wrong.
+              </p>
+            </div>
+
+            <div className="rounded-lg bg-muted/50 p-3.5">
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                <span className="text-foreground font-medium">TL;DR:</span> Pick a percentage for each question. The closer your guess is to reality, the more points you earn. Forecast on 5+ markets to qualify for prizes. Top forecasters win real money.
+              </p>
+            </div>
+
+            <div className="flex justify-center pt-1">
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/leaderboard">View Leaderboard</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
