@@ -62,25 +62,30 @@ export function SuggestQuestion() {
 
   return (
     <>
-      <Button variant="default" size="sm" onClick={() => setOpen(true)} className="gap-2">
-        <Lightbulb className="h-4 w-4" />
-        Suggest a New Market
-      </Button>
+      <button
+        onClick={() => setOpen(true)}
+        className="group flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border border-blue-500/20 hover:border-blue-500/40 hover:from-blue-500/15 hover:to-indigo-500/15 active:scale-[0.98] px-4 py-2.5 text-sm font-semibold text-blue-600 dark:text-blue-400 transition-all"
+      >
+        <div className="flex items-center justify-center h-7 w-7 rounded-lg bg-blue-500/15 group-hover:bg-blue-500/25 transition-colors">
+          <Lightbulb className="h-4 w-4" />
+        </div>
+        Suggest a Market
+      </button>
 
       <Dialog open={open} onOpenChange={(v) => { if (!v) close(); }}>
-        <DialogContent showCloseButton={false} className="max-w-sm gap-0 p-0 overflow-hidden">
+        <DialogContent showCloseButton={false} className="max-w-[380px] gap-0 p-0 overflow-hidden rounded-2xl">
           <DialogTitle className="sr-only">Suggest a New Market</DialogTitle>
 
           {/* Success state */}
           {submitted ? (
             <div className="flex flex-col items-center text-center px-6 py-10 gap-4">
-              <div className="h-16 w-16 rounded-full bg-green-500/10 flex items-center justify-center">
-                <CheckCircle className="h-8 w-8 text-green-500" />
+              <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-green-500/20">
+                <CheckCircle className="h-8 w-8 text-white" weight="bold" />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <h2 className="text-xl font-bold">Submitted!</h2>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Your market idea is in the queue. We&apos;ll review it and add it to the season if it&apos;s a good fit.
+                <p className="text-sm text-muted-foreground">
+                  We&apos;ll review your idea and add it if it&apos;s a good fit.
                 </p>
               </div>
               <Button onClick={close} className="mt-2 rounded-full px-8">
@@ -90,31 +95,30 @@ export function SuggestQuestion() {
           ) : (
             <>
               {/* Header */}
-              <div className="relative bg-gradient-to-r from-blue-500 to-indigo-600 px-5 pt-6 pb-5 text-white">
+              <div className="relative bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 px-5 pt-5 pb-4 text-white">
                 <button
                   onClick={close}
-                  className="absolute top-3 right-3 text-xs text-white/70 hover:text-white transition-colors"
+                  className="absolute top-3 right-3 h-7 w-7 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors"
                 >
-                  Cancel
+                  <span className="text-xs font-medium">&times;</span>
                 </button>
-                <div className="flex items-center gap-2.5 mb-1">
-                  <Sparkle className="h-5 w-5" />
-                  <h2 className="text-lg font-bold">Suggest a Market</h2>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <Sparkle className="h-5 w-5" weight="fill" />
+                  <h2 className="text-base font-bold tracking-tight">Suggest a Market</h2>
                 </div>
-                <p className="text-sm text-white/80">
+                <p className="text-[13px] text-white/75">
                   {step === 0
-                    ? "What do you want people to predict?"
+                    ? "What should people predict?"
                     : step === 1
                       ? "Pick a category"
-                      : "Review and submit"}
+                      : "Looks good?"}
                 </p>
-                {/* Step indicators */}
-                <div className="flex gap-1.5 mt-4">
+                <div className="flex gap-1.5 mt-3">
                   {[0, 1, 2].map((i) => (
                     <div
                       key={i}
-                      className={`h-1 rounded-full transition-all ${
-                        i === step ? "w-8 bg-white" : i < step ? "w-4 bg-white/60" : "w-4 bg-white/25"
+                      className={`h-1 rounded-full transition-all duration-300 ${
+                        i === step ? "w-10 bg-white" : i < step ? "w-6 bg-white/50" : "w-6 bg-white/20"
                       }`}
                     />
                   ))}
@@ -123,29 +127,29 @@ export function SuggestQuestion() {
 
               {/* Step 0: Question */}
               {step === 0 && (
-                <div className="px-5 pt-5 pb-4 space-y-4">
+                <div className="px-5 pt-4 pb-3 space-y-3.5">
                   <div>
-                    <label className="text-sm font-medium">Your question</label>
+                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Question</label>
                     <input
                       type="text"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      placeholder='e.g. "Will W&L beat Roanoke in lacrosse?"'
+                      placeholder='Will W&L beat Roanoke in lacrosse?'
                       maxLength={200}
                       autoFocus
-                      className="w-full mt-1.5 rounded-lg border border-input bg-background px-3.5 py-2.5 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                      className="w-full mt-1.5 rounded-xl border border-input bg-background px-3.5 py-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40"
                     />
-                    <p className="text-xs text-muted-foreground mt-1.5">Must be a yes/no question. {title.length}/200</p>
+                    <p className="text-[11px] text-muted-foreground mt-1">Yes/no questions only &middot; {title.length}/200</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium">Context <span className="text-muted-foreground font-normal">(optional)</span></label>
+                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Context <span className="font-normal normal-case">(optional)</span></label>
                     <textarea
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Any extra details, resolution criteria, or why this would be fun..."
+                      placeholder="How should this resolve? Any extra details..."
                       maxLength={500}
-                      rows={3}
-                      className="w-full mt-1.5 rounded-lg border border-input bg-background px-3.5 py-2.5 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 resize-none"
+                      rows={2}
+                      className="w-full mt-1.5 rounded-xl border border-input bg-background px-3.5 py-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 resize-none"
                     />
                   </div>
                 </div>
@@ -153,23 +157,20 @@ export function SuggestQuestion() {
 
               {/* Step 1: Category */}
               {step === 1 && (
-                <div className="px-5 pt-5 pb-4">
-                  <div className="grid grid-cols-2 gap-2.5">
+                <div className="px-5 pt-4 pb-3">
+                  <div className="grid grid-cols-2 gap-2">
                     {CATEGORY_OPTIONS.map((cat) => (
                       <button
                         key={cat.value}
                         onClick={() => setCategory(cat.value)}
-                        className={`relative flex items-center gap-2.5 rounded-xl border-2 px-3.5 py-3 text-left transition-all ${
+                        className={`relative flex items-center gap-2 rounded-xl px-3 py-2.5 text-left transition-all ${
                           category === cat.value
-                            ? "border-primary bg-primary/5 shadow-sm"
-                            : "border-transparent bg-muted/50 hover:bg-muted"
+                            ? `bg-gradient-to-r ${cat.gradient} text-white shadow-md`
+                            : "bg-muted/50 hover:bg-muted"
                         }`}
                       >
-                        <span className="text-xl">{cat.emoji}</span>
-                        <span className="text-sm font-medium">{cat.label}</span>
-                        {category === cat.value && (
-                          <div className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary" />
-                        )}
+                        <span className="text-lg">{cat.emoji}</span>
+                        <span className={`text-sm font-medium ${category === cat.value ? "text-white" : ""}`}>{cat.label}</span>
                       </button>
                     ))}
                   </div>
@@ -178,26 +179,28 @@ export function SuggestQuestion() {
 
               {/* Step 2: Review */}
               {step === 2 && (
-                <div className="px-5 pt-5 pb-4 space-y-3">
-                  <div className="rounded-xl border bg-muted/30 p-4 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">{CATEGORY_OPTIONS.find((c) => c.value === category)?.emoji}</span>
-                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                        {CATEGORY_LABELS[category]}
-                      </span>
+                <div className="px-5 pt-4 pb-3">
+                  <div className={`rounded-xl bg-gradient-to-r ${CATEGORY_OPTIONS.find((c) => c.value === category)?.gradient} p-[1px]`}>
+                    <div className="rounded-[11px] bg-background p-4 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{CATEGORY_OPTIONS.find((c) => c.value === category)?.emoji}</span>
+                        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                          {CATEGORY_LABELS[category]}
+                        </span>
+                      </div>
+                      <p className="font-semibold leading-snug">{title}</p>
+                      {description && (
+                        <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
+                      )}
                     </div>
-                    <p className="font-semibold leading-snug">{title}</p>
-                    {description && (
-                      <p className="text-sm text-muted-foreground">{description}</p>
-                    )}
                   </div>
                 </div>
               )}
 
               {/* Footer */}
-              <div className="flex items-center justify-between border-t px-5 py-3">
+              <div className="flex items-center justify-between px-5 py-3 border-t">
                 {step > 0 ? (
-                  <Button variant="ghost" size="sm" onClick={() => setStep(step - 1)} className="gap-1.5">
+                  <Button variant="ghost" size="sm" onClick={() => setStep(step - 1)} className="gap-1.5 rounded-full">
                     <ArrowLeft className="h-3.5 w-3.5" />
                     Back
                   </Button>
@@ -210,7 +213,7 @@ export function SuggestQuestion() {
                     size="sm"
                     onClick={() => setStep(step + 1)}
                     disabled={step === 0 && title.trim().length < 5}
-                    className="gap-1.5"
+                    className="gap-1.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 px-5"
                   >
                     Next
                     <ArrowRight className="h-3.5 w-3.5" />
@@ -220,7 +223,7 @@ export function SuggestQuestion() {
                     size="sm"
                     onClick={handleSubmit}
                     disabled={isPending}
-                    className="gap-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
+                    className="gap-1.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 px-5"
                   >
                     <PaperPlaneTilt className="h-3.5 w-3.5" />
                     {isPending ? "Submitting..." : "Submit"}
