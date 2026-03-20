@@ -24,8 +24,9 @@ export function ConsensusChart({ data, userProbability = null }: ConsensusChartP
   useEffect(() => {
     if (!containerRef.current || data.length === 0) return;
 
+    const isMobile = window.innerWidth < 640;
     const chart = createChart(containerRef.current, {
-      height: 280,
+      height: isMobile ? 220 : 280,
       layout: {
         background: { type: ColorType.Solid, color: "transparent" },
         textColor: "rgba(100, 116, 139, 0.85)",
@@ -178,7 +179,7 @@ export function ConsensusChart({ data, userProbability = null }: ConsensusChartP
           </div>
         </div>
         {data.length > 0 ? (
-          <div ref={containerRef} className="-mt-2" />
+          <div ref={containerRef} className="-mt-2 h-[220px] sm:h-[280px] w-full" />
         ) : (
           <div className="flex items-center justify-center h-[280px] -mt-4 text-muted-foreground text-sm">
             No forecasts yet

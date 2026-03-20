@@ -231,61 +231,84 @@ export default async function HomePage() {
 
       <div className="space-y-3">
         <h2 className="font-semibold text-lg">How Forecasting Works</h2>
-        <Card>
-          <CardContent className="pt-5 space-y-5">
-            <div className="space-y-2">
-              <p className="font-semibold text-sm flex items-center gap-2">
-                <Crosshair className="h-4 w-4 text-primary shrink-0" />
-                What are you predicting?
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Card className="bg-gradient-to-br from-blue-500/5 to-transparent">
+            <CardContent className="pt-4 pb-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-lg bg-blue-500/15 flex items-center justify-center">
+                  <Crosshair className="h-4 w-4 text-blue-500" />
+                </div>
+                <p className="font-semibold text-sm">Pick a Probability</p>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Each question is yes or no. You pick <span className="text-foreground font-medium">how likely</span> (0-100%). Saying 80% means &quot;8 out of 10 times, this happens.&quot;
               </p>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Each market is a yes-or-no question about something that might happen at W&amp;L. Your job is to guess <span className="text-foreground font-medium">how likely</span> it is to happen — not just &quot;yes&quot; or &quot;no,&quot; but a number from 0% to 100%.
-              </p>
-            </div>
+            </CardContent>
+          </Card>
 
-            <div className="space-y-2">
-              <p className="font-semibold text-sm flex items-center gap-2">
-                <ForecasterLogo className="h-4 w-4 text-primary shrink-0" />
-                What does the percentage mean?
+          <Card className="bg-gradient-to-br from-purple-500/5 to-transparent">
+            <CardContent className="pt-4 pb-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-lg bg-purple-500/15 flex items-center justify-center">
+                  <ForecasterLogo className="h-4 w-4 text-purple-500" />
+                </div>
+                <p className="font-semibold text-sm">Brier Scoring</p>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Your score: <span className="text-foreground font-mono font-medium">100 &times; (1 - (forecast - outcome)&sup2;)</span>
               </p>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Think of it like this: if you say <span className="text-foreground font-medium">80%</span>, you&apos;re saying &quot;if this exact situation happened 10 times, I think it would come true about 8 of those times.&quot; Saying 50% means you genuinely have no idea — it&apos;s a coin flip. Saying 95% means you&apos;re almost certain it&apos;ll happen.
+              <div className="grid grid-cols-2 gap-1.5 text-[11px]">
+                <div className="rounded-md bg-emerald-500/10 px-2 py-1.5 text-center">
+                  <p className="text-emerald-600 font-semibold">90% &rarr; YES</p>
+                  <p className="text-emerald-600/80 font-mono">99 pts</p>
+                </div>
+                <div className="rounded-md bg-rose-500/10 px-2 py-1.5 text-center">
+                  <p className="text-rose-600 font-semibold">90% &rarr; NO</p>
+                  <p className="text-rose-600/80 font-mono">19 pts</p>
+                </div>
+                <div className="rounded-md bg-emerald-500/10 px-2 py-1.5 text-center">
+                  <p className="text-emerald-600 font-semibold">60% &rarr; YES</p>
+                  <p className="text-emerald-600/80 font-mono">84 pts</p>
+                </div>
+                <div className="rounded-md bg-amber-500/10 px-2 py-1.5 text-center">
+                  <p className="text-amber-600 font-semibold">50% &rarr; either</p>
+                  <p className="text-amber-600/80 font-mono">75 pts</p>
+                </div>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Higher confidence = higher reward if right, bigger penalty if wrong.
               </p>
-            </div>
+            </CardContent>
+          </Card>
 
-            <div className="space-y-2">
-              <p className="font-semibold text-sm flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
-                How do you score points?
+          <Card className="bg-gradient-to-br from-amber-500/5 to-transparent">
+            <CardContent className="pt-4 pb-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-lg bg-amber-500/15 flex items-center justify-center">
+                  <ShieldCheck className="h-4 w-4 text-amber-500" />
+                </div>
+                <p className="font-semibold text-sm">The Consensus Graph</p>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Each market shows a live graph of the <span className="text-foreground font-medium">crowd&apos;s average prediction</span> over time. Use it to spot where you disagree with everyone else.
               </p>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                When a question resolves (the answer is revealed), you get scored based on how close your probability was to what actually happened. If you said 90% and it happened — great score. If you said 90% and it didn&apos;t happen — ouch. The key: <span className="text-foreground font-medium">being confident and right earns the most, being confident and wrong costs the most.</span> Playing it safe at 50% always gives you a medium score.
-              </p>
-            </div>
+            </CardContent>
+          </Card>
 
-            <div className="space-y-2">
-              <p className="font-semibold text-sm flex items-center gap-2">
-                <Trophy className="h-4 w-4 text-primary shrink-0" />
-                What&apos;s the consensus line on the graph?
+          <Card className="bg-gradient-to-br from-emerald-500/5 to-transparent">
+            <CardContent className="pt-4 pb-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-lg bg-emerald-500/15 flex items-center justify-center">
+                  <Trophy className="h-4 w-4 text-emerald-500" />
+                </div>
+                <p className="font-semibold text-sm">Win Real Money</p>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Forecast on 5+ markets to qualify. Top forecasters win cash prizes from the prize pool. <Link href="/leaderboard" className="text-primary hover:underline">View leaderboard</Link>
               </p>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                The graph on each market shows the <span className="text-foreground font-medium">average of everyone&apos;s predictions over time</span>. If the line is at 70%, that means the crowd collectively thinks there&apos;s a 70% chance it happens. You can use this to see if you agree with everyone else — or if you think the crowd is wrong.
-              </p>
-            </div>
-
-            <div className="rounded-lg bg-muted/50 p-3.5">
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                <span className="text-foreground font-medium">TL;DR:</span> Pick a percentage for each question. The closer your guess is to reality, the more points you earn. Forecast on 5+ markets to qualify for prizes. Top forecasters win real money.
-              </p>
-            </div>
-
-            <div className="flex justify-center pt-1">
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/leaderboard">View Leaderboard</Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
