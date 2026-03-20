@@ -20,9 +20,9 @@ export async function GET(request: Request) {
   const supabase = adminClient();
   const now = new Date();
   const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-  const in25h = new Date(now.getTime() + 25 * 60 * 60 * 1000);
+  const in25h = new Date(now.getTime() + 48 * 60 * 60 * 1000);
 
-  // Find markets closing in the next 24-25 hours (so this runs once per market)
+  // Find markets closing in the next 24-48 hours (runs once daily at 2pm UTC)
   const { data: closingQuestions } = await supabase
     .from("questions")
     .select("id, title, season_id")
