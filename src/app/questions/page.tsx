@@ -73,7 +73,7 @@ export default async function QuestionsPage() {
   const closed = sortByVoted(enriched.filter((q) => q.status === "CLOSED"));
   const resolved = sortByVoted(enriched.filter((q) => q.status === "RESOLVED"));
 
-  const allVisible = [...open, ...closed, ...resolved];
+  const allVisible = [...open, ...resolved, ...closed];
 
   // Participation tracking for logged-in users
   const totalMarkets = allVisible.length;

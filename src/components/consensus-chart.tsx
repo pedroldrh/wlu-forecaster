@@ -14,6 +14,7 @@ export function ConsensusChart({ data, userProbability = null }: ConsensusChartP
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const legendRef = useRef<HTMLDivElement>(null);
+  const cleanupRef = useRef<(() => void) | null>(null);
 
   const latestValue = data.length > 0 ? data[data.length - 1].value : 0;
   const latestTimestamp = data.length > 0 ? new Date(data[data.length - 1].time).getTime() : 0;
@@ -24,9 +25,21 @@ export function ConsensusChart({ data, userProbability = null }: ConsensusChartP
   useEffect(() => {
     if (!containerRef.current || data.length === 0) return;
 
-    const isMobile = window.innerWidth < 640;
-    const chart = createChart(containerRef.current, {
-      height: isMobile ? 220 : 280,
+    // Delay chart init slightly so mobile PWA containers have layout dimensions
+    const initTimer = setTimeout(() => {
+      if (!containerRef.current) return;
+      initChart();
+    }, 50);
+
+    function initChart() {
+    const container = containerRef.current!;
+    const isMobile = container.clientWidth < 640;
+    const chartHeight = isMobile ? 220 : 280;
+
+    const chart = createChart(container, {
+      width: container.clientWidth,
+      height: chartHeight,
+      autoSize: false,
       layout: {
         background: { type: ColorType.Solid, color: "transparent" },
         textColor: "rgba(100, 116, 139, 0.85)",
@@ -141,12 +154,18 @@ export function ConsensusChart({ data, userProbability = null }: ConsensusChartP
         chart.applyOptions({ width: entry.contentRect.width });
       }
     });
-    resizeObserver.observe(containerRef.current);
+    resizeObserver.observe(container);
 
-    return () => {
+    cleanupRef.current = () => {
       resizeObserver.disconnect();
       chart.remove();
       chartRef.current = null;
+    };
+    } // end initChart
+
+    return () => {
+      clearTimeout(initTimer);
+      cleanupRef.current?.();
     };
   }, [data, latestValue, userProbability]);
 

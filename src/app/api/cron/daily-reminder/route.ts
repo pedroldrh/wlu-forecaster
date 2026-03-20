@@ -75,37 +75,67 @@ export async function GET(request: Request) {
     }
   }
 
-  // Find users who haven't hit the minimum
-  const userIdsToNotify = (entries ?? [])
-    .map((e) => e.user_id)
-    .filter((uid) => (forecastCountByUser.get(uid) ?? 0) < MIN_FORECASTS);
+  // Count open markets each user hasn't voted on
+  const { data: openQuestions } = await supabase
+    .from("questions")
+    .select("id")
+    .eq("season_id", season.id)
+    .eq("status", "OPEN")
+    .gt("close_time", new Date().toISOString());
 
-  if (userIdsToNotify.length === 0) {
-    return NextResponse.json({ message: "All users on track" });
+  const openIds = (openQuestions ?? []).map((q) => q.id);
+
+  const { data: allForecasts } = await supabase
+    .from("forecasts")
+    .select("user_id, question_id")
+    .in("question_id", openIds);
+
+  const userOpenForecasts = new Map<string, Set<string>>();
+  for (const f of allForecasts ?? []) {
+    if (!userOpenForecasts.has(f.user_id)) userOpenForecasts.set(f.user_id, new Set());
+    userOpenForecasts.get(f.user_id)!.add(f.question_id);
   }
 
-  // Get push subscriptions for these users
+  // Build notification targets: under-5 users get qualification nudge, others get "X markets unvoted" nudge
+  const allUserIds = (entries ?? []).map((e) => e.user_id);
+
+  // Get all push subscriptions
   const { data: subs } = await supabase
     .from("push_subscriptions")
     .select("user_id, endpoint, p256dh, auth")
-    .in("user_id", userIdsToNotify);
+    .in("user_id", allUserIds);
 
   if (!subs || subs.length === 0) {
-    return NextResponse.json({ message: "No push subs for lagging users" });
+    return NextResponse.json({ message: "No push subs" });
   }
 
-  // Send push to each subscription
   const wp = getWebPush();
   let sent = 0;
   const toDelete: string[] = [];
 
   await Promise.allSettled(
     subs.map(async (sub) => {
-      const done = forecastCountByUser.get(sub.user_id) ?? 0;
-      const remaining = MIN_FORECASTS - done;
+      const totalDone = forecastCountByUser.get(sub.user_id) ?? 0;
+      const openVoted = userOpenForecasts.get(sub.user_id)?.size ?? 0;
+      const openUnvoted = openIds.length - openVoted;
+
+      let title: string;
+      let body: string;
+
+      if (totalDone < MIN_FORECASTS) {
+        const remaining = MIN_FORECASTS - totalDone;
+        title = "Don't miss out on prizes!";
+        body = `You've forecasted on ${totalDone}/5 markets. Predict ${remaining} more to qualify for the prize pool.`;
+      } else if (openUnvoted > 0) {
+        title = "New markets to predict on";
+        body = `You have ${openUnvoted} open market${openUnvoted !== 1 ? "s" : ""} you haven't voted on yet. Make your forecasts!`;
+      } else {
+        return; // User has voted on everything, skip
+      }
+
       const payload = JSON.stringify({
-        title: "Don't miss out on prizes!",
-        body: `You've forecasted on ${done}/5 markets. Predict ${remaining} more to qualify for the prize pool.`,
+        title,
+        body,
         link: "/questions",
         tag: "daily_reminder",
       });
@@ -125,7 +155,6 @@ export async function GET(request: Request) {
     })
   );
 
-  // Clean up expired subscriptions
   if (toDelete.length > 0) {
     await supabase
       .from("push_subscriptions")
@@ -133,5 +162,5 @@ export async function GET(request: Request) {
       .in("endpoint", toDelete);
   }
 
-  return NextResponse.json({ sent, notified: userIdsToNotify.length });
+  return NextResponse.json({ sent, total: allUserIds.length });
 }
