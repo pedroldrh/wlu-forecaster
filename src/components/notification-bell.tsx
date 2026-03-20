@@ -34,8 +34,17 @@ export function NotificationBell({ userId }: { userId: string }) {
     setHasOpenedBell(!!localStorage.getItem("forecaster-bell-opened"));
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
       setPushStatus("unsupported");
+    } else if (Notification.permission === "denied") {
+      setPushStatus("denied");
+    } else if (Notification.permission === "granted") {
+      // Permission granted but check if we actually have a subscription
+      navigator.serviceWorker.ready.then((reg) => {
+        reg.pushManager.getSubscription().then((sub) => {
+          setPushStatus(sub ? "granted" : "prompt");
+        });
+      }).catch(() => setPushStatus("prompt"));
     } else {
-      setPushStatus(Notification.permission as "granted" | "denied" | "prompt");
+      setPushStatus("prompt");
     }
   }, []);
 

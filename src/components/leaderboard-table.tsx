@@ -147,14 +147,11 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
   }
 
   const hasPodium = entries.length >= 3;
-  const currentUser = entries.find((e) => e.isCurrentUser);
-  const showYourRank = currentUser && currentUser.rank > 3 && hasPodium;
   const restEntries = hasPodium ? entries.slice(3) : entries;
 
   return (
     <div className="space-y-4">
       {hasPodium && <Podium entries={entries} />}
-      {showYourRank && <YourRankBanner entry={currentUser} />}
 
       {restEntries.length > 0 && (
         <Card>

@@ -43,9 +43,22 @@ export function PushPrompt() {
     if (typeof window === "undefined") return;
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
 
-    // Already granted — silently re-register
+    // Already granted — check if subscription exists, if not try to create one
     if (Notification.permission === "granted") {
-      subscribeToPush().catch(() => {});
+      navigator.serviceWorker.ready.then((reg) => {
+        reg.pushManager.getSubscription().then((existing) => {
+          if (!existing) {
+            subscribeToPush().catch((err) => console.error("Push subscribe failed:", err));
+          } else {
+            // Re-save to DB in case it was lost
+            const json = existing.toJSON();
+            savePushSubscription({
+              endpoint: json.endpoint!,
+              keys: { p256dh: json.keys!.p256dh!, auth: json.keys!.auth! },
+            }).catch(() => {});
+          }
+        });
+      }).catch(() => {});
       return;
     }
 
