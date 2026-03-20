@@ -3,15 +3,10 @@
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { savePushSubscription } from "@/actions/push-subscriptions";
+import { subscribeToPush } from "@/lib/push-utils";
 
-async function subscribeToPush() {
-  const reg = await navigator.serviceWorker.ready;
-  // iOS needs a brief pause after granting permission before pushManager is ready
-  await new Promise((r) => setTimeout(r, 500));
-  const sub = await reg.pushManager.subscribe({
-    userVisibleOnly: true,
-    applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  });
+async function subscribeAndSave() {
+  const sub = await subscribeToPush();
   const json = sub.toJSON();
   await savePushSubscription({
     endpoint: json.endpoint!,
@@ -27,7 +22,7 @@ function showPushToast() {
       label: "Enable",
       onClick: () => {
         Notification.requestPermission().then((perm) => {
-          if (perm === "granted") subscribeToPush().catch(() => {});
+          if (perm === "granted") subscribeAndSave().catch(() => {});
         });
       },
     },
@@ -48,7 +43,7 @@ export function PushPrompt() {
       navigator.serviceWorker.ready.then((reg) => {
         reg.pushManager.getSubscription().then((existing) => {
           if (!existing) {
-            subscribeToPush().catch((err) => console.error("Push subscribe failed:", err));
+            subscribeAndSave().catch((err) => console.error("Push subscribe failed:", err));
           } else {
             // Re-save to DB in case it was lost
             const json = existing.toJSON();

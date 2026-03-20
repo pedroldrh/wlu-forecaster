@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useNotificationCount } from "@/hooks/use-notification-count";
 import { markAllRead } from "@/actions/notifications";
 import { savePushSubscription } from "@/actions/push-subscriptions";
+import { subscribeToPush } from "@/lib/push-utils";
 import { InstallInstructionsDialog } from "@/components/install-instructions-dialog";
 import { toast } from "sonner";
 
@@ -53,12 +54,7 @@ export function NotificationBell({ userId }: { userId: string }) {
     try {
       const perm = await Notification.requestPermission();
       if (perm === "granted") {
-        const reg = await navigator.serviceWorker.ready;
-        await new Promise((r) => setTimeout(r, 500));
-        const sub = await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-        });
+        const sub = await subscribeToPush();
         const json = sub.toJSON();
         await savePushSubscription({
           endpoint: json.endpoint!,
@@ -70,7 +66,8 @@ export function NotificationBell({ userId }: { userId: string }) {
         setPushStatus(perm as "denied" | "prompt");
         if (perm === "denied") toast.error("Notifications blocked. Check browser settings.");
       }
-    } catch {
+    } catch (err) {
+      console.error("Push enable failed:", err);
       toast.error("Something went wrong. Try again.");
     }
     setPushEnabling(false);

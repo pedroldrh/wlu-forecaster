@@ -4,16 +4,11 @@ import { useState, useEffect } from "react";
 import { Bell, BellSlash, BellRinging } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { savePushSubscription } from "@/actions/push-subscriptions";
+import { subscribeToPush } from "@/lib/push-utils";
 import { toast } from "sonner";
 
-async function subscribeToPush() {
-  const reg = await navigator.serviceWorker.ready;
-  // iOS needs a brief pause after granting permission before pushManager is ready
-  await new Promise((r) => setTimeout(r, 500));
-  const sub = await reg.pushManager.subscribe({
-    userVisibleOnly: true,
-    applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  });
+async function subscribeAndSave() {
+  const sub = await subscribeToPush();
   const json = sub.toJSON();
   await savePushSubscription({
     endpoint: json.endpoint!,
@@ -40,7 +35,7 @@ export function EnableNotificationsButton() {
     const perm = await Notification.requestPermission();
     if (perm === "granted") {
       try {
-        await subscribeToPush();
+        await subscribeAndSave();
         setStatus("granted");
         toast.success("Notifications enabled!");
       } catch (err) {
