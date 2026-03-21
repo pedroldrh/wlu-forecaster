@@ -4,10 +4,9 @@ import { QuestionCard } from "@/components/question-card";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { seasonScore, rankUsers, UserScore } from "@/lib/scoring";
+import { winLossRecord, rankUsers, UserScore } from "@/lib/scoring";
 import Link from "next/link";
 import { Trophy, ShieldCheck, Crosshair } from "@phosphor-icons/react/ssr";
-import { ForecasterLogo } from "@/components/forecaster-logo";
 
 export default async function HomePage() {
   const supabase = await createAdminClient();
@@ -101,15 +100,17 @@ export default async function HomePage() {
         const avgSubmissionTime = userForecasts.length > 0
           ? userForecasts.reduce((sum: number, f: any) => sum + new Date(f.submitted_at).getTime(), 0) / userForecasts.length
           : Infinity;
+        const { wins, losses } = winLossRecord(scoringForecasts);
         return {
           userId: entry.user_id,
           name: profile?.display_name || profile?.name || "Anonymous",
-          score: seasonScore(scoringForecasts),
+          wins,
+          losses,
           questionsPlayed: userForecasts.length,
           joinedAt: entry.created_at ? new Date(entry.created_at) : null,
           totalResolvedQuestions: totalResolved,
           participationPct,
-          qualifiesForPrize: userForecasts.length >= 5,
+          qualifiesForPrize: userForecasts.length >= 15,
           avgSubmissionTime,
         };
       });
@@ -161,31 +162,24 @@ export default async function HomePage() {
           <CardContent>
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="flex gap-3">
-                <Crosshair className="h-5 w-5 mt-0.5 shrink-0 text-red-500" />
+                <Crosshair className="h-5 w-5 mt-0.5 shrink-0 text-blue-500" />
                 <div>
-                  <p className="font-medium text-sm">Make Predictions</p>
-                  <p className="text-sm text-muted-foreground">Assign probabilities (0-100%) to campus questions. Think it&apos;ll rain at formal? Say 70%.</p>
+                  <p className="font-medium text-sm">Vote YES or NO</p>
+                  <p className="text-sm text-muted-foreground">Each market is a yes-or-no question about W&L. Pick your answer.</p>
                 </div>
               </div>
               <div className="flex gap-3">
-                <ForecasterLogo className="h-5 w-5 mt-0.5 shrink-0 text-blue-500" />
+                <ShieldCheck className="h-5 w-5 mt-0.5 shrink-0 text-emerald-500" />
                 <div>
-                  <p className="font-medium text-sm">Brier Scoring</p>
-                  <p className="text-sm text-muted-foreground">You&apos;re scored on accuracy. Confident and correct? Big points. Wrong? You lose points.</p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <ShieldCheck className="h-5 w-5 mt-0.5 shrink-0 text-amber-500" />
-                <div>
-                  <p className="font-medium text-sm">Stay Active</p>
-                  <p className="text-sm text-muted-foreground">Forecast on at least 5 markets to qualify for prizes.</p>
+                  <p className="font-medium text-sm">Build Your Record</p>
+                  <p className="text-sm text-muted-foreground">Get it right, get a W. Get it wrong, take an L. Your record shows on the leaderboard.</p>
                 </div>
               </div>
               <div className="flex gap-3">
                 <Trophy className="h-5 w-5 mt-0.5 shrink-0 text-amber-500" />
                 <div>
-                  <p className="font-medium text-sm">Win Prizes</p>
-                  <p className="text-sm text-muted-foreground">Prizes paid out every 2 weeks to the top of the leaderboard.</p>
+                  <p className="font-medium text-sm">Win Real Money</p>
+                  <p className="text-sm text-muted-foreground">Vote on 15+ markets to qualify. Best record wins cash from the prize pool.</p>
                 </div>
               </div>
             </div>
@@ -219,82 +213,33 @@ export default async function HomePage() {
       )}
 
       <div className="space-y-3">
-        <h2 className="font-semibold text-lg">How Forecasting Works</h2>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <h2 className="font-semibold text-lg">How It Works</h2>
+        <div className="grid gap-3 sm:grid-cols-3">
           <Card className="bg-gradient-to-br from-blue-500/5 to-transparent">
             <CardContent className="pt-4 pb-4 space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-blue-500/15 flex items-center justify-center">
-                  <Crosshair className="h-4 w-4 text-blue-500" />
-                </div>
-                <p className="font-semibold text-sm">Pick a Probability</p>
+              <div className="h-8 w-8 rounded-lg bg-blue-500/15 flex items-center justify-center">
+                <Crosshair className="h-4 w-4 text-blue-500" />
               </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Each question is yes or no. You pick <span className="text-foreground font-medium">how likely</span> (0-100%). Saying 80% means &quot;8 out of 10 times, this happens.&quot;
-              </p>
+              <p className="font-semibold text-sm">Vote YES or NO</p>
+              <p className="text-xs text-muted-foreground">Each market is a yes-or-no question about W&L. Pick your answer.</p>
             </CardContent>
           </Card>
-
-          <Card className="bg-gradient-to-br from-purple-500/5 to-transparent">
-            <CardContent className="pt-4 pb-4 space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-purple-500/15 flex items-center justify-center">
-                  <ForecasterLogo className="h-4 w-4 text-purple-500" />
-                </div>
-                <p className="font-semibold text-sm">Brier Scoring</p>
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Your score: <span className="text-foreground font-mono font-medium">100 &times; (1 - (forecast - outcome)&sup2;)</span>
-              </p>
-              <div className="grid grid-cols-2 gap-1.5 text-[11px]">
-                <div className="rounded-md bg-emerald-500/10 px-2 py-1.5 text-center">
-                  <p className="text-emerald-600 font-semibold">90% &rarr; YES</p>
-                  <p className="text-emerald-600/80 font-mono">99 pts</p>
-                </div>
-                <div className="rounded-md bg-rose-500/10 px-2 py-1.5 text-center">
-                  <p className="text-rose-600 font-semibold">90% &rarr; NO</p>
-                  <p className="text-rose-600/80 font-mono">19 pts</p>
-                </div>
-                <div className="rounded-md bg-emerald-500/10 px-2 py-1.5 text-center">
-                  <p className="text-emerald-600 font-semibold">60% &rarr; YES</p>
-                  <p className="text-emerald-600/80 font-mono">84 pts</p>
-                </div>
-                <div className="rounded-md bg-amber-500/10 px-2 py-1.5 text-center">
-                  <p className="text-amber-600 font-semibold">50% &rarr; either</p>
-                  <p className="text-amber-600/80 font-mono">75 pts</p>
-                </div>
-              </div>
-              <p className="text-[11px] text-muted-foreground">
-                Higher confidence = higher reward if right, bigger penalty if wrong.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-amber-500/5 to-transparent">
-            <CardContent className="pt-4 pb-4 space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-amber-500/15 flex items-center justify-center">
-                  <ShieldCheck className="h-4 w-4 text-amber-500" />
-                </div>
-                <p className="font-semibold text-sm">The Consensus Graph</p>
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Each market shows a live graph of the <span className="text-foreground font-medium">crowd&apos;s average prediction</span> over time. Use it to spot where you disagree with everyone else.
-              </p>
-            </CardContent>
-          </Card>
-
           <Card className="bg-gradient-to-br from-emerald-500/5 to-transparent">
             <CardContent className="pt-4 pb-4 space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-emerald-500/15 flex items-center justify-center">
-                  <Trophy className="h-4 w-4 text-emerald-500" />
-                </div>
-                <p className="font-semibold text-sm">Win Real Money</p>
+              <div className="h-8 w-8 rounded-lg bg-emerald-500/15 flex items-center justify-center">
+                <ShieldCheck className="h-4 w-4 text-emerald-500" />
               </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Forecast on 5+ markets to qualify. Top forecasters win cash prizes from the prize pool. <Link href="/leaderboard" className="text-primary hover:underline">View leaderboard</Link>
-              </p>
+              <p className="font-semibold text-sm">Build Your Record</p>
+              <p className="text-xs text-muted-foreground">Get it right, get a W. Get it wrong, take an L. Your record shows on the leaderboard.</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-gradient-to-br from-amber-500/5 to-transparent">
+            <CardContent className="pt-4 pb-4 space-y-2">
+              <div className="h-8 w-8 rounded-lg bg-amber-500/15 flex items-center justify-center">
+                <Trophy className="h-4 w-4 text-amber-500" />
+              </div>
+              <p className="font-semibold text-sm">Win Real Money</p>
+              <p className="text-xs text-muted-foreground">Vote on 15+ markets to qualify. Best record wins cash from the prize pool.</p>
             </CardContent>
           </Card>
         </div>

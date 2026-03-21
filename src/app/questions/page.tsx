@@ -70,7 +70,7 @@ export default async function QuestionsPage() {
   // Participation tracking for logged-in users
   const totalMarkets = allVisible.length;
   const forecastedCount = user ? enriched.filter((q) => q.user_probability !== null).length : 0;
-  const minRequired = 5;
+  const minRequired = 15;
   const remaining = Math.max(0, minRequired - forecastedCount);
   const qualifies = forecastedCount >= minRequired;
   const pct = Math.min((forecastedCount / minRequired) * 100, 100);
