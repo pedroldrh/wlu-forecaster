@@ -1,6 +1,6 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { LeaderboardTable } from "@/components/leaderboard-table";
-import { seasonScore, brierPoints, rankUsers, UserScore } from "@/lib/scoring";
+import { winLossRecord, rankUsers, UserScore } from "@/lib/scoring";
 import { formatDollars } from "@/lib/utils";
 
 export const metadata = {
@@ -40,13 +40,11 @@ export default async function LeaderboardPage() {
     .eq("season_id", season.id)
     .in("status", ["PAID", "JOINED"]);
 
-  // Get resolved questions for this season (sorted by resolution date for delta calc)
   const { data: resolvedQuestions } = await supabase
     .from("questions")
-    .select("id, resolved_outcome, resolved_at")
+    .select("id, resolved_outcome")
     .eq("season_id", season.id)
-    .eq("status", "RESOLVED")
-    .order("resolved_at", { ascending: false });
+    .eq("status", "RESOLVED");
 
   const resolvedQuestionIds = (resolvedQuestions ?? []).map((q) => q.id);
   const resolvedCount = resolvedQuestionIds.length;
@@ -80,15 +78,17 @@ export default async function LeaderboardPage() {
     const avgSubmissionTime = userForecasts.length > 0
       ? userForecasts.reduce((sum, f) => sum + new Date(f.submittedAt).getTime(), 0) / userForecasts.length
       : Infinity;
+    const { wins, losses } = winLossRecord(userForecasts.map(f => ({ probability: f.probability, outcome: f.outcome })));
     return {
       userId: entry.user_id,
       name: profile?.display_name || profile?.name || "Anonymous",
-      score: seasonScore(userForecasts.map(f => ({ probability: f.probability, outcome: f.outcome }))),
+      wins,
+      losses,
       questionsPlayed: userForecasts.length,
       joinedAt: entry.created_at ? new Date(entry.created_at) : null,
       totalResolvedQuestions: resolvedCount,
       participationPct,
-      qualifiesForPrize: userForecasts.length >= 5,
+      qualifiesForPrize: userForecasts.length >= 15,
       avgSubmissionTime,
     };
   });
@@ -103,48 +103,18 @@ export default async function LeaderboardPage() {
   const ranked = rankUsers(users);
   const prizeAmounts = [season.prize_1st_cents, season.prize_2nd_cents, season.prize_3rd_cents, season.prize_4th_cents, season.prize_5th_cents];
 
-  // Query referral counts
-  const { data: referralRows } = await supabase
-    .from("profiles")
-    .select("referred_by")
-    .not("referred_by", "is", null);
-
-  const referralCounts = new Map<string, number>();
-  for (const row of referralRows ?? []) {
-    const id = row.referred_by as string;
-    referralCounts.set(id, (referralCounts.get(id) || 0) + 1);
-  }
-
-  // Compute score deltas from the most recently resolved question
-  const latestResolved = (resolvedQuestions ?? [])[0];
-  const deltaMap = new Map<string, number>();
-  if (latestResolved) {
-    const latestOutcome = latestResolved.resolved_outcome as boolean;
-    for (const f of forecasts ?? []) {
-      if (f.question_id === latestResolved.id) {
-        deltaMap.set(f.user_id, brierPoints(f.probability, latestOutcome) * 100);
-      }
-    }
-  }
-
-  const leaderboardEntries = ranked.map((u, i) => {
-    const rawReferrals = referralCounts.get(u.userId) || 0;
-    const referralBonus = Math.min(rawReferrals, 3) * 0.01;
-    return {
-      rank: i + 1,
-      userId: u.userId,
-      name: u.name,
-      score: u.score + referralBonus,
-      questionsPlayed: u.questionsPlayed,
-      isCurrentUser: u.userId === user?.id,
-      participationPct: u.participationPct,
-      qualifiesForPrize: u.qualifiesForPrize,
-      prizeCents: u.qualifiesForPrize && i < 5 ? prizeAmounts[i] : undefined,
-      referralBonus: rawReferrals > 0 ? Math.min(rawReferrals, 3) : undefined,
-      scoreDelta: deltaMap.get(u.userId),
-      isFounder: roleMap.get(u.userId) === "ADMIN" && u.name === "Forecast Founder",
-    };
-  });
+  const leaderboardEntries = ranked.map((u, i) => ({
+    rank: i + 1,
+    userId: u.userId,
+    name: u.name,
+    wins: u.wins,
+    losses: u.losses,
+    questionsPlayed: u.questionsPlayed,
+    isCurrentUser: u.userId === user?.id,
+    qualifiesForPrize: u.qualifiesForPrize,
+    prizeCents: u.qualifiesForPrize && i < 5 ? prizeAmounts[i] : undefined,
+    isFounder: roleMap.get(u.userId) === "ADMIN" && u.name === "Forecast Founder",
+  }));
 
   const totalPrizeCents = prizeAmounts.reduce((sum: number, val) => sum + (val || 0), 0);
 

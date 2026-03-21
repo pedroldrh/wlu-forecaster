@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn, formatDollars } from "@/lib/utils";
 import { UserAvatar } from "@/components/user-avatar";
-import { AnimatedNumber } from "@/components/animated-number";
 import Link from "next/link";
 import { Crown, Trophy } from "@phosphor-icons/react";
 
@@ -12,14 +11,12 @@ interface LeaderboardEntry {
   rank: number;
   userId: string;
   name: string;
-  score: number;
+  wins: number;
+  losses: number;
   questionsPlayed: number;
   isCurrentUser?: boolean;
-  participationPct?: number;
   qualifiesForPrize?: boolean;
   prizeCents?: number;
-  referralBonus?: number;
-  scoreDelta?: number;
   isFounder?: boolean;
 }
 
@@ -92,12 +89,10 @@ function Podium({ entries }: { entries: LeaderboardEntry[] }) {
                 {entry.isCurrentUser && (
                   <Badge variant="outline" className="text-[9px] px-1 py-0 mt-0.5 border-primary/40 text-primary">You</Badge>
                 )}
-                <div className={cn(
-                  "font-bold font-mono mt-1",
-                  isFirst ? "text-2xl sm:text-3xl" : "text-lg sm:text-xl",
-                  c.color
-                )}>
-                  <AnimatedNumber value={entry.score * 100} suffix="%" />
+                <div className={cn("font-bold font-mono mt-1", isFirst ? "text-2xl sm:text-3xl" : "text-lg sm:text-xl")}>
+                  <span className="text-green-500">{entry.wins}</span>
+                  <span className="text-muted-foreground mx-0.5">-</span>
+                  <span className="text-red-500">{entry.losses}</span>
                 </div>
                 {entry.prizeCents && (
                   <span className="text-[10px] sm:text-xs text-green-500 font-medium mt-0.5">
@@ -127,8 +122,10 @@ function YourRankBanner({ entry }: { entry: LeaderboardEntry }) {
             <span className="text-sm font-medium truncate">{entry.name}</span>
           </div>
           <div className="text-right shrink-0">
-            <div className="font-bold font-mono text-primary">
-              <AnimatedNumber value={entry.score * 100} suffix="%" />
+            <div className="font-bold font-mono">
+              <span className="text-green-500">{entry.wins}</span>
+              <span className="text-muted-foreground mx-0.5">-</span>
+              <span className="text-red-500">{entry.losses}</span>
             </div>
           </div>
         </CardContent>
@@ -214,16 +211,10 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
                   </div>
                   <div className="shrink-0 text-right">
                     <div className="text-sm font-bold font-mono">
-                      <AnimatedNumber value={entry.score * 100} suffix="%" />
+                      <span className="text-green-500">{entry.wins}</span>
+                      <span className="text-muted-foreground mx-0.5">-</span>
+                      <span className="text-red-500">{entry.losses}</span>
                     </div>
-                    {entry.scoreDelta != null && (
-                      <div className="text-[10px] text-green-500 font-medium animate-in fade-in slide-in-from-bottom-1 duration-500">
-                        +{entry.scoreDelta.toFixed(1)} pts
-                      </div>
-                    )}
-                    {entry.referralBonus ? (
-                      <div className="text-[10px] text-green-500" title="Referral bonus">+{entry.referralBonus} ref</div>
-                    ) : null}
                   </div>
                 </Link>
               ))}
