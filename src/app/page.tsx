@@ -39,20 +39,10 @@ export default async function HomePage() {
 
     if (data) {
       for (const q of data) {
-        const [{ count }, { data: allForecasts }] = await Promise.all([
-          supabase
-            .from("forecasts")
-            .select("*", { count: "exact", head: true })
-            .eq("question_id", q.id),
-          supabase
-            .from("forecasts")
-            .select("probability")
-            .eq("question_id", q.id),
-        ]);
-
-        const consensus = allForecasts && allForecasts.length > 0
-          ? allForecasts.reduce((sum, f) => sum + f.probability, 0) / allForecasts.length
-          : null;
+        const { count } = await supabase
+          .from("forecasts")
+          .select("*", { count: "exact", head: true })
+          .eq("question_id", q.id);
 
         let userProb = null;
         if (user) {
@@ -65,7 +55,7 @@ export default async function HomePage() {
           userProb = forecast?.probability ?? null;
         }
 
-        upcomingQuestions.push({ ...q, forecast_count: count || 0, user_probability: userProb, consensus });
+        upcomingQuestions.push({ ...q, forecast_count: count || 0, user_probability: userProb });
       }
     }
   }
@@ -222,7 +212,6 @@ export default async function HomePage() {
                 closeTime={q.close_time}
                 forecastCount={q.forecast_count}
                 userProbability={q.user_probability}
-                consensus={q.consensus}
               />
             ))}
           </div>

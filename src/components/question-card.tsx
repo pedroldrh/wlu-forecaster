@@ -23,7 +23,6 @@ interface QuestionCardProps {
   forecastCount: number;
   resolvedOutcome?: boolean | null;
   userProbability?: number | null;
-  consensus?: number | null;
 }
 
 export function QuestionCard({
@@ -35,12 +34,7 @@ export function QuestionCard({
   forecastCount,
   resolvedOutcome,
   userProbability,
-  consensus,
 }: QuestionCardProps) {
-  const consensusPct = consensus !== null && consensus !== undefined
-    ? Math.round(consensus * 100)
-    : null;
-
   const gradient = CATEGORY_GRADIENTS[category] || CATEGORY_GRADIENTS.OTHER;
   const emoji = getQuestionEmoji(title, category);
 
@@ -58,17 +52,11 @@ export function QuestionCard({
         </div>
 
         <CardContent className="pt-3 pb-3 flex flex-col flex-1 gap-3">
-          {/* Title + consensus */}
+          {/* Title + resolution badge */}
           <div className="flex items-start gap-3">
             <div className="flex-1 min-w-0">
               <h3 className="font-medium text-sm leading-snug line-clamp-2">{title}</h3>
             </div>
-            {consensusPct !== null && status !== "RESOLVED" && (
-              <div className="shrink-0 flex flex-col items-center">
-                <div className="text-xl font-bold font-mono text-primary">{consensusPct}%</div>
-                <span className="text-[10px] text-muted-foreground">chance</span>
-              </div>
-            )}
             {status === "RESOLVED" && (
               <div className="shrink-0 flex items-center gap-1">
                 {resolvedOutcome ? (
@@ -102,8 +90,9 @@ export function QuestionCard({
               )}
             </div>
             {userProbability !== null && userProbability !== undefined ? (
-              <span className="font-mono font-medium text-foreground">
-                You: {Math.round(userProbability * 100)}%
+              <span className="flex items-center gap-1 text-green-500 font-medium">
+                <CheckCircle className="h-3.5 w-3.5" weight="fill" />
+                Voted
               </span>
             ) : status === "OPEN" && (
               <span className="text-amber-500 font-medium">
