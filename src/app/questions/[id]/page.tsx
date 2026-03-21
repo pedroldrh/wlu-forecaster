@@ -7,10 +7,8 @@ import { CATEGORY_LABELS, getQuestionEmoji } from "@/lib/constants";
 import { ForecastForm } from "./forecast-form";
 import { CommentSection } from "./comment-section";
 import { DisputeForm } from "@/components/dispute-form";
-import { ConsensusChart } from "@/components/consensus-chart";
 import { UsersThree, CheckCircle, XCircle, ArrowLeft, Clock } from "@phosphor-icons/react/ssr";
-import { brierPoints } from "@/lib/scoring";
-import { AnimatedNumber } from "@/components/animated-number";
+import { isCorrect } from "@/lib/scoring";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ShareButton } from "@/components/share-button";
@@ -109,33 +107,13 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
     profile: profileMap.get(c.user_id) ?? null,
   }));
 
-  // Fetch forecast history for consensus chart
-  const { data: historyRows } = await supabase
-    .from("forecast_history")
-    .select("user_id, probability, recorded_at")
-    .eq("question_id", id)
-    .order("recorded_at", { ascending: true });
-
-  // Compute consensus timeline: at each history point, avg of each user's latest probability
-  const consensusTimeline: { time: string; value: number }[] = [];
-  if (historyRows && historyRows.length >= 1) {
-    const latestByUser = new Map<string, number>();
-    for (const row of historyRows) {
-      latestByUser.set(row.user_id, row.probability);
-      const values = Array.from(latestByUser.values());
-      const avg = values.reduce((s, v) => s + v, 0) / values.length;
-      consensusTimeline.push({ time: row.recorded_at, value: avg });
-    }
-  }
-
   const isOpen = question.status === "OPEN" && new Date() < new Date(question.close_time);
   const emoji = getQuestionEmoji(question.title, question.category);
 
-  // Pre-compute user score for resolved markets
-  let userScore: number | null = null;
-  if (userForecast && question.status === "RESOLVED" && question.resolved_outcome !== null) {
-    userScore = brierPoints(userForecast.probability, question.resolved_outcome!) * 100;
-  }
+  // Pre-compute correctness for resolved markets
+  const wasCorrect = userForecast && question.status === "RESOLVED" && question.resolved_outcome !== null
+    ? isCorrect(userForecast.probability, question.resolved_outcome!)
+    : null;
 
   // Sidebar content shared between mobile and desktop positions
   const sidebarContent = (
@@ -149,7 +127,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
           <CardContent>
             <ForecastForm
               questionId={id}
-              currentProbability={userForecast?.probability ?? null}
+              currentVote={userForecast ? userForecast.probability >= 0.5 : null}
               redirectTo={!user ? `/questions/${id}` : undefined}
             />
           </CardContent>
@@ -165,29 +143,17 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
       {userForecast && (
         <Card className={question.status === "RESOLVED" ? "border-primary/20" : ""}>
           <CardContent className="py-5">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">Your Prediction</p>
-            <div className="flex items-end justify-between">
-              <p className="text-4xl font-bold font-mono tabular-nums">
-                {Math.round(userForecast.probability * 100)}
-                <span className="text-2xl text-muted-foreground/50">%</span>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">Your Vote</p>
+            <div className="flex items-center justify-between">
+              <p className="text-2xl font-bold">
+                {userForecast.probability >= 0.5 ? "YES" : "NO"}
               </p>
-              {userScore !== null && (
-                <div className="text-right">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Score</p>
-                  <p className={`text-2xl font-bold font-mono tabular-nums ${userScore >= 80 ? "text-green-500" : userScore >= 50 ? "text-primary" : "text-orange-500"}`}>
-                    <AnimatedNumber value={userScore} suffix=" pts" />
-                  </p>
-                </div>
+              {wasCorrect !== null && (
+                <Badge className={wasCorrect ? "bg-green-500/15 text-green-500 hover:bg-green-500/20 border-green-500/30" : "bg-red-500/15 text-red-500 hover:bg-red-500/20 border-red-500/30"}>
+                  {wasCorrect ? "Correct!" : "Wrong"}
+                </Badge>
               )}
             </div>
-            {question.status !== "RESOLVED" && (
-              <div className="mt-4 h-2.5 rounded-full bg-muted overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-primary/70 transition-all duration-500"
-                  style={{ width: `${Math.round(userForecast.probability * 100)}%` }}
-                />
-              </div>
-            )}
           </CardContent>
         </Card>
       )}
@@ -276,9 +242,6 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
           )}
         </div>
       </div>
-
-      {/* Consensus chart — full width */}
-      <ConsensusChart data={consensusTimeline} userProbability={userForecast?.probability ?? null} />
 
       {/* Two-column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 lg:items-start">
