@@ -1,7 +1,8 @@
 export interface UserScore {
   userId: string;
   name: string;
-  score: number;
+  wins: number;
+  losses: number;
   questionsPlayed: number;
   joinedAt: Date | null;
   totalResolvedQuestions: number;
@@ -33,16 +34,33 @@ export function seasonScore(
   return total / forecasts.length;
 }
 
-/** Ranking comparator: higher score > more questions > earliest avg submission time */
+/** Check if a forecast was correct (YES/NO binary) */
+export function isCorrect(probability: number, outcome: boolean): boolean {
+  const votedYes = probability >= 0.5;
+  return votedYes === outcome;
+}
+
+/** Compute W-L record from forecasts */
+export function winLossRecord(
+  forecasts: { probability: number; outcome: boolean }[]
+): { wins: number; losses: number } {
+  let wins = 0;
+  let losses = 0;
+  for (const f of forecasts) {
+    if (isCorrect(f.probability, f.outcome)) wins++;
+    else losses++;
+  }
+  return { wins, losses };
+}
+
+/** Ranking comparator: most wins > fewest losses > most questions > earliest avg submission time */
 export function rankUsers(users: UserScore[]): UserScore[] {
   return [...users].sort((a, b) => {
-    if (b.score !== a.score) return b.score - a.score;
+    if (b.wins !== a.wins) return b.wins - a.wins;
+    if (a.losses !== b.losses) return a.losses - b.losses;
     if (b.questionsPlayed !== a.questionsPlayed)
       return b.questionsPlayed - a.questionsPlayed;
-    // Lower avg submission time = submitted earlier on average = better
-    if (a.avgSubmissionTime !== b.avgSubmissionTime)
-      return a.avgSubmissionTime - b.avgSubmissionTime;
-    return 0;
+    return a.avgSubmissionTime - b.avgSubmissionTime;
   });
 }
 
