@@ -145,39 +145,42 @@ export type Database = {
           season_id: string;
           title: string;
           description: string;
-          category: "SPORTS" | "CAMPUS" | "ACADEMICS" | "GREEK" | "OTHER";
+          category: "SPORTS" | "CAMPUS" | "ACADEMICS" | "GREEK" | "LAW_SCHOOL" | "OTHER";
           close_time: string;
           resolve_time: string;
           status: "OPEN" | "CLOSED" | "RESOLVED";
           resolved_outcome: boolean | null;
           resolved_at: string | null;
           created_at: string;
+          image_url: string | null;
         };
         Insert: {
           id?: string;
           season_id: string;
           title: string;
           description: string;
-          category?: "SPORTS" | "CAMPUS" | "ACADEMICS" | "GREEK" | "OTHER";
+          category?: "SPORTS" | "CAMPUS" | "ACADEMICS" | "GREEK" | "LAW_SCHOOL" | "OTHER";
           close_time: string;
           resolve_time: string;
           status?: "OPEN" | "CLOSED" | "RESOLVED";
           resolved_outcome?: boolean | null;
           resolved_at?: string | null;
           created_at?: string;
+          image_url?: string | null;
         };
         Update: {
           id?: string;
           season_id?: string;
           title?: string;
           description?: string;
-          category?: "SPORTS" | "CAMPUS" | "ACADEMICS" | "GREEK" | "OTHER";
+          category?: "SPORTS" | "CAMPUS" | "ACADEMICS" | "GREEK" | "LAW_SCHOOL" | "OTHER";
           close_time?: string;
           resolve_time?: string;
           status?: "OPEN" | "CLOSED" | "RESOLVED";
           resolved_outcome?: boolean | null;
           resolved_at?: string | null;
           created_at?: string;
+          image_url?: string | null;
         };
         Relationships: [
           {

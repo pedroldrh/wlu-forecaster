@@ -1,7 +1,8 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { QuestionCard } from "@/components/question-card";
 import { SuggestQuestion } from "@/components/suggest-question";
-import { WarningCircle } from "@phosphor-icons/react/ssr";
+import { WarningCircle, Cards } from "@phosphor-icons/react/ssr";
+import Link from "next/link";
 
 export const metadata = {
   title: "Markets — Forecaster",
@@ -100,6 +101,15 @@ export default async function QuestionsPage() {
             </div>
           )}
           <SuggestQuestion />
+          <Link
+            href="/swipe"
+            className="flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 hover:border-purple-500/40 hover:from-purple-500/15 hover:to-pink-500/15 active:scale-[0.98] px-4 py-2.5 text-sm font-semibold text-purple-600 dark:text-purple-400 transition-all"
+          >
+            <div className="flex items-center justify-center h-7 w-7 rounded-lg bg-purple-500/15">
+              <Cards className="h-4 w-4" />
+            </div>
+            Swipe Mode
+          </Link>
         </div>
       )}
 
