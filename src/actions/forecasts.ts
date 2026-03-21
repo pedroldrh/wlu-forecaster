@@ -3,12 +3,12 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
-export async function submitForecast(questionId: string, probability: number) {
+export async function submitForecast(questionId: string, vote: boolean) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");
 
-  if (probability < 0 || probability > 1) throw new Error("Probability must be between 0 and 1");
+  const probability = vote ? 1.0 : 0.0;
 
   // Check question is open
   const { data: question } = await supabase.from("questions").select("*").eq("id", questionId).single();

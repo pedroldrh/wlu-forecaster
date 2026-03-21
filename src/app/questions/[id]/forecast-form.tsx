@@ -1,38 +1,32 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ForecastSlider } from "@/components/forecast-slider";
+import { VoteButtons } from "@/components/forecast-slider";
 import { submitForecast } from "@/actions/forecasts";
 import { toast } from "sonner";
 
 interface ForecastFormProps {
   questionId: string;
-  currentProbability: number | null;
+  currentVote: boolean | null;
   redirectTo?: string;
 }
 
-export function ForecastForm({ questionId, currentProbability, redirectTo }: ForecastFormProps) {
+export function ForecastForm({ questionId, currentVote, redirectTo }: ForecastFormProps) {
   const router = useRouter();
 
-  const handleSubmit = async (probability: number) => {
+  const handleSubmit = async (vote: boolean) => {
     if (redirectTo) {
       router.push(`/signin?next=${encodeURIComponent(redirectTo)}`);
       return;
     }
-
     try {
-      await submitForecast(questionId, probability);
-      toast.success("Forecast submitted!");
+      await submitForecast(questionId, vote);
+      toast.success(vote ? "Voted YES!" : "Voted NO!");
       router.push("/questions");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to submit forecast");
+      toast.error(error instanceof Error ? error.message : "Failed to submit vote");
     }
   };
 
-  return (
-    <ForecastSlider
-      defaultValue={currentProbability !== null ? Math.round(currentProbability * 100) : 50}
-      onSubmit={handleSubmit}
-    />
-  );
+  return <VoteButtons currentVote={currentVote} onSubmit={handleSubmit} />;
 }
