@@ -5,12 +5,15 @@ import {
   seasonScore,
   rankUsers,
   findBonusWinner,
+  isCorrect,
+  winLossRecord,
   UserScore,
 } from "./scoring";
 
 function makeUser(overrides: Partial<UserScore> & { userId: string; name: string }): UserScore {
   return {
-    score: 0,
+    wins: 0,
+    losses: 0,
     questionsPlayed: 0,
     joinedAt: new Date("2026-01-01"),
     totalResolvedQuestions: 10,
@@ -110,21 +113,65 @@ describe("seasonScore", () => {
   });
 });
 
+describe("isCorrect", () => {
+  it("returns true when voted YES and outcome is true", () => {
+    expect(isCorrect(1, true)).toBe(true);
+    expect(isCorrect(0.5, true)).toBe(true);
+  });
+
+  it("returns true when voted NO and outcome is false", () => {
+    expect(isCorrect(0, false)).toBe(true);
+    expect(isCorrect(0.3, false)).toBe(true);
+  });
+
+  it("returns false when voted YES and outcome is false", () => {
+    expect(isCorrect(0.8, false)).toBe(false);
+  });
+
+  it("returns false when voted NO and outcome is true", () => {
+    expect(isCorrect(0.2, true)).toBe(false);
+  });
+});
+
+describe("winLossRecord", () => {
+  it("returns 0-0 for empty forecasts", () => {
+    expect(winLossRecord([])).toEqual({ wins: 0, losses: 0 });
+  });
+
+  it("counts wins and losses correctly", () => {
+    const forecasts = [
+      { probability: 0.8, outcome: true },  // YES vote, outcome YES -> win
+      { probability: 0.3, outcome: false },  // NO vote, outcome NO -> win
+      { probability: 0.8, outcome: false },  // YES vote, outcome NO -> loss
+    ];
+    expect(winLossRecord(forecasts)).toEqual({ wins: 2, losses: 1 });
+  });
+});
+
 describe("rankUsers", () => {
-  it("ranks by score descending", () => {
+  it("ranks by wins descending", () => {
     const users: UserScore[] = [
-      makeUser({ userId: "a", name: "A", score: 0.5, questionsPlayed: 5 }),
-      makeUser({ userId: "b", name: "B", score: 0.8, questionsPlayed: 5 }),
+      makeUser({ userId: "a", name: "A", wins: 3, losses: 2, questionsPlayed: 5 }),
+      makeUser({ userId: "b", name: "B", wins: 5, losses: 0, questionsPlayed: 5 }),
     ];
     const ranked = rankUsers(users);
     expect(ranked[0].userId).toBe("b");
     expect(ranked[1].userId).toBe("a");
   });
 
-  it("breaks ties by questions played", () => {
+  it("breaks ties by fewer losses", () => {
     const users: UserScore[] = [
-      makeUser({ userId: "a", name: "A", score: 0.8, questionsPlayed: 3 }),
-      makeUser({ userId: "b", name: "B", score: 0.8, questionsPlayed: 5 }),
+      makeUser({ userId: "a", name: "A", wins: 4, losses: 3, questionsPlayed: 7 }),
+      makeUser({ userId: "b", name: "B", wins: 4, losses: 1, questionsPlayed: 5 }),
+    ];
+    const ranked = rankUsers(users);
+    expect(ranked[0].userId).toBe("b");
+  });
+
+  it("breaks further ties by more questions played", () => {
+    const users: UserScore[] = [
+      makeUser({ userId: "a", name: "A", wins: 4, losses: 1, questionsPlayed: 5 }),
+      makeUser({ userId: "b", name: "B", wins: 4, losses: 1, questionsPlayed: 8 }),
     ];
     const ranked = rankUsers(users);
     expect(ranked[0].userId).toBe("b");
@@ -132,8 +179,8 @@ describe("rankUsers", () => {
 
   it("breaks further ties by earlier avg submission time", () => {
     const users: UserScore[] = [
-      makeUser({ userId: "a", name: "A", score: 0.8, questionsPlayed: 5, avgSubmissionTime: 5000 }),
-      makeUser({ userId: "b", name: "B", score: 0.8, questionsPlayed: 5, avgSubmissionTime: 1000 }),
+      makeUser({ userId: "a", name: "A", wins: 4, losses: 1, questionsPlayed: 5, avgSubmissionTime: 5000 }),
+      makeUser({ userId: "b", name: "B", wins: 4, losses: 1, questionsPlayed: 5, avgSubmissionTime: 1000 }),
     ];
     const ranked = rankUsers(users);
     expect(ranked[0].userId).toBe("b");
@@ -141,8 +188,8 @@ describe("rankUsers", () => {
 
   it("does not mutate original array", () => {
     const users: UserScore[] = [
-      makeUser({ userId: "a", name: "A", score: 0.5, questionsPlayed: 5 }),
-      makeUser({ userId: "b", name: "B", score: 0.8, questionsPlayed: 5 }),
+      makeUser({ userId: "a", name: "A", wins: 2, losses: 3, questionsPlayed: 5 }),
+      makeUser({ userId: "b", name: "B", wins: 4, losses: 1, questionsPlayed: 5 }),
     ];
     rankUsers(users);
     expect(users[0].userId).toBe("a");

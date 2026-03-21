@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient, createAdminClient } from "@/lib/supabase/server";
-import { seasonScore, rankUsers, findBonusWinner, UserScore } from "@/lib/scoring";
+import { winLossRecord, rankUsers, findBonusWinner, UserScore } from "@/lib/scoring";
 
 async function requireAdmin() {
   const supabase = await createClient();
@@ -67,10 +67,12 @@ export async function getSeasonRankings(seasonId: string) {
       : Infinity;
 
     const profile = entry.profiles as unknown as { name: string; email: string; display_name: string | null };
+    const record = winLossRecord(scoringForecasts);
     return {
       userId: entry.user_id,
       name: profile?.display_name || profile?.name || profile?.email || "Unknown",
-      score: seasonScore(scoringForecasts),
+      wins: record.wins,
+      losses: record.losses,
       questionsPlayed: userForecasts.length,
       joinedAt: entry.created_at ? new Date(entry.created_at) : null,
       totalResolvedQuestions: totalResolved,
@@ -94,7 +96,7 @@ export async function exportSeasonCSV(seasonId: string) {
     season?.prize_3rd_cents ?? 0,
   ];
 
-  const headers = ["Rank", "Name", "Email", "Score", "Questions Played", "Participation %", "Qualified", "Prize Amount"];
+  const headers = ["Rank", "Name", "Email", "Wins", "Losses", "Questions Played", "Participation %", "Qualified", "Prize Amount"];
   const rows = await Promise.all(
     rankings.map(async (user, index) => {
       const { data: profile } = await supabase
@@ -111,7 +113,8 @@ export async function exportSeasonCSV(seasonId: string) {
         index + 1,
         user.name,
         profile?.email || "",
-        (user.score * 100).toFixed(1) + "%",
+        user.wins,
+        user.losses,
         user.questionsPlayed,
         user.participationPct.toFixed(0) + "%",
         user.qualifiesForPrize ? "Yes" : "No",

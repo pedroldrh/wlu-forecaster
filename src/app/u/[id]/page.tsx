@@ -2,15 +2,15 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { seasonScore, brierPoints } from "@/lib/scoring";
-import { formatPercent, formatDate } from "@/lib/utils";
+import { winLossRecord, isCorrect } from "@/lib/scoring";
+import { formatDate } from "@/lib/utils";
 import { UserAvatar } from "@/components/user-avatar";
 import { ReferralCard } from "@/components/referral-card";
 import { ScoreCard } from "@/components/score-card";
 import { EnableNotificationsButton } from "@/components/enable-notifications-button";
 import { SignOutButton } from "@/components/sign-out-button";
 import { HowItWorksButton } from "@/components/how-it-works-button";
-import { TrendUp, Hash, Pulse, Medal, Crown, Shield, ShieldCheck } from "@phosphor-icons/react/ssr";
+import { Hash, Pulse, Medal, Crown, Shield, ShieldCheck } from "@phosphor-icons/react/ssr";
 import Link from "next/link";
 import type { Metadata } from "next";
 
@@ -68,9 +68,10 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
     .limit(1)
     .single();
 
-  let score = 0;
+  let wins = 0;
+  let losses = 0;
   let questionsPlayed = 0;
-  let resolvedForecasts: { questionId: string; probability: number; outcome: boolean; title: string; points: number }[] = [];
+  let resolvedForecasts: { questionId: string; probability: number; outcome: boolean; title: string; correct: boolean }[] = [];
   if (season) {
     // Get resolved question IDs for this season
     const { data: resolvedQuestions } = await supabase
@@ -101,7 +102,9 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
         };
       });
 
-      score = seasonScore(forCalc);
+      const record = winLossRecord(forCalc);
+      wins = record.wins;
+      losses = record.losses;
       questionsPlayed = (forecasts ?? []).length;
       resolvedForecasts = (forecasts ?? []).map((f) => {
         const q = questionMap.get(f.question_id)!;
@@ -110,7 +113,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           probability: f.probability,
           outcome: q.resolved_outcome as boolean,
           title: q.title,
-          points: brierPoints(f.probability, q.resolved_outcome as boolean),
+          correct: isCorrect(f.probability, q.resolved_outcome as boolean),
         };
       });
     }
@@ -225,7 +228,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
       {/* Stats grid */}
       {season && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <ScoreCard score={score} hasBreakdown={resolvedForecasts.length > 0} />
+          <ScoreCard wins={wins} losses={losses} hasBreakdown={resolvedForecasts.length > 0} />
           <Link href="#score-breakdown" className="block">
             <Card className="h-full transition-colors hover:border-primary/30">
               <CardContent className="pt-4 pb-4">
@@ -284,12 +287,12 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{f.title}</p>
                     <p className="text-xs text-muted-foreground">
-                      Resolved {f.outcome ? "YES" : "NO"} · You: {Math.round(f.probability * 100)}%
+                      Resolved {f.outcome ? "YES" : "NO"} · You voted {f.probability >= 0.5 ? "YES" : "NO"}
                     </p>
                   </div>
                   <div className="ml-4 shrink-0">
-                    <Badge variant={f.points >= 0.75 ? "default" : "secondary"} className="font-mono">
-                      {(f.points * 100).toFixed(1)}%
+                    <Badge variant={f.correct ? "default" : "secondary"} className={f.correct ? "bg-green-500/15 text-green-500 border-green-500/30" : "bg-red-500/15 text-red-500 border-red-500/30"}>
+                      {f.correct ? "Correct" : "Wrong"}
                     </Badge>
                   </div>
                 </Link>
@@ -318,10 +321,10 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                     </p>
                   </div>
                   <div className="text-right ml-4 shrink-0">
-                    <div className="font-mono text-sm font-medium">{Math.round(f.probability * 100)}%</div>
-                    {f.question.status === "RESOLVED" && (
-                      <div className="text-xs font-mono text-muted-foreground">
-                        {(brierPoints(f.probability, f.question.resolved_outcome!) * 100).toFixed(1)} pts
+                    <div className="font-mono text-sm font-medium">{f.probability >= 0.5 ? "YES" : "NO"}</div>
+                    {f.question.status === "RESOLVED" && f.question.resolved_outcome !== null && (
+                      <div className={`text-xs font-medium ${(f.probability >= 0.5) === f.question.resolved_outcome ? "text-green-500" : "text-red-500"}`}>
+                        {(f.probability >= 0.5) === f.question.resolved_outcome ? "Correct" : "Wrong"}
                       </div>
                     )}
                   </div>

@@ -7,14 +7,14 @@ import { NotificationBell } from "@/components/notification-bell";
 import { useState, useEffect, Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { usePathname } from "next/navigation";
-import { brierPoints } from "@/lib/scoring";
+import { isCorrect } from "@/lib/scoring";
 import { NavigationProgress } from "@/components/navigation-progress";
 import { useUnvotedCount } from "@/hooks/use-unvoted-count";
 
 export function Nav() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
-  const [userStats, setUserStats] = useState<{ score: number; forecasts: number; resolved: number } | null>(null);
+  const [userStats, setUserStats] = useState<{ wins: number; losses: number; forecasts: number; resolved: number } | null>(null);
   const pathname = usePathname();
   const supabase = createClient();
   const unvotedCount = useUnvotedCount();
@@ -49,18 +49,19 @@ export function Nav() {
         .map((q) => [q.id, q.resolved_outcome])
     );
 
-    let totalPoints = 0;
+    let wins = 0;
+    let lossCount = 0;
     let resolvedCount = 0;
     for (const f of forecasts || []) {
       const outcome = resolvedMap.get(f.question_id);
       if (outcome != null) {
-        totalPoints += brierPoints(f.probability, outcome as boolean);
+        if (isCorrect(f.probability, outcome as boolean)) wins++;
+        else lossCount++;
         resolvedCount++;
       }
     }
 
-    const score = resolvedCount > 0 ? (totalPoints / resolvedCount) * 100 : 0;
-    setUserStats({ score, forecasts: totalForecasts, resolved: resolvedCount });
+    setUserStats({ wins, losses: lossCount, forecasts: totalForecasts, resolved: resolvedCount });
   }
 
   useEffect(() => {
@@ -143,7 +144,11 @@ export function Nav() {
               <Link href={`/u/${user.id}`} className="flex items-center gap-2 rounded-full pl-1 pr-3 py-1 hover:bg-accent active:bg-accent/80 transition-colors outline-none">
                 <UserAvatar userId={user.id} size="sm" />
                 {userStats && userStats.resolved > 0 ? (
-                  <span className="text-sm font-bold font-mono text-primary">{userStats.score.toFixed(1)}%</span>
+                  <span className="text-sm font-bold font-mono">
+                    <span className="text-green-500">{userStats.wins}</span>
+                    <span className="text-muted-foreground">-</span>
+                    <span className="text-red-500">{userStats.losses}</span>
+                  </span>
                 ) : userStats && userStats.forecasts > 0 ? (
                   <span className="text-xs text-muted-foreground">{userStats.forecasts} bet{userStats.forecasts !== 1 ? "s" : ""}</span>
                 ) : null}

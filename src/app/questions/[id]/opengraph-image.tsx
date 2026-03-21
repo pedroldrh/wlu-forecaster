@@ -48,17 +48,17 @@ export default async function OGImage({ params }: { params: Promise<{ id: string
     );
   }
 
-  // Compute consensus
+  // Compute YES %
   const { data: forecasts } = await supabase
     .from("forecasts")
     .select("probability")
     .eq("question_id", id);
 
   const forecastCount = forecasts?.length ?? 0;
-  let consensus: number | null = null;
+  let yesPct: number | null = null;
   if (forecastCount > 0) {
-    const sum = forecasts!.reduce((s, f) => s + f.probability, 0);
-    consensus = Math.round((sum / forecastCount) * 100);
+    const yesVotes = forecasts!.filter((f) => f.probability >= 0.5).length;
+    yesPct = Math.round((yesVotes / forecastCount) * 100);
   }
 
   const emoji = getQuestionEmoji(question.title, question.category);
@@ -192,16 +192,16 @@ export default async function OGImage({ params }: { params: Promise<{ id: string
             </span>
           </div>
 
-          {/* Bottom bar: consensus/forecasts + CTA + domain */}
+          {/* Bottom bar: YES % / forecasts + CTA + domain */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
             <div style={{ display: "flex", alignItems: "baseline", gap: "12px" }}>
-              {consensus !== null ? (
+              {yesPct !== null ? (
                 <>
                   <span style={{ fontSize: 60, fontWeight: 700, color: "#3b82f6", letterSpacing: "-0.03em" }}>
-                    {consensus}%
+                    {yesPct}%
                   </span>
                   <span style={{ fontSize: 20, fontWeight: 500, color: "#71717a" }}>
-                    consensus from {forecastCount} forecaster{forecastCount !== 1 ? "s" : ""}
+                    voted YES from {forecastCount} forecaster{forecastCount !== 1 ? "s" : ""}
                   </span>
                 </>
               ) : (

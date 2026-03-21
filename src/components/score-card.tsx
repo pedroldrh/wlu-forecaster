@@ -2,14 +2,14 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { TrendUp } from "@phosphor-icons/react";
-import { AnimatedNumber } from "@/components/animated-number";
 
 interface ScoreCardProps {
-  score: number;
+  wins: number;
+  losses: number;
   hasBreakdown: boolean;
 }
 
-export function ScoreCard({ score, hasBreakdown }: ScoreCardProps) {
+export function ScoreCard({ wins, losses, hasBreakdown }: ScoreCardProps) {
   function handleClick() {
     if (!hasBreakdown) return;
     document.getElementById("score-breakdown")?.scrollIntoView({ behavior: "smooth" });
@@ -24,9 +24,13 @@ export function ScoreCard({ score, hasBreakdown }: ScoreCardProps) {
         <div className="flex items-center gap-2">
           <TrendUp className="h-4 w-4 text-primary shrink-0" />
           <div>
-            <p className="text-2xl font-bold font-mono"><AnimatedNumber value={score * 100} suffix="%" /></p>
+            <p className="text-2xl font-bold font-mono">
+              <span className="text-green-500">{wins}</span>
+              <span className="text-muted-foreground mx-0.5">-</span>
+              <span className="text-red-500">{losses}</span>
+            </p>
             <p className="text-xs text-muted-foreground">
-              Avg Score{hasBreakdown ? " ↓" : ""}
+              Record{hasBreakdown ? " ↓" : ""}
             </p>
           </div>
         </div>

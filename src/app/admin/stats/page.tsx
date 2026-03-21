@@ -141,16 +141,16 @@ export default async function AdminStatsPage() {
     )
     .map((q) => {
       const qForecasts = forecastsByQuestion.get(q.id) ?? [];
-      const avgProb =
+      const yesPct =
         qForecasts.length > 0
-          ? qForecasts.reduce((sum, f) => sum + f.probability, 0) /
+          ? qForecasts.filter((f) => f.probability >= 0.5).length /
             qForecasts.length
           : null;
       return {
         ...q,
         forecastCount: qForecasts.length,
         commentCount: commentCountByQuestion.get(q.id) ?? 0,
-        consensus: avgProb,
+        yesPct,
       };
     })
     .sort((a, b) => b.forecastCount - a.forecastCount);
@@ -280,7 +280,7 @@ export default async function AdminStatsPage() {
                   <TableHead className="text-center">Status</TableHead>
                   <TableHead className="text-right">Forecasts</TableHead>
                   <TableHead className="text-right">Comments</TableHead>
-                  <TableHead className="text-right">Consensus</TableHead>
+                  <TableHead className="text-right">YES %</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -315,8 +315,8 @@ export default async function AdminStatsPage() {
                         {q.commentCount}
                       </TableCell>
                       <TableCell className="text-right">
-                        {q.consensus !== null
-                          ? `${(q.consensus * 100).toFixed(0)}%`
+                        {q.yesPct !== null
+                          ? `${(q.yesPct * 100).toFixed(0)}%`
                           : "\u2014"}
                       </TableCell>
                     </TableRow>

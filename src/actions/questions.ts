@@ -2,7 +2,7 @@
 
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { createNotification } from "@/actions/notifications";
-import { brierPoints } from "@/lib/scoring";
+import { isCorrect } from "@/lib/scoring";
 import { revalidatePath } from "next/cache";
 
 async function requireAdmin() {
@@ -100,12 +100,12 @@ export async function resolveQuestion(id: string, outcome: boolean) {
   for (const f of forecasts ?? []) {
     if (notifiedIds.has(f.user_id)) continue;
     notifiedIds.add(f.user_id);
-    const pts = (brierPoints(f.probability, outcome) * 100).toFixed(1);
+    const correct = isCorrect(f.probability, outcome);
     await createNotification(
       f.user_id,
       "resolution",
       "Market resolved",
-      `"${question.title}" resolved ${outcome ? "YES" : "NO"}. You scored ${pts} pts!`,
+      `"${question.title}" resolved ${outcome ? "YES" : "NO"}. You were ${correct ? "correct!" : "wrong."}`,
       `/questions/${id}`
     );
   }

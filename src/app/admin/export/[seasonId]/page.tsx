@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LeaderboardTable } from "@/components/leaderboard-table";
 import { ExportActions } from "./export-actions";
-import { seasonScore, rankUsers, UserScore } from "@/lib/scoring";
+import { winLossRecord, rankUsers, UserScore } from "@/lib/scoring";
 import { formatDollars } from "@/lib/utils";
 
 export default async function ExportPage({ params }: { params: Promise<{ seasonId: string }> }) {
@@ -66,10 +66,12 @@ export default async function ExportPage({ params }: { params: Promise<{ seasonI
     const avgSubmissionTime = userForecasts.length > 0
       ? userForecasts.reduce((sum, f) => sum + new Date(f.submittedAt).getTime(), 0) / userForecasts.length
       : Infinity;
+    const record = winLossRecord(userForecasts.map(f => ({ probability: f.probability, outcome: f.outcome })));
     return {
       userId: entry.user_id,
       name: userProfile?.display_name || userProfile?.name || userProfile?.email || "Unknown",
-      score: seasonScore(userForecasts.map(f => ({ probability: f.probability, outcome: f.outcome }))),
+      wins: record.wins,
+      losses: record.losses,
       questionsPlayed: userForecasts.length,
       joinedAt: entry.created_at ? new Date(entry.created_at) : null,
       totalResolvedQuestions: totalResolved,
@@ -90,7 +92,8 @@ export default async function ExportPage({ params }: { params: Promise<{ seasonI
       userId: u.userId,
       name: u.name,
       image: userProfile?.avatar_url,
-      score: u.score,
+      wins: u.wins,
+      losses: u.losses,
       questionsPlayed: u.questionsPlayed,
       participationPct: u.participationPct,
       qualifiesForPrize: u.qualifiesForPrize,

@@ -19,23 +19,23 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { data: question } = await supabase.from("questions").select("title, description, status, resolved_outcome").eq("id", id).single();
   if (!question) return { title: "Market Not Found" };
 
-  // Fetch forecast count + consensus for the description
+  // Fetch forecast count + YES % for the description
   const { data: forecasts } = await supabase
     .from("forecasts")
     .select("probability")
     .eq("question_id", id);
   const forecastCount = forecasts?.length ?? 0;
-  let consensus: number | null = null;
+  let yesPct: number | null = null;
   if (forecastCount > 0) {
-    const sum = forecasts!.reduce((s, f) => s + f.probability, 0);
-    consensus = Math.round((sum / forecastCount) * 100);
+    const yesVotes = forecasts!.filter((f) => f.probability >= 0.5).length;
+    yesPct = Math.round((yesVotes / forecastCount) * 100);
   }
 
   let description: string;
   if (question.status === "RESOLVED") {
-    description = `Resolved ${question.resolved_outcome ? "YES" : "NO"}. ${forecastCount} forecaster${forecastCount !== 1 ? "s" : ""} predicted this market on Forecaster.`;
-  } else if (consensus !== null) {
-    description = `${consensus}% consensus from ${forecastCount} forecaster${forecastCount !== 1 ? "s" : ""}. Make your prediction on Forecaster — W&L's free forecasting game.`;
+    description = `Resolved ${question.resolved_outcome ? "YES" : "NO"}. ${forecastCount} forecaster${forecastCount !== 1 ? "s" : ""} voted on Forecaster.`;
+  } else if (yesPct !== null) {
+    description = `${yesPct}% voted YES from ${forecastCount} forecaster${forecastCount !== 1 ? "s" : ""}. Make your prediction on Forecaster — W&L's free forecasting game.`;
   } else {
     description = `Be the first to predict. Forecaster — W&L's free campus forecasting game with real prizes.`;
   }
