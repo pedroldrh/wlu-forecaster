@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { submitForecast } from "@/actions/forecasts";
 import { CATEGORY_LABELS, getQuestionEmoji } from "@/lib/constants";
@@ -28,30 +28,33 @@ const CATEGORY_GRADIENTS: Record<string, string> = {
   OTHER: "from-zinc-900/90 to-zinc-600/40",
 };
 
-interface SwipeFeedProps {
-  initialMarkets?: Market[];
-  initialSeasonInfo?: { name: string; totalPrizeCents: number } | null;
-}
-
-export function SwipeFeed({ initialMarkets, initialSeasonInfo }: SwipeFeedProps) {
-  const [markets, setMarkets] = useState<Market[]>(initialMarkets ?? []);
-  const [loading, setLoading] = useState(!initialMarkets || initialMarkets.length === 0);
-  const [seasonInfo, setSeasonInfo] = useState(initialSeasonInfo ?? null);
+export function SwipeFeed() {
+  const [markets, setMarkets] = useState<Market[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [seasonInfo, setSeasonInfo] = useState<{ name: string; totalPrizeCents: number } | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [submittingMap, setSubmittingMap] = useState<Map<string, boolean | null>>(new Map());
   const [votedIds, setVotedIds] = useState<Set<string>>(new Set());
   const [showResolution, setShowResolution] = useState<string | null>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    const supabase = createClient();
+  const loadFeed = useCallback(async () => {
+    try {
+      // Always fetch fresh from API (uses service role, bypasses RLS)
+      const res = await fetch("/api/feed", { cache: "no-store" });
+      const data = await res.json();
+      const feedMarkets: Market[] = data.markets ?? [];
 
-    async function loadUserData(marketList: Market[]) {
+      setMarkets(feedMarkets);
+      setSeasonInfo(data.seasonInfo ?? null);
+
+      // Check auth + user's votes
+      const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       setIsLoggedIn(!!user);
 
-      if (user && marketList.length > 0) {
-        const questionIds = marketList.map((m) => m.id);
+      if (user && feedMarkets.length > 0) {
+        const questionIds = feedMarkets.map((m) => m.id);
         const { data: userForecasts } = await supabase
           .from("forecasts")
           .select("question_id")
@@ -60,42 +63,30 @@ export function SwipeFeed({ initialMarkets, initialSeasonInfo }: SwipeFeedProps)
 
         if (userForecasts && userForecasts.length > 0) {
           setVotedIds(new Set(userForecasts.map((f: { question_id: string }) => f.question_id)));
+        } else {
+          setVotedIds(new Set());
         }
+      } else {
+        setVotedIds(new Set());
       }
+    } catch (e) {
+      console.error("Feed load error:", e);
     }
+    setLoading(false);
+  }, []);
 
-    async function loadFeed() {
-      try {
-        const res = await fetch("/api/feed");
-        const data = await res.json();
-        const feedMarkets = data.markets ?? [];
-        setMarkets(feedMarkets);
-        setSeasonInfo(data.seasonInfo ?? null);
-        await loadUserData(feedMarkets);
-      } catch (e) {
-        console.error("Feed load error:", e);
-      }
-      setLoading(false);
-    }
+  useEffect(() => {
+    loadFeed();
 
-    // If we have initial data from SSR, just load user data
-    // Otherwise fetch everything from the API
-    if (initialMarkets && initialMarkets.length > 0) {
-      loadUserData(initialMarkets).then(() => setLoading(false));
-    } else {
-      // Fallback: fetch from API (in case SSR didn't provide data)
-      loadFeed();
-    }
-
+    const supabase = createClient();
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsLoggedIn(!!session?.user);
-      if (session?.user) {
-        loadFeed();
-      }
+      // Reload feed on any auth change (sign in or sign out)
+      loadFeed();
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [loadFeed]);
 
   const visibleMarkets = markets.filter((m) => !votedIds.has(m.id));
 
