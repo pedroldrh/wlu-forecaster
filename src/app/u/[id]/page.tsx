@@ -33,121 +33,112 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createAdminClient();
-  let user: { id: string } | null = null;
-  try {
-    const authClient = await createClient();
-    const { data } = await authClient.auth.getUser();
-    user = data.user;
-  } catch {}
 
-  // Fetch the profile
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", id)
-    .single();
+  // Parallel: user + profile + season + entries + referrals
+  const [userResult, profileResult, seasonResult, entriesResult, referralResult] = await Promise.all([
+    (async () => {
+      try {
+        const authClient = await createClient();
+        const { data } = await authClient.auth.getUser();
+        return data.user;
+      } catch {
+        return null;
+      }
+    })(),
+    supabase.from("profiles").select("*").eq("id", id).single(),
+    supabase
+      .from("seasons")
+      .select("*")
+      .in("status", ["LIVE", "ENDED"])
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single(),
+    supabase
+      .from("season_entries")
+      .select("*, seasons(*)")
+      .eq("user_id", id)
+      .in("status", ["PAID", "JOINED"]),
+    supabase
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .eq("referred_by", id),
+  ]);
 
+  const user = userResult;
+  const profile = profileResult.data;
   if (!profile) notFound();
 
-  // Get season entries (PAID or JOINED)
-  const { data: entriesRaw } = await supabase
-    .from("season_entries")
-    .select("*, seasons(*)")
-    .eq("user_id", id)
-    .in("status", ["PAID", "JOINED"]);
-
-  const entries = entriesRaw ?? [];
-
-  // Get current/latest season
-  const { data: season } = await supabase
-    .from("seasons")
-    .select("*")
-    .in("status", ["LIVE", "ENDED"])
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .single();
+  const season = seasonResult.data;
+  const entries = entriesResult.data ?? [];
+  const referrals = referralResult.count ?? 0;
 
   let wins = 0;
   let losses = 0;
   let questionsPlayed = 0;
   let resolvedForecasts: { questionId: string; probability: number; outcome: boolean; title: string; correct: boolean }[] = [];
-  if (season) {
-    const { data: resolvedQuestions } = await supabase
-      .from("questions")
-      .select("id, title, resolved_outcome")
-      .eq("season_id", season.id)
-      .eq("status", "RESOLVED");
-
-    const resolvedQs = resolvedQuestions ?? [];
-    const resolvedQuestionIds = resolvedQs.map((q) => q.id);
-
-    if (resolvedQuestionIds.length > 0) {
-      const { data: forecasts } = await supabase
-        .from("forecasts")
-        .select("id, probability, question_id, submitted_at")
-        .eq("user_id", id)
-        .in("question_id", resolvedQuestionIds)
-        .order("submitted_at", { ascending: false });
-
-      const questionMap = new Map(resolvedQs.map((q) => [q.id, q]));
-
-      const forCalc = (forecasts ?? []).map((f) => {
-        const q = questionMap.get(f.question_id)!;
-        return {
-          probability: f.probability,
-          outcome: q.resolved_outcome as boolean,
-        };
-      });
-
-      const record = winLossRecord(forCalc);
-      wins = record.wins;
-      losses = record.losses;
-      questionsPlayed = (forecasts ?? []).length;
-      resolvedForecasts = (forecasts ?? []).map((f) => {
-        const q = questionMap.get(f.question_id)!;
-        return {
-          questionId: f.question_id,
-          probability: f.probability,
-          outcome: q.resolved_outcome as boolean,
-          title: q.title,
-          correct: isCorrect(f.probability, q.resolved_outcome as boolean),
-        };
-      });
-    }
-  }
-
-  // Get all forecasts including unresolved for this season
   let allForecasts: { id: string; probability: number; question_id: string; submitted_at: string; question: { title: string; status: string; resolved_outcome: boolean | null } }[] = [];
+  let totalResolved = 0;
+
   if (season) {
-    const { data: allQuestions } = await supabase
-      .from("questions")
-      .select("id, title, status, resolved_outcome")
-      .eq("season_id", season.id);
-
-    const allQs = allQuestions ?? [];
-    const allQuestionIds = allQs.map((q) => q.id);
-
-    if (allQuestionIds.length > 0) {
-      const { data: forecasts } = await supabase
+    // Parallel: all questions + user's forecasts for this season
+    const [allQuestionsResult, userForecastsResult] = await Promise.all([
+      supabase
+        .from("questions")
+        .select("id, title, status, resolved_outcome")
+        .eq("season_id", season.id),
+      supabase
         .from("forecasts")
         .select("id, probability, question_id, submitted_at")
         .eq("user_id", id)
-        .in("question_id", allQuestionIds)
-        .order("submitted_at", { ascending: false });
+        .order("submitted_at", { ascending: false }),
+    ]);
 
-      const questionMap = new Map(allQs.map((q) => [q.id, q]));
-      allForecasts = (forecasts ?? []).map((f) => {
-        const q = questionMap.get(f.question_id)!;
-        return {
-          ...f,
-          question: {
-            title: q.title,
-            status: q.status,
-            resolved_outcome: q.resolved_outcome,
-          },
-        };
-      });
-    }
+    const allQs = allQuestionsResult.data ?? [];
+    const allQuestionIds = new Set(allQs.map((q) => q.id));
+    const questionMap = new Map(allQs.map((q) => [q.id, q]));
+
+    const resolvedQs = allQs.filter((q) => q.status === "RESOLVED");
+    totalResolved = resolvedQs.length;
+    const resolvedIds = new Set(resolvedQs.map((q) => q.id));
+
+    // Filter forecasts to this season's questions
+    const seasonForecasts = (userForecastsResult.data ?? []).filter((f) => allQuestionIds.has(f.question_id));
+
+    // Build allForecasts for display
+    allForecasts = seasonForecasts.map((f) => {
+      const q = questionMap.get(f.question_id)!;
+      return {
+        ...f,
+        question: {
+          title: q.title,
+          status: q.status,
+          resolved_outcome: q.resolved_outcome,
+        },
+      };
+    });
+
+    // Build resolved forecasts for accuracy section
+    const resolvedUserForecasts = seasonForecasts.filter((f) => resolvedIds.has(f.question_id));
+    const forCalc = resolvedUserForecasts.map((f) => {
+      const q = questionMap.get(f.question_id)!;
+      return { probability: f.probability, outcome: q.resolved_outcome as boolean };
+    });
+
+    const record = winLossRecord(forCalc);
+    wins = record.wins;
+    losses = record.losses;
+    questionsPlayed = resolvedUserForecasts.length;
+
+    resolvedForecasts = resolvedUserForecasts.map((f) => {
+      const q = questionMap.get(f.question_id)!;
+      return {
+        questionId: f.question_id,
+        probability: f.probability,
+        outcome: q.resolved_outcome as boolean,
+        title: q.title,
+        correct: isCorrect(f.probability, q.resolved_outcome as boolean),
+      };
+    });
   }
 
   // Badges
@@ -155,40 +146,22 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   if (profile.is_wlu_verified) badges.push("W&L Verified");
   const qualifiesForPrizes = allForecasts.length >= 5;
 
-  if (season) {
-    const { count: totalResolved } = await supabase
-      .from("questions")
-      .select("*", { count: "exact", head: true })
-      .eq("season_id", season.id)
-      .eq("status", "RESOLVED");
-
-    if (totalResolved && totalResolved > 0 && questionsPlayed >= totalResolved * 0.9) {
-      badges.push("Most Active");
-    }
+  if (totalResolved > 0 && questionsPlayed >= totalResolved * 0.9) {
+    badges.push("Most Active");
   }
 
   const isOwnProfile = user?.id === id;
   const displayName = profile.display_name || profile.name || "Anonymous";
   const isFounder = profile.role === "ADMIN" && displayName === "Forecast Founder";
-
-  // Count referrals
-  const { count: referralCount } = await supabase
-    .from("profiles")
-    .select("*", { count: "exact", head: true })
-    .eq("referred_by", id);
-  const referrals = referralCount ?? 0;
-
   const hasRecord = wins > 0 || losses > 0;
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-24">
       {/* Hero section — big record display */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-background to-blue-500/10 border border-primary/20 pt-8 pb-6 px-6">
-        {/* Decorative glow */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-primary/10 rounded-full blur-3xl" />
 
         <div className="relative flex flex-col items-center text-center">
-          {/* Avatar */}
           <div className="relative mb-4">
             <UserAvatar userId={id} size="lg" className="h-20 w-20 ring-4 ring-primary/20" />
             {isFounder && (
@@ -198,10 +171,8 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
             )}
           </div>
 
-          {/* Name */}
           <h1 className="text-xl font-bold mb-1">{displayName}</h1>
 
-          {/* Badges */}
           <div className="flex flex-wrap items-center justify-center gap-1.5 mb-5">
             {isFounder && (
               <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-xs">
@@ -216,31 +187,21 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
             </span>
           </div>
 
-          {/* Big record display */}
           {hasRecord ? (
             <div className="flex items-baseline gap-2 mb-2">
-              <span className="text-6xl sm:text-7xl font-extrabold font-mono text-green-500 leading-none">
-                {wins}
-              </span>
-              <span className="text-4xl sm:text-5xl font-bold text-muted-foreground/40 leading-none">
-                -
-              </span>
-              <span className="text-6xl sm:text-7xl font-extrabold font-mono text-red-500 leading-none">
-                {losses}
-              </span>
+              <span className="text-6xl sm:text-7xl font-extrabold font-mono text-green-500 leading-none">{wins}</span>
+              <span className="text-4xl sm:text-5xl font-bold text-muted-foreground/40 leading-none">-</span>
+              <span className="text-6xl sm:text-7xl font-extrabold font-mono text-red-500 leading-none">{losses}</span>
             </div>
           ) : (
             <div className="flex items-baseline gap-2 mb-2">
-              <span className="text-5xl sm:text-6xl font-extrabold font-mono text-muted-foreground/30 leading-none">
-                0 - 0
-              </span>
+              <span className="text-5xl sm:text-6xl font-extrabold font-mono text-muted-foreground/30 leading-none">0 - 0</span>
             </div>
           )}
           <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold mb-3">
             {season ? `${season.name} Record` : "Record"}
           </p>
 
-          {/* Quick stats row */}
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
             <div className="text-center">
               <p className="font-bold font-mono text-foreground">{allForecasts.length}</p>
@@ -260,7 +221,6 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
         </div>
       </div>
 
-      {/* Notifications + How It Works */}
       {isOwnProfile && (
         <div className="flex gap-3">
           <EnableNotificationsButton />
@@ -268,20 +228,15 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
         </div>
       )}
 
-      {/* Prize qualification */}
       {season && qualifiesForPrizes && (
         <div className="flex items-center gap-3 rounded-lg border border-green-500/30 bg-green-500/5 px-4 py-3 text-sm">
           <ShieldCheck className="h-5 w-5 text-green-500 shrink-0" weight="fill" />
-          <span className="font-medium">
-            Qualifies for {season.name} prizes
-          </span>
+          <span className="font-medium">Qualifies for {season.name} prizes</span>
         </div>
       )}
 
-      {/* Referral card (own profile only) */}
       {isOwnProfile && <ReferralCard userId={id} referralCount={referrals} />}
 
-      {/* Score breakdown */}
       {resolvedForecasts.length > 0 && (
         <Card id="score-breakdown">
           <CardHeader>
@@ -309,7 +264,6 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
         </Card>
       )}
 
-      {/* Recent forecasts */}
       {allForecasts.length > 0 && (
         <Card id="recent-forecasts">
           <CardHeader>
@@ -342,7 +296,6 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
         </Card>
       )}
 
-      {/* Own profile actions */}
       {isOwnProfile && (
         <div className="space-y-3">
           {profile.role === "ADMIN" && (

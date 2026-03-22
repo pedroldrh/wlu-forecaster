@@ -3,18 +3,27 @@ import { HomeFeed } from "@/components/home-feed";
 
 export default async function HomePage() {
   const supabase = await createAdminClient();
-  let user: { id: string } | null = null;
-  try {
-    const authClient = await createClient();
-    const { data } = await authClient.auth.getUser();
-    user = data.user;
-  } catch {}
 
-  const { data: season } = await supabase
-    .from("seasons")
-    .select("*")
-    .eq("status", "LIVE")
-    .single();
+  // Parallel: get user + season at the same time
+  const [userResult, seasonResult] = await Promise.all([
+    (async () => {
+      try {
+        const authClient = await createClient();
+        const { data } = await authClient.auth.getUser();
+        return data.user;
+      } catch {
+        return null;
+      }
+    })(),
+    supabase
+      .from("seasons")
+      .select("id, name, prize_1st_cents, prize_2nd_cents, prize_3rd_cents, prize_4th_cents, prize_5th_cents, prize_bonus_cents")
+      .eq("status", "LIVE")
+      .single(),
+  ]);
+
+  const user = userResult;
+  const season = seasonResult.data;
 
   if (!season) {
     return <HomeFeed markets={[]} isLoggedIn={false} seasonInfo={null} />;
@@ -30,41 +39,48 @@ export default async function HomePage() {
 
   const seasonInfo = { name: season.name, totalPrizeCents };
 
-  // Get all open markets
-  const { data: questions } = await supabase
-    .from("questions")
-    .select("id, title, description, category, image_url, close_time, status")
-    .eq("season_id", season.id)
-    .eq("status", "OPEN")
-    .gt("close_time", new Date().toISOString())
-    .order("close_time", { ascending: true });
+  // Get open markets + user's votes in parallel
+  const [questionsResult, userForecastsResult] = await Promise.all([
+    supabase
+      .from("questions")
+      .select("id, title, description, category, image_url")
+      .eq("season_id", season.id)
+      .eq("status", "OPEN")
+      .gt("close_time", new Date().toISOString())
+      .order("close_time", { ascending: true }),
+    user
+      ? supabase
+          .from("forecasts")
+          .select("question_id")
+          .eq("user_id", user.id)
+      : Promise.resolve({ data: [] as { question_id: string }[] }),
+  ]);
 
+  const questions = questionsResult.data;
   if (!questions || questions.length === 0) {
     return <HomeFeed markets={[]} isLoggedIn={!!user} seasonInfo={seasonInfo} />;
   }
 
-  // Filter out markets user has already voted on
-  let unvotedQuestions = questions;
-  if (user) {
-    const questionIds = questions.map((q) => q.id);
-    const { data: forecasts } = await supabase
-      .from("forecasts")
-      .select("question_id")
-      .eq("user_id", user.id)
-      .in("question_id", questionIds);
+  // Filter out voted markets
+  const votedIds = new Set((userForecastsResult.data ?? []).map((f) => f.question_id));
+  const unvotedQuestions = questions.filter((q) => !votedIds.has(q.id));
 
-    const votedIds = new Set((forecasts ?? []).map((f) => f.question_id));
-    unvotedQuestions = questions.filter((q) => !votedIds.has(q.id));
+  if (unvotedQuestions.length === 0) {
+    return <HomeFeed markets={[]} isLoggedIn={!!user} seasonInfo={seasonInfo} />;
   }
 
-  // Get vote counts
+  // Get all vote counts in a single query using group-by via RPC,
+  // or batch with Promise.all instead of sequential loop
+  const unvotedIds = unvotedQuestions.map((q) => q.id);
+  const { data: allForecasts } = await supabase
+    .from("forecasts")
+    .select("question_id")
+    .in("question_id", unvotedIds);
+
+  // Count forecasts per question in JS
   const voteCounts = new Map<string, number>();
-  for (const q of unvotedQuestions) {
-    const { count } = await supabase
-      .from("forecasts")
-      .select("*", { count: "exact", head: true })
-      .eq("question_id", q.id);
-    voteCounts.set(q.id, count || 0);
+  for (const f of allForecasts ?? []) {
+    voteCounts.set(f.question_id, (voteCounts.get(f.question_id) || 0) + 1);
   }
 
   const markets = unvotedQuestions.map((q) => ({
