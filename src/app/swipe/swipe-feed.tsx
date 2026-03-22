@@ -106,6 +106,7 @@ export function SwipeFeed() {
     setSubmittingMap((prev) => new Map(prev).set(marketId, vote));
     try {
       await submitForecast(marketId, vote);
+      toast.success(vote ? "Voted YES!" : "Voted NO!", { duration: 1000 });
       setTimeout(() => {
         setVotedIds((prev) => {
           const next = new Set(prev).add(marketId);
@@ -171,8 +172,7 @@ export function SwipeFeed() {
                 <img
                   src={market.imageUrl}
                   alt=""
-                  className="absolute inset-0 w-full h-full object-cover scale-[1.4]"
-                  style={{ objectPosition: "center 30%" }}
+                  className="absolute inset-0 w-full h-full object-cover"
                   draggable={false}
                 />
               ) : (

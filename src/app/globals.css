@@ -130,15 +130,6 @@
   }
 }
 
-/* Hide scrollbars everywhere */
-* {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-*::-webkit-scrollbar {
-  display: none;
-}
-
 /* In standalone PWA mode, make html/body black so no white bleeds behind full-screen feed */
 @media (display-mode: standalone) {
   html, body {
