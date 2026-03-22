@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { ForecasterLogo } from "@/components/forecaster-logo";
-import { DownloadSimple, Trophy } from "@phosphor-icons/react";
+import { DownloadSimple } from "@phosphor-icons/react";
 import { formatDollars } from "@/lib/utils";
 
 type Platform = "ios" | "android" | "desktop";
@@ -55,14 +55,13 @@ export function WebInstallPage({ seasonInfo }: WebInstallPageProps) {
         W&L Campus Predictions — vote on markets, build your record, win real money.
       </p>
 
-      {/* Prize pool — big and bold */}
+      {/* Prize pool */}
       {seasonInfo && seasonInfo.totalPrizeCents > 0 && (
         <div className="flex flex-col items-center mb-10 animate-fade-up" style={{ animationDelay: "0.2s" }}>
-          <Trophy className="h-10 w-10 text-amber-300 mb-2" weight="fill" />
-          <span className="text-5xl sm:text-6xl font-extrabold font-mono bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent leading-none">
+          <span className="text-7xl sm:text-8xl font-extrabold font-mono bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent leading-none">
             {formatDollars(seasonInfo.totalPrizeCents)}
           </span>
-          <span className="text-white/50 text-sm font-semibold uppercase tracking-widest mt-2">
+          <span className="text-white/50 text-sm font-semibold uppercase tracking-widest mt-3">
             Prize Pool
           </span>
         </div>
