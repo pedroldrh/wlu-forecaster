@@ -79,7 +79,6 @@ export function SwipeFeed({ markets, isLoggedIn, seasonInfo }: SwipeFeedProps) {
     }
   }, [currentIndex]);
 
-  // Touch gesture handling for vertical swiping
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY;
     touchStartX.current = e.touches[0].clientX;
@@ -90,10 +89,9 @@ export function SwipeFeed({ markets, isLoggedIn, seasonInfo }: SwipeFeedProps) {
       const deltaY = touchStartY.current - e.changedTouches[0].clientY;
       const deltaX = Math.abs(touchStartX.current - e.changedTouches[0].clientX);
 
-      // Only trigger if vertical swipe is dominant and exceeds threshold
       if (Math.abs(deltaY) > 60 && Math.abs(deltaY) > deltaX) {
-        if (deltaY > 0) goNext(); // swiped up → next
-        else goPrev(); // swiped down → previous
+        if (deltaY > 0) goNext();
+        else goPrev();
       }
     },
     [goNext, goPrev]
@@ -110,7 +108,6 @@ export function SwipeFeed({ markets, isLoggedIn, seasonInfo }: SwipeFeedProps) {
       await submitForecast(market.id, vote);
       setVotes((prev) => new Map(prev).set(market.id, vote));
       toast.success(vote ? "Voted YES!" : "Voted NO!", { duration: 1000 });
-      // Auto-advance after first vote
       if (userVote === null) {
         setTimeout(goNext, 800);
       }
@@ -135,7 +132,6 @@ export function SwipeFeed({ markets, isLoggedIn, seasonInfo }: SwipeFeedProps) {
     );
   }
 
-  // Slide animation classes
   const slideClass = slideDirection === "up"
     ? "animate-slide-out-up"
     : slideDirection === "down"
@@ -152,7 +148,6 @@ export function SwipeFeed({ markets, isLoggedIn, seasonInfo }: SwipeFeedProps) {
     >
       {/* Card container with animation */}
       <div key={market.id} className={`absolute inset-0 ${slideClass}`}>
-        {/* Background image */}
         {market.imageUrl ? (
           <img
             src={market.imageUrl}
@@ -163,57 +158,28 @@ export function SwipeFeed({ markets, isLoggedIn, seasonInfo }: SwipeFeedProps) {
         ) : (
           <div className={`absolute inset-0 bg-gradient-to-b ${gradient}`} />
         )}
-
-        {/* Dark overlay for readability */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/80" />
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 flex flex-col h-full">
-        {/* Top bar */}
-        <div className="flex items-center justify-between px-4 pt-[env(safe-area-inset-top,12px)] pb-2">
-          {/* Prize pool mini indicator */}
-          {seasonInfo && seasonInfo.totalPrizeCents > 0 ? (
+      {/* Content — vertically centered */}
+      <div className="relative z-10 flex flex-col h-full justify-center px-5">
+        {/* Prize pool — centered at top area */}
+        {seasonInfo && seasonInfo.totalPrizeCents > 0 && (
+          <div className="absolute top-0 left-0 right-0 flex justify-center pt-[env(safe-area-inset-top,12px)]">
             <Link
               href="/leaderboard"
-              className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1.5"
+              className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mt-2"
             >
-              <Trophy className="h-3.5 w-3.5 text-amber-300" weight="fill" />
-              <span className="text-white/80 text-xs font-bold font-mono">
+              <Trophy className="h-4 w-4 text-amber-300" weight="fill" />
+              <span className="text-white font-bold text-sm font-mono">
                 {formatDollars(seasonInfo.totalPrizeCents)}
               </span>
             </Link>
-          ) : (
-            <div />
-          )}
-          <span className="text-white/50 text-xs font-mono">
-            {currentIndex + 1} / {markets.length}
-          </span>
-        </div>
-
-        {/* Progress bar */}
-        <div className="px-4 pb-3">
-          <div className="flex gap-0.5">
-            {markets.map((_, i) => (
-              <div
-                key={i}
-                className={`h-0.5 flex-1 rounded-full transition-colors ${
-                  i < currentIndex
-                    ? "bg-white/50"
-                    : i === currentIndex
-                      ? "bg-white"
-                      : "bg-white/15"
-                }`}
-              />
-            ))}
           </div>
-        </div>
+        )}
 
-        {/* Spacer */}
-        <div className="flex-1" />
-
-        {/* Market info */}
-        <div className="px-5 pb-4 space-y-3">
+        {/* Market content — centered */}
+        <div className="space-y-4">
           {/* Category + emoji */}
           <div className="flex items-center gap-2">
             <span className="text-2xl">{getQuestionEmoji(market.title, market.category)}</span>
@@ -234,86 +200,76 @@ export function SwipeFeed({ markets, isLoggedIn, seasonInfo }: SwipeFeedProps) {
             <span>{market.voteCount} vote{market.voteCount !== 1 ? "s" : ""}</span>
             <CountdownTimer targetDate={market.closeTime} className="text-white/60" />
           </div>
-        </div>
 
-        {/* Comments (TikTok-style) */}
-        {market.comments.length > 0 && (
-          <div className="px-5 pb-3">
-            <button
-              onClick={() => setShowComments(!showComments)}
-              className="flex items-center gap-1.5 text-white/50 text-xs mb-2"
-            >
-              <ChatCircle className="h-3.5 w-3.5" />
-              {market.comments.length} comment{market.comments.length !== 1 ? "s" : ""}
-              <CaretDown className={`h-3 w-3 transition-transform ${showComments ? "rotate-180" : ""}`} />
-            </button>
-            {showComments && (
-              <div className="space-y-2 max-h-32 overflow-y-auto">
-                {market.comments.map((c, i) => (
-                  <div key={i} className="text-sm">
-                    <span className="font-semibold text-white/80">{c.display_name}</span>
-                    <span className="text-white/60 ml-1.5">{c.content}</span>
-                  </div>
-                ))}
-                <Link
-                  href={`/questions/${market.id}`}
-                  className="text-xs text-white/40 hover:text-white/60"
-                >
-                  View all comments
-                </Link>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Vote buttons */}
-        <div className="px-5 pb-4">
-          {userVote !== null && (
-            <p className="text-xs text-center text-white/50 mb-2">
-              You voted {userVote ? "YES" : "NO"} · tap to change
-            </p>
+          {/* Comments */}
+          {market.comments.length > 0 && (
+            <div>
+              <button
+                onClick={() => setShowComments(!showComments)}
+                className="flex items-center gap-1.5 text-white/50 text-xs mb-2"
+              >
+                <ChatCircle className="h-3.5 w-3.5" />
+                {market.comments.length} comment{market.comments.length !== 1 ? "s" : ""}
+                <CaretDown className={`h-3 w-3 transition-transform ${showComments ? "rotate-180" : ""}`} />
+              </button>
+              {showComments && (
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {market.comments.map((c, i) => (
+                    <div key={i} className="text-sm">
+                      <span className="font-semibold text-white/80">{c.display_name}</span>
+                      <span className="text-white/60 ml-1.5">{c.content}</span>
+                    </div>
+                  ))}
+                  <Link
+                    href={`/questions/${market.id}`}
+                    className="text-xs text-white/40 hover:text-white/60"
+                  >
+                    View all comments
+                  </Link>
+                </div>
+              )}
+            </div>
           )}
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => handleVote(true)}
-              disabled={submitting !== null}
-              className={`relative h-14 rounded-2xl font-bold text-lg transition-all active:scale-[0.96] ${
-                userVote === true
-                  ? "bg-green-500 text-white shadow-lg shadow-green-500/30"
-                  : "bg-white/15 text-white hover:bg-white/25 backdrop-blur-sm border border-white/20"
-              } ${submitting === true ? "animate-pulse" : ""}`}
-            >
-              {userVote === true && (
-                <Check className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5" weight="bold" />
-              )}
-              YES
-            </button>
-            <button
-              onClick={() => handleVote(false)}
-              disabled={submitting !== null}
-              className={`relative h-14 rounded-2xl font-bold text-lg transition-all active:scale-[0.96] ${
-                userVote === false
-                  ? "bg-red-500 text-white shadow-lg shadow-red-500/30"
-                  : "bg-white/15 text-white hover:bg-white/25 backdrop-blur-sm border border-white/20"
-              } ${submitting === false ? "animate-pulse" : ""}`}
-            >
-              {userVote === false && (
-                <Check className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5" weight="bold" />
-              )}
-              NO
-            </button>
+
+          {/* Vote buttons */}
+          <div className="pt-2">
+            {userVote !== null && (
+              <p className="text-xs text-center text-white/50 mb-2">
+                You voted {userVote ? "YES" : "NO"} · tap to change
+              </p>
+            )}
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => handleVote(true)}
+                disabled={submitting !== null}
+                className={`relative h-16 rounded-2xl font-bold text-xl transition-all active:scale-[0.96] ${
+                  userVote === true
+                    ? "bg-green-400 text-white shadow-lg shadow-green-400/30"
+                    : "bg-green-500/20 text-green-300 hover:bg-green-500/30 backdrop-blur-sm border border-green-400/30"
+                } ${submitting === true ? "animate-pulse" : ""}`}
+              >
+                {userVote === true && (
+                  <Check className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5" weight="bold" />
+                )}
+                YES
+              </button>
+              <button
+                onClick={() => handleVote(false)}
+                disabled={submitting !== null}
+                className={`relative h-16 rounded-2xl font-bold text-xl transition-all active:scale-[0.96] ${
+                  userVote === false
+                    ? "bg-red-400 text-white shadow-lg shadow-red-400/30"
+                    : "bg-red-500/20 text-red-300 hover:bg-red-500/30 backdrop-blur-sm border border-red-400/30"
+                } ${submitting === false ? "animate-pulse" : ""}`}
+              >
+                {userVote === false && (
+                  <Check className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5" weight="bold" />
+                )}
+                NO
+              </button>
+            </div>
           </div>
         </div>
-
-        {/* Swipe hint (shown on first card only) */}
-        {currentIndex === 0 && markets.length > 1 && (
-          <div className="flex justify-center pb-2 animate-bounce-slow">
-            <span className="text-white/30 text-xs">Swipe up for next</span>
-          </div>
-        )}
-
-        {/* Bottom spacer for nav bar */}
-        <div className="h-20 pb-[env(safe-area-inset-bottom,0px)]" />
       </div>
     </div>
   );
