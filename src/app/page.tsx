@@ -33,7 +33,7 @@ export default async function HomePage() {
   // Get all open markets
   const { data: questions } = await supabase
     .from("questions")
-    .select("id, title, category, image_url, close_time, status")
+    .select("id, title, description, category, image_url, close_time, status")
     .eq("season_id", season.id)
     .eq("status", "OPEN")
     .gt("close_time", new Date().toISOString())
@@ -43,24 +43,23 @@ export default async function HomePage() {
     return <HomeFeed markets={[]} isLoggedIn={!!user} seasonInfo={seasonInfo} />;
   }
 
-  // Get user's existing votes
-  const userVotes = new Map<string, boolean>();
+  // Filter out markets user has already voted on
+  let unvotedQuestions = questions;
   if (user) {
     const questionIds = questions.map((q) => q.id);
     const { data: forecasts } = await supabase
       .from("forecasts")
-      .select("question_id, probability")
+      .select("question_id")
       .eq("user_id", user.id)
       .in("question_id", questionIds);
 
-    for (const f of forecasts ?? []) {
-      userVotes.set(f.question_id, f.probability >= 0.5);
-    }
+    const votedIds = new Set((forecasts ?? []).map((f) => f.question_id));
+    unvotedQuestions = questions.filter((q) => !votedIds.has(q.id));
   }
 
   // Get vote counts
   const voteCounts = new Map<string, number>();
-  for (const q of questions) {
+  for (const q of unvotedQuestions) {
     const { count } = await supabase
       .from("forecasts")
       .select("*", { count: "exact", head: true })
@@ -68,52 +67,14 @@ export default async function HomePage() {
     voteCounts.set(q.id, count || 0);
   }
 
-  // Get last 3 comments per question
-  const commentsByQuestion = new Map<string, { content: string; display_name: string }[]>();
-  for (const q of questions) {
-    const { data: comments } = await supabase
-      .from("comments")
-      .select("content, user_id")
-      .eq("question_id", q.id)
-      .order("created_at", { ascending: false })
-      .limit(3);
-
-    if (comments && comments.length > 0) {
-      const userIds = comments.map((c) => c.user_id);
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("id, display_name, name")
-        .in("id", userIds);
-
-      const profileMap = new Map(
-        (profiles ?? []).map((p) => [p.id, p.display_name || p.name || "Anon"])
-      );
-
-      commentsByQuestion.set(
-        q.id,
-        comments.map((c) => ({
-          content: c.content,
-          display_name: profileMap.get(c.user_id) || "Anon",
-        }))
-      );
-    }
-  }
-
-  const markets = questions.map((q) => ({
+  const markets = unvotedQuestions.map((q) => ({
     id: q.id,
     title: q.title,
+    description: q.description,
     category: q.category,
     imageUrl: q.image_url,
-    closeTime: q.close_time,
     voteCount: voteCounts.get(q.id) || 0,
-    userVote: userVotes.get(q.id) ?? null,
-    comments: commentsByQuestion.get(q.id) || [],
   }));
 
-  // Unvoted markets first
-  const unvoted = markets.filter((m) => m.userVote === null);
-  const voted = markets.filter((m) => m.userVote !== null);
-  const sorted = [...unvoted, ...voted];
-
-  return <HomeFeed markets={sorted} isLoggedIn={!!user} seasonInfo={seasonInfo} />;
+  return <HomeFeed markets={markets} isLoggedIn={!!user} seasonInfo={seasonInfo} />;
 }

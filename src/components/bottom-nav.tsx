@@ -28,11 +28,8 @@ export function BottomNav() {
   const profileHref = userId ? `/u/${userId}` : "/signin";
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-50 md:hidden">
-      {/* Thin top border like IG */}
+    <nav className="fixed bottom-0 inset-x-0 z-50 md:hidden bg-black">
       <div className="h-px bg-white/10" />
-
-      {/* Nav content with safe area */}
       <div className="flex items-end justify-around px-6 pt-2 pb-[max(env(safe-area-inset-bottom,8px),8px)]">
         {/* Leaderboard */}
         <Link

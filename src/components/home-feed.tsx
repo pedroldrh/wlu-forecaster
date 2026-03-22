@@ -6,11 +6,9 @@ interface Market {
   id: string;
   title: string;
   category: string;
+  description: string | null;
   imageUrl: string | null;
-  closeTime: string;
   voteCount: number;
-  userVote: boolean | null;
-  comments: { content: string; display_name: string }[];
 }
 
 interface HomeFeedProps {
