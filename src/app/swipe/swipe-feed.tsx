@@ -28,10 +28,15 @@ const CATEGORY_GRADIENTS: Record<string, string> = {
   OTHER: "from-zinc-900/90 to-zinc-600/40",
 };
 
-export function SwipeFeed() {
-  const [markets, setMarkets] = useState<Market[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [seasonInfo, setSeasonInfo] = useState<{ name: string; totalPrizeCents: number } | null>(null);
+interface SwipeFeedProps {
+  initialMarkets?: Market[];
+  initialSeasonInfo?: { name: string; totalPrizeCents: number } | null;
+}
+
+export function SwipeFeed({ initialMarkets, initialSeasonInfo }: SwipeFeedProps) {
+  const [markets, setMarkets] = useState<Market[]>(initialMarkets ?? []);
+  const [loading, setLoading] = useState(!initialMarkets || initialMarkets.length === 0);
+  const [seasonInfo, setSeasonInfo] = useState(initialSeasonInfo ?? null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [submittingMap, setSubmittingMap] = useState<Map<string, boolean | null>>(new Map());
   const [votedIds, setVotedIds] = useState<Set<string>>(new Set());
@@ -41,39 +46,46 @@ export function SwipeFeed() {
   useEffect(() => {
     const supabase = createClient();
 
+    async function loadUserData(marketList: Market[]) {
+      const { data: { user } } = await supabase.auth.getUser();
+      setIsLoggedIn(!!user);
+
+      if (user && marketList.length > 0) {
+        const questionIds = marketList.map((m) => m.id);
+        const { data: userForecasts } = await supabase
+          .from("forecasts")
+          .select("question_id")
+          .eq("user_id", user.id)
+          .in("question_id", questionIds);
+
+        if (userForecasts && userForecasts.length > 0) {
+          setVotedIds(new Set(userForecasts.map((f: { question_id: string }) => f.question_id)));
+        }
+      }
+    }
+
     async function loadFeed() {
       try {
-        // Fetch markets from API route (uses service role, bypasses RLS)
         const res = await fetch("/api/feed");
         const data = await res.json();
-
-        setMarkets(data.markets ?? []);
+        const feedMarkets = data.markets ?? [];
+        setMarkets(feedMarkets);
         setSeasonInfo(data.seasonInfo ?? null);
-
-        // Check auth + get user's voted questions
-        const { data: { user } } = await supabase.auth.getUser();
-        setIsLoggedIn(!!user);
-
-        if (user && data.markets?.length > 0) {
-          const questionIds = data.markets.map((m: Market) => m.id);
-          const { data: userForecasts } = await supabase
-            .from("forecasts")
-            .select("question_id")
-            .eq("user_id", user.id)
-            .in("question_id", questionIds);
-
-          if (userForecasts && userForecasts.length > 0) {
-            setVotedIds(new Set(userForecasts.map((f: { question_id: string }) => f.question_id)));
-          }
-        }
+        await loadUserData(feedMarkets);
       } catch (e) {
         console.error("Feed load error:", e);
       }
-
       setLoading(false);
     }
 
-    loadFeed();
+    // If we have initial data from SSR, just load user data
+    // Otherwise fetch everything from the API
+    if (initialMarkets && initialMarkets.length > 0) {
+      loadUserData(initialMarkets).then(() => setLoading(false));
+    } else {
+      // Fallback: fetch from API (in case SSR didn't provide data)
+      loadFeed();
+    }
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsLoggedIn(!!session?.user);
