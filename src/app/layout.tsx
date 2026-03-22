@@ -10,6 +10,7 @@ import { PwaGate } from "@/components/pwa-gate";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { createAdminClient } from "@/lib/supabase/server";
+import { CacheBuster } from "@/components/cache-buster";
 
 const sora = localFont({
   src: "../fonts/Sora-VariableFont_wght.ttf",
@@ -88,6 +89,7 @@ export default async function RootLayout({
         className={`${sora.variable} antialiased`}
         style={{ backgroundColor: '#000' }}
       >
+        <CacheBuster />
         <PwaGate seasonInfo={seasonInfo}>
           <Providers>
             <InAppBrowserGate />
