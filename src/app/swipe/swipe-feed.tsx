@@ -28,30 +28,37 @@ const CATEGORY_GRADIENTS: Record<string, string> = {
   OTHER: "from-zinc-900/90 to-zinc-600/40",
 };
 
+// In-memory cache for instant revisits
+let cachedMarkets: Market[] | null = null;
+let cachedSeasonInfo: { name: string; totalPrizeCents: number } | null = null;
+let cachedVotedIds: Set<string> = new Set();
+let cachedIsLoggedIn = false;
+
 export function SwipeFeed() {
-  const [markets, setMarkets] = useState<Market[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [seasonInfo, setSeasonInfo] = useState<{ name: string; totalPrizeCents: number } | null>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [markets, setMarkets] = useState<Market[]>(cachedMarkets ?? []);
+  const [loading, setLoading] = useState(cachedMarkets === null);
+  const [seasonInfo, setSeasonInfo] = useState(cachedSeasonInfo);
+  const [isLoggedIn, setIsLoggedIn] = useState(cachedIsLoggedIn);
   const [submittingMap, setSubmittingMap] = useState<Map<string, boolean | null>>(new Map());
-  const [votedIds, setVotedIds] = useState<Set<string>>(new Set());
+  const [votedIds, setVotedIds] = useState<Set<string>>(cachedVotedIds);
   const [showResolution, setShowResolution] = useState<string | null>(null);
   const router = useRouter();
 
   const loadFeed = useCallback(async () => {
     try {
-      // Always fetch fresh from API (uses service role, bypasses RLS)
       const res = await fetch("/api/feed", { cache: "no-store" });
       const data = await res.json();
       const feedMarkets: Market[] = data.markets ?? [];
 
+      cachedMarkets = feedMarkets;
+      cachedSeasonInfo = data.seasonInfo ?? null;
       setMarkets(feedMarkets);
-      setSeasonInfo(data.seasonInfo ?? null);
+      setSeasonInfo(cachedSeasonInfo);
 
-      // Check auth + user's votes
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
-      setIsLoggedIn(!!user);
+      cachedIsLoggedIn = !!user;
+      setIsLoggedIn(cachedIsLoggedIn);
 
       if (user && feedMarkets.length > 0) {
         const questionIds = feedMarkets.map((m) => m.id);
@@ -61,12 +68,11 @@ export function SwipeFeed() {
           .eq("user_id", user.id)
           .in("question_id", questionIds);
 
-        if (userForecasts && userForecasts.length > 0) {
-          setVotedIds(new Set(userForecasts.map((f: { question_id: string }) => f.question_id)));
-        } else {
-          setVotedIds(new Set());
-        }
+        const newVoted = new Set((userForecasts ?? []).map((f: { question_id: string }) => f.question_id));
+        cachedVotedIds = newVoted;
+        setVotedIds(newVoted);
       } else {
+        cachedVotedIds = new Set();
         setVotedIds(new Set());
       }
     } catch (e) {
@@ -102,7 +108,11 @@ export function SwipeFeed() {
       await submitForecast(marketId, vote);
       toast.success(vote ? "Voted YES!" : "Voted NO!", { duration: 1000 });
       setTimeout(() => {
-        setVotedIds((prev) => new Set(prev).add(marketId));
+        setVotedIds((prev) => {
+          const next = new Set(prev).add(marketId);
+          cachedVotedIds = next;
+          return next;
+        });
       }, 600);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to vote");
