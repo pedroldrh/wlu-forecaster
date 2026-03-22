@@ -28,51 +28,103 @@ const CATEGORY_GRADIENTS: Record<string, string> = {
   OTHER: "from-zinc-900/90 to-zinc-600/40",
 };
 
-interface SwipeFeedProps {
-  markets: Market[];
-  seasonInfo?: { name: string; totalPrizeCents: number } | null;
-}
-
-export function SwipeFeed({ markets, seasonInfo }: SwipeFeedProps) {
+export function SwipeFeed() {
+  const [markets, setMarkets] = useState<Market[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [seasonInfo, setSeasonInfo] = useState<{ name: string; totalPrizeCents: number } | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [submittingMap, setSubmittingMap] = useState<Map<string, boolean | null>>(new Map());
   const [votedIds, setVotedIds] = useState<Set<string>>(new Set());
   const [showResolution, setShowResolution] = useState<string | null>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const router = useRouter();
 
-  // Check auth client-side — no server dependency
   useEffect(() => {
     const supabase = createClient();
 
-    // Check current session
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setIsLoggedIn(!!user);
+    async function loadFeed() {
+      // Get season
+      const { data: season } = await supabase
+        .from("seasons")
+        .select("id, name, prize_1st_cents, prize_2nd_cents, prize_3rd_cents, prize_4th_cents, prize_5th_cents, prize_bonus_cents")
+        .eq("status", "LIVE")
+        .single();
 
-      // If logged in, fetch their existing votes to hide voted markets
-      if (user) {
-        const questionIds = markets.map((m) => m.id);
-        if (questionIds.length > 0) {
-          supabase
-            .from("forecasts")
-            .select("question_id")
-            .eq("user_id", user.id)
-            .in("question_id", questionIds)
-            .then(({ data }) => {
-              if (data && data.length > 0) {
-                setVotedIds(new Set(data.map((f) => f.question_id)));
-              }
-            });
+      if (season) {
+        const total =
+          (season.prize_1st_cents || 0) + (season.prize_2nd_cents || 0) +
+          (season.prize_3rd_cents || 0) + (season.prize_4th_cents || 0) +
+          (season.prize_5th_cents || 0) + (season.prize_bonus_cents || 0);
+        setSeasonInfo({ name: season.name, totalPrizeCents: total });
+
+        // Get open questions
+        const { data: questions } = await supabase
+          .from("questions")
+          .select("id, title, description, category, image_url")
+          .eq("season_id", season.id)
+          .eq("status", "OPEN")
+          .gt("close_time", new Date().toISOString())
+          .order("close_time", { ascending: true });
+
+        if (questions && questions.length > 0) {
+          // Check auth + get voted IDs in parallel
+          const [{ data: { user } }, { data: forecasts }] = await Promise.all([
+            supabase.auth.getUser(),
+            supabase.from("forecasts").select("question_id").in(
+              "question_id",
+              questions.map((q) => q.id)
+            ),
+          ]);
+
+          setIsLoggedIn(!!user);
+
+          // Count votes per question
+          const voteCounts = new Map<string, number>();
+          for (const f of forecasts ?? []) {
+            voteCounts.set(f.question_id, (voteCounts.get(f.question_id) || 0) + 1);
+          }
+
+          // If logged in, find user's voted questions
+          if (user) {
+            const { data: userForecasts } = await supabase
+              .from("forecasts")
+              .select("question_id")
+              .eq("user_id", user.id)
+              .in("question_id", questions.map((q) => q.id));
+
+            if (userForecasts && userForecasts.length > 0) {
+              setVotedIds(new Set(userForecasts.map((f) => f.question_id)));
+            }
+          }
+
+          setMarkets(
+            questions.map((q) => ({
+              id: q.id,
+              title: q.title,
+              description: q.description,
+              category: q.category,
+              imageUrl: q.image_url,
+              voteCount: voteCounts.get(q.id) || 0,
+            }))
+          );
         }
+      }
+
+      setLoading(false);
+    }
+
+    loadFeed();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session?.user);
+      if (session?.user) {
+        // Reload to pick up new auth state
+        loadFeed();
       }
     });
 
-    // Listen for auth changes (e.g., after sign-in redirect)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsLoggedIn(!!session?.user);
-    });
-
     return () => subscription.unsubscribe();
-  }, [markets]);
+  }, []);
 
   const visibleMarkets = markets.filter((m) => !votedIds.has(m.id));
 
@@ -96,6 +148,11 @@ export function SwipeFeed({ markets, seasonInfo }: SwipeFeedProps) {
     setSubmittingMap((prev) => new Map(prev).set(marketId, null));
   };
 
+  // Loading state — instant black screen
+  if (loading) {
+    return <div className="fixed inset-0 bg-black" />;
+  }
+
   if (visibleMarkets.length === 0) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-black">
@@ -113,7 +170,7 @@ export function SwipeFeed({ markets, seasonInfo }: SwipeFeedProps) {
 
   return (
     <div className="fixed inset-0 bg-black">
-      {/* Prize pool — fixed at top center */}
+      {/* Prize pool */}
       {seasonInfo && seasonInfo.totalPrizeCents > 0 && (
         <div className="fixed top-0 left-0 right-0 z-20 flex justify-center pt-[env(safe-area-inset-top,12px)]">
           <Link
@@ -128,7 +185,7 @@ export function SwipeFeed({ markets, seasonInfo }: SwipeFeedProps) {
         </div>
       )}
 
-      {/* Scroll snap container — IG Reels style */}
+      {/* Scroll snap container */}
       <div
         className="h-full overflow-y-auto snap-y snap-mandatory"
         style={{ WebkitOverflowScrolling: "touch" }}
@@ -142,7 +199,6 @@ export function SwipeFeed({ markets, seasonInfo }: SwipeFeedProps) {
               key={market.id}
               className="h-[100dvh] w-full snap-start snap-always relative"
             >
-              {/* Background */}
               {market.imageUrl ? (
                 <img
                   src={market.imageUrl}
@@ -155,9 +211,7 @@ export function SwipeFeed({ markets, seasonInfo }: SwipeFeedProps) {
               )}
               <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/70" />
 
-              {/* Content — positioned at bottom */}
               <div className="relative z-10 h-full flex flex-col justify-end px-5 pb-24">
-                {/* Category + emoji */}
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-2xl">{getQuestionEmoji(market.title, market.category)}</span>
                   <span className="text-xs font-bold text-white/70 uppercase tracking-wider">
@@ -165,12 +219,10 @@ export function SwipeFeed({ markets, seasonInfo }: SwipeFeedProps) {
                   </span>
                 </div>
 
-                {/* Title */}
                 <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight mb-2">
                   {market.title}
                 </h1>
 
-                {/* Stats + Resolution button */}
                 <div className="flex items-center gap-3 mb-5">
                   <span className="text-sm text-white/50">
                     {market.voteCount} vote{market.voteCount !== 1 ? "s" : ""}
@@ -186,7 +238,6 @@ export function SwipeFeed({ markets, seasonInfo }: SwipeFeedProps) {
                   )}
                 </div>
 
-                {/* Vote buttons */}
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => handleVote(market.id, true)}
@@ -215,7 +266,6 @@ export function SwipeFeed({ markets, seasonInfo }: SwipeFeedProps) {
                 </div>
               </div>
 
-              {/* Resolution criteria modal */}
               {showResolution === market.id && (
                 <div
                   className="absolute inset-0 z-30 bg-black/70 backdrop-blur-sm flex items-center justify-center px-6"
