@@ -115,9 +115,6 @@ export function WebInstallPage({ seasonInfo }: WebInstallPageProps) {
         Install for push notifications, instant access & the full experience.
       </p>
 
-      <Link href="/signin" className="text-white/40 text-xs mt-4 hover:text-white/60 transition-colors underline">
-        Already have it? Sign in
-      </Link>
     </div>
   );
 }

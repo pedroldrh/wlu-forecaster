@@ -13,7 +13,7 @@ function isPWA() {
 }
 
 // Routes that bypass the PWA gate (auth callbacks, legal pages)
-const BYPASS_ROUTES = ["/signin", "/api/", "/terms", "/privacy"];
+const BYPASS_ROUTES = ["/api/", "/terms", "/privacy"];
 
 interface PwaGateProps {
   children: React.ReactNode;
