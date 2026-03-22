@@ -13,10 +13,9 @@ interface Market {
 
 interface HomeFeedProps {
   markets: Market[];
-  isLoggedIn: boolean;
   seasonInfo: { name: string; totalPrizeCents: number } | null;
 }
 
-export function HomeFeed({ markets, isLoggedIn, seasonInfo }: HomeFeedProps) {
-  return <SwipeFeed markets={markets} isLoggedIn={isLoggedIn} seasonInfo={seasonInfo} />;
+export function HomeFeed({ markets, seasonInfo }: HomeFeedProps) {
+  return <SwipeFeed markets={markets} seasonInfo={seasonInfo} />;
 }

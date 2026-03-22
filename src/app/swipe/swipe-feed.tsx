@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { submitForecast } from "@/actions/forecasts";
 import { CATEGORY_LABELS, getQuestionEmoji } from "@/lib/constants";
@@ -8,6 +8,7 @@ import { Check, Trophy, Info, X } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { formatDollars } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
 
 interface Market {
   id: string;
@@ -29,15 +30,49 @@ const CATEGORY_GRADIENTS: Record<string, string> = {
 
 interface SwipeFeedProps {
   markets: Market[];
-  isLoggedIn: boolean;
   seasonInfo?: { name: string; totalPrizeCents: number } | null;
 }
 
-export function SwipeFeed({ markets, isLoggedIn, seasonInfo }: SwipeFeedProps) {
+export function SwipeFeed({ markets, seasonInfo }: SwipeFeedProps) {
   const [submittingMap, setSubmittingMap] = useState<Map<string, boolean | null>>(new Map());
   const [votedIds, setVotedIds] = useState<Set<string>>(new Set());
   const [showResolution, setShowResolution] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const router = useRouter();
+
+  // Check auth client-side — no server dependency
+  useEffect(() => {
+    const supabase = createClient();
+
+    // Check current session
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setIsLoggedIn(!!user);
+
+      // If logged in, fetch their existing votes to hide voted markets
+      if (user) {
+        const questionIds = markets.map((m) => m.id);
+        if (questionIds.length > 0) {
+          supabase
+            .from("forecasts")
+            .select("question_id")
+            .eq("user_id", user.id)
+            .in("question_id", questionIds)
+            .then(({ data }) => {
+              if (data && data.length > 0) {
+                setVotedIds(new Set(data.map((f) => f.question_id)));
+              }
+            });
+        }
+      }
+    });
+
+    // Listen for auth changes (e.g., after sign-in redirect)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session?.user);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [markets]);
 
   const visibleMarkets = markets.filter((m) => !votedIds.has(m.id));
 
@@ -52,7 +87,6 @@ export function SwipeFeed({ markets, isLoggedIn, seasonInfo }: SwipeFeedProps) {
     try {
       await submitForecast(marketId, vote);
       toast.success(vote ? "Voted YES!" : "Voted NO!", { duration: 1000 });
-      // Remove the card after a short delay
       setTimeout(() => {
         setVotedIds((prev) => new Set(prev).add(marketId));
       }, 600);
@@ -152,7 +186,7 @@ export function SwipeFeed({ markets, isLoggedIn, seasonInfo }: SwipeFeedProps) {
                   )}
                 </div>
 
-                {/* Vote buttons — big, at bottom */}
+                {/* Vote buttons */}
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => handleVote(market.id, true)}
