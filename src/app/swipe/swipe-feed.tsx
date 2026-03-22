@@ -42,71 +42,32 @@ export function SwipeFeed() {
     const supabase = createClient();
 
     async function loadFeed() {
-      // Get season
-      const { data: season } = await supabase
-        .from("seasons")
-        .select("id, name, prize_1st_cents, prize_2nd_cents, prize_3rd_cents, prize_4th_cents, prize_5th_cents, prize_bonus_cents")
-        .eq("status", "LIVE")
-        .single();
+      try {
+        // Fetch markets from API route (uses service role, bypasses RLS)
+        const res = await fetch("/api/feed");
+        const data = await res.json();
 
-      if (season) {
-        const total =
-          (season.prize_1st_cents || 0) + (season.prize_2nd_cents || 0) +
-          (season.prize_3rd_cents || 0) + (season.prize_4th_cents || 0) +
-          (season.prize_5th_cents || 0) + (season.prize_bonus_cents || 0);
-        setSeasonInfo({ name: season.name, totalPrizeCents: total });
+        setMarkets(data.markets ?? []);
+        setSeasonInfo(data.seasonInfo ?? null);
 
-        // Get open questions
-        const { data: questions } = await supabase
-          .from("questions")
-          .select("id, title, description, category, image_url")
-          .eq("season_id", season.id)
-          .eq("status", "OPEN")
-          .gt("close_time", new Date().toISOString())
-          .order("close_time", { ascending: true });
+        // Check auth + get user's voted questions
+        const { data: { user } } = await supabase.auth.getUser();
+        setIsLoggedIn(!!user);
 
-        if (questions && questions.length > 0) {
-          // Check auth + get voted IDs in parallel
-          const [{ data: { user } }, { data: forecasts }] = await Promise.all([
-            supabase.auth.getUser(),
-            supabase.from("forecasts").select("question_id").in(
-              "question_id",
-              questions.map((q) => q.id)
-            ),
-          ]);
+        if (user && data.markets?.length > 0) {
+          const questionIds = data.markets.map((m: Market) => m.id);
+          const { data: userForecasts } = await supabase
+            .from("forecasts")
+            .select("question_id")
+            .eq("user_id", user.id)
+            .in("question_id", questionIds);
 
-          setIsLoggedIn(!!user);
-
-          // Count votes per question
-          const voteCounts = new Map<string, number>();
-          for (const f of forecasts ?? []) {
-            voteCounts.set(f.question_id, (voteCounts.get(f.question_id) || 0) + 1);
+          if (userForecasts && userForecasts.length > 0) {
+            setVotedIds(new Set(userForecasts.map((f: { question_id: string }) => f.question_id)));
           }
-
-          // If logged in, find user's voted questions
-          if (user) {
-            const { data: userForecasts } = await supabase
-              .from("forecasts")
-              .select("question_id")
-              .eq("user_id", user.id)
-              .in("question_id", questions.map((q) => q.id));
-
-            if (userForecasts && userForecasts.length > 0) {
-              setVotedIds(new Set(userForecasts.map((f) => f.question_id)));
-            }
-          }
-
-          setMarkets(
-            questions.map((q) => ({
-              id: q.id,
-              title: q.title,
-              description: q.description,
-              category: q.category,
-              imageUrl: q.image_url,
-              voteCount: voteCounts.get(q.id) || 0,
-            }))
-          );
         }
+      } catch (e) {
+        console.error("Feed load error:", e);
       }
 
       setLoading(false);
@@ -114,11 +75,9 @@ export function SwipeFeed() {
 
     loadFeed();
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsLoggedIn(!!session?.user);
       if (session?.user) {
-        // Reload to pick up new auth state
         loadFeed();
       }
     });
@@ -148,7 +107,6 @@ export function SwipeFeed() {
     setSubmittingMap((prev) => new Map(prev).set(marketId, null));
   };
 
-  // Loading state — instant black screen
   if (loading) {
     return <div className="fixed inset-0 bg-black" />;
   }
@@ -170,7 +128,6 @@ export function SwipeFeed() {
 
   return (
     <div className="fixed inset-0 bg-black">
-      {/* Prize pool */}
       {seasonInfo && seasonInfo.totalPrizeCents > 0 && (
         <div className="fixed top-0 left-0 right-0 z-20 flex justify-center pt-[env(safe-area-inset-top,12px)]">
           <Link
@@ -185,7 +142,6 @@ export function SwipeFeed() {
         </div>
       )}
 
-      {/* Scroll snap container */}
       <div
         className="h-full overflow-y-auto snap-y snap-mandatory"
         style={{ WebkitOverflowScrolling: "touch" }}
