@@ -8,8 +8,7 @@ import { UserAvatar } from "@/components/user-avatar";
 import { ReferralCard } from "@/components/referral-card";
 import { EnableNotificationsButton } from "@/components/enable-notifications-button";
 import { SignOutButton } from "@/components/sign-out-button";
-import { HowItWorksButton } from "@/components/how-it-works-button";
-import { Crown, Shield, ShieldCheck } from "@phosphor-icons/react/ssr";
+import { Crown, Shield } from "@phosphor-icons/react/ssr";
 import Link from "next/link";
 import type { Metadata } from "next";
 
@@ -34,7 +33,6 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   const { id } = await params;
   const supabase = await createAdminClient();
 
-  // Parallel: user + profile + season + entries + referrals
   const [userResult, profileResult, seasonResult, entriesResult, referralResult] = await Promise.all([
     (async () => {
       try {
@@ -80,7 +78,6 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   let totalResolved = 0;
 
   if (season) {
-    // Parallel: all questions + user's forecasts for this season
     const [allQuestionsResult, userForecastsResult] = await Promise.all([
       supabase
         .from("questions")
@@ -101,23 +98,16 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
     totalResolved = resolvedQs.length;
     const resolvedIds = new Set(resolvedQs.map((q) => q.id));
 
-    // Filter forecasts to this season's questions
     const seasonForecasts = (userForecastsResult.data ?? []).filter((f) => allQuestionIds.has(f.question_id));
 
-    // Build allForecasts for display
     allForecasts = seasonForecasts.map((f) => {
       const q = questionMap.get(f.question_id)!;
       return {
         ...f,
-        question: {
-          title: q.title,
-          status: q.status,
-          resolved_outcome: q.resolved_outcome,
-        },
+        question: { title: q.title, status: q.status, resolved_outcome: q.resolved_outcome },
       };
     });
 
-    // Build resolved forecasts for accuracy section
     const resolvedUserForecasts = seasonForecasts.filter((f) => resolvedIds.has(f.question_id));
     const forCalc = resolvedUserForecasts.map((f) => {
       const q = questionMap.get(f.question_id)!;
@@ -141,14 +131,9 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
     });
   }
 
-  // Badges
   const badges: string[] = [];
   if (profile.is_wlu_verified) badges.push("W&L Verified");
-  const qualifiesForPrizes = allForecasts.length >= 5;
-
-  if (totalResolved > 0 && questionsPlayed >= totalResolved * 0.9) {
-    badges.push("Most Active");
-  }
+  if (totalResolved > 0 && questionsPlayed >= totalResolved * 0.9) badges.push("Most Active");
 
   const isOwnProfile = user?.id === id;
   const displayName = profile.display_name || profile.name || "Anonymous";
@@ -157,13 +142,13 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-24">
-      {/* Hero section — big record display */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-background to-blue-500/10 border border-primary/20 pt-8 pb-6 px-6">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-primary/10 rounded-full blur-3xl" />
+      {/* Hero section */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600/15 via-background to-purple-500/10 border border-white/8 pt-8 pb-6 px-6">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-blue-500/10 rounded-full blur-3xl" />
 
         <div className="relative flex flex-col items-center text-center">
           <div className="relative mb-4">
-            <UserAvatar userId={id} size="lg" className="h-20 w-20 ring-4 ring-primary/20" />
+            <UserAvatar userId={id} size="lg" className="h-20 w-20 ring-4 ring-blue-500/20" />
             {isFounder && (
               <div className="absolute -top-1 -right-1 h-6 w-6 rounded-full bg-amber-500 flex items-center justify-center">
                 <Crown className="h-3.5 w-3.5 text-white" weight="fill" />
@@ -175,7 +160,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
           <div className="flex flex-wrap items-center justify-center gap-1.5 mb-5">
             {isFounder && (
-              <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-xs">
+              <Badge variant="secondary" className="bg-amber-500/10 text-amber-400 border-amber-500/20 text-xs">
                 Forecaster Founder
               </Badge>
             )}
@@ -189,13 +174,13 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
           {hasRecord ? (
             <div className="flex items-baseline gap-2 mb-2">
-              <span className="text-6xl sm:text-7xl font-extrabold font-mono text-green-500 leading-none">{wins}</span>
-              <span className="text-4xl sm:text-5xl font-bold text-muted-foreground/40 leading-none">-</span>
-              <span className="text-6xl sm:text-7xl font-extrabold font-mono text-red-500 leading-none">{losses}</span>
+              <span className="text-6xl sm:text-7xl font-extrabold font-mono text-green-400 leading-none">{wins}</span>
+              <span className="text-4xl sm:text-5xl font-bold text-white/20 leading-none">-</span>
+              <span className="text-6xl sm:text-7xl font-extrabold font-mono text-red-400 leading-none">{losses}</span>
             </div>
           ) : (
             <div className="flex items-baseline gap-2 mb-2">
-              <span className="text-5xl sm:text-6xl font-extrabold font-mono text-muted-foreground/30 leading-none">0 - 0</span>
+              <span className="text-5xl sm:text-6xl font-extrabold font-mono text-white/15 leading-none">0 - 0</span>
             </div>
           )}
           <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold mb-3">
@@ -207,12 +192,12 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
               <p className="font-bold font-mono text-foreground">{allForecasts.length}</p>
               <p className="text-xs">Forecasts</p>
             </div>
-            <div className="h-6 w-px bg-border" />
+            <div className="h-6 w-px bg-white/10" />
             <div className="text-center">
               <p className="font-bold font-mono text-foreground">{questionsPlayed}</p>
               <p className="text-xs">Resolved</p>
             </div>
-            <div className="h-6 w-px bg-border" />
+            <div className="h-6 w-px bg-white/10" />
             <div className="text-center">
               <p className="font-bold font-mono text-foreground">{entries.length}</p>
               <p className="text-xs">Seasons</p>
@@ -221,31 +206,22 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
         </div>
       </div>
 
-      {isOwnProfile && (
-        <div className="flex gap-3">
-          <EnableNotificationsButton />
-          <HowItWorksButton />
-        </div>
-      )}
+      {/* Notifications (own profile only) */}
+      {isOwnProfile && <EnableNotificationsButton />}
 
-      {season && qualifiesForPrizes && (
-        <div className="flex items-center gap-3 rounded-lg border border-green-500/30 bg-green-500/5 px-4 py-3 text-sm">
-          <ShieldCheck className="h-5 w-5 text-green-500 shrink-0" weight="fill" />
-          <span className="font-medium">Qualifies for {season.name} prizes</span>
-        </div>
-      )}
-
+      {/* Referral card (own profile only) */}
       {isOwnProfile && <ReferralCard userId={id} referralCount={referrals} />}
 
+      {/* Resolved Forecasts */}
       {resolvedForecasts.length > 0 && (
         <Card id="score-breakdown">
           <CardHeader>
-            <CardTitle className="text-lg">Accuracy on Resolved Markets</CardTitle>
+            <CardTitle className="text-lg">Resolved Forecasts</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="divide-y">
+            <div className="divide-y divide-white/5">
               {resolvedForecasts.map((f, i) => (
-                <Link key={i} href={`/questions/${f.questionId}`} className="flex items-center justify-between py-3 hover:bg-muted/50 -mx-2 px-2 rounded-md transition-colors">
+                <Link key={i} href={`/questions/${f.questionId}`} className="flex items-center justify-between py-3 hover:bg-white/5 -mx-2 px-2 rounded-md transition-colors">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{f.title}</p>
                     <p className="text-xs text-muted-foreground">
@@ -253,7 +229,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                     </p>
                   </div>
                   <div className="ml-4 shrink-0">
-                    <Badge variant={f.correct ? "default" : "secondary"} className={f.correct ? "bg-green-500/15 text-green-500 border-green-500/30" : "bg-red-500/15 text-red-500 border-red-500/30"}>
+                    <Badge variant="secondary" className={f.correct ? "bg-green-500/15 text-green-400 border-green-500/30" : "bg-red-500/15 text-red-400 border-red-500/30"}>
                       {f.correct ? "Correct" : "Wrong"}
                     </Badge>
                   </div>
@@ -264,15 +240,16 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
         </Card>
       )}
 
+      {/* Recent Forecasts */}
       {allForecasts.length > 0 && (
         <Card id="recent-forecasts">
           <CardHeader>
             <CardTitle className="text-lg">Recent Forecasts</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="divide-y">
+            <div className="divide-y divide-white/5">
               {allForecasts.slice(0, 20).map((f) => (
-                <Link key={f.id} href={`/questions/${f.question_id}`} className="flex items-center justify-between py-3 hover:bg-muted/50 -mx-2 px-2 rounded-md transition-colors">
+                <Link key={f.id} href={`/questions/${f.question_id}`} className="flex items-center justify-between py-3 hover:bg-white/5 -mx-2 px-2 rounded-md transition-colors">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{f.question.title}</p>
                     <p className="text-xs text-muted-foreground">
@@ -284,7 +261,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                   <div className="text-right ml-4 shrink-0">
                     <div className="font-mono text-sm font-medium">{f.probability >= 0.5 ? "YES" : "NO"}</div>
                     {f.question.status === "RESOLVED" && f.question.resolved_outcome !== null && (
-                      <div className={`text-xs font-medium ${(f.probability >= 0.5) === f.question.resolved_outcome ? "text-green-500" : "text-red-500"}`}>
+                      <div className={`text-xs font-medium ${(f.probability >= 0.5) === f.question.resolved_outcome ? "text-green-400" : "text-red-400"}`}>
                         {(f.probability >= 0.5) === f.question.resolved_outcome ? "Correct" : "Wrong"}
                       </div>
                     )}
@@ -296,10 +273,11 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
         </Card>
       )}
 
+      {/* Own profile actions */}
       {isOwnProfile && (
         <div className="space-y-3">
           {profile.role === "ADMIN" && (
-            <Link href="/admin" className="flex items-center justify-center gap-2 w-full rounded-md border border-primary/30 bg-primary/5 px-4 py-2.5 text-sm font-medium text-primary hover:bg-primary/10 transition-colors">
+            <Link href="/admin" className="flex items-center justify-center gap-2 w-full rounded-md border border-blue-500/30 bg-blue-500/5 px-4 py-2.5 text-sm font-medium text-blue-400 hover:bg-blue-500/10 transition-colors">
               <Shield className="h-4 w-4" />
               Admin Dashboard
             </Link>
