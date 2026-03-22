@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { Bell, BellSlash, BellRinging } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
 import { savePushSubscription } from "@/actions/push-subscriptions";
 import { subscribeToPush } from "@/lib/push-utils";
 import { toast } from "sonner";
@@ -39,7 +38,6 @@ export function EnableNotificationsButton() {
         setStatus("granted");
         toast.success("Notifications enabled!");
       } catch (err) {
-        // Permission granted but subscription failed — let them retry
         setStatus("prompt");
         console.error("Push subscription failed:", err);
         toast.error("Something went wrong. Try again.");
@@ -52,26 +50,26 @@ export function EnableNotificationsButton() {
 
   if (status === "granted") {
     return (
-      <Button variant="outline" size="sm" disabled className="gap-2">
+      <button disabled className="flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-medium text-white/50">
         <BellRinging className="h-4 w-4" />
         Notifications on
-      </Button>
+      </button>
     );
   }
 
   if (status === "denied") {
     return (
-      <Button variant="outline" size="sm" disabled className="gap-2 text-muted-foreground">
+      <button disabled className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white/30">
         <BellSlash className="h-4 w-4" />
         Notifications blocked
-      </Button>
+      </button>
     );
   }
 
   return (
-    <Button variant="outline" size="sm" onClick={handleEnable} className="gap-2">
+    <button onClick={handleEnable} className="flex items-center gap-2 rounded-lg border border-white/20 bg-white text-black px-4 py-2.5 text-sm font-semibold hover:bg-white/90 active:scale-[0.97] transition-all">
       <Bell className="h-4 w-4" />
       Enable notifications
-    </Button>
+    </button>
   );
 }
