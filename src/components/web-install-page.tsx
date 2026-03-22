@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo } from "react";
 import { ForecasterLogo } from "@/components/forecaster-logo";
 import { DownloadSimple, Trophy } from "@phosphor-icons/react";
 import { formatDollars } from "@/lib/utils";
-import Link from "next/link";
 
 type Platform = "ios" | "android" | "desktop";
 
@@ -52,16 +51,20 @@ export function WebInstallPage({ seasonInfo }: WebInstallPageProps) {
       <h1 className="text-2xl sm:text-3xl font-bold text-center mb-1 animate-fade-up">
         Forecaster
       </h1>
-      <p className="text-white/60 text-center text-sm max-w-xs mb-6 animate-fade-up" style={{ animationDelay: "0.1s" }}>
+      <p className="text-white/60 text-center text-sm max-w-xs mb-8 animate-fade-up" style={{ animationDelay: "0.1s" }}>
         W&L Campus Predictions — vote on markets, build your record, win real money.
       </p>
 
-      {/* Prize pool pill */}
+      {/* Prize pool — big and bold */}
       {seasonInfo && seasonInfo.totalPrizeCents > 0 && (
-        <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-5 py-2.5 mb-8 animate-fade-up" style={{ animationDelay: "0.2s" }}>
-          <Trophy className="h-5 w-5 text-amber-300" weight="fill" />
-          <span className="font-bold text-lg font-mono">{formatDollars(seasonInfo.totalPrizeCents)}</span>
-          <span className="text-white/50 text-sm">prize pool</span>
+        <div className="flex flex-col items-center mb-10 animate-fade-up" style={{ animationDelay: "0.2s" }}>
+          <Trophy className="h-10 w-10 text-amber-300 mb-2" weight="fill" />
+          <span className="text-5xl sm:text-6xl font-extrabold font-mono bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent leading-none">
+            {formatDollars(seasonInfo.totalPrizeCents)}
+          </span>
+          <span className="text-white/50 text-sm font-semibold uppercase tracking-widest mt-2">
+            Prize Pool
+          </span>
         </div>
       )}
 
@@ -75,12 +78,10 @@ export function WebInstallPage({ seasonInfo }: WebInstallPageProps) {
         <div className="space-y-3">
           {platform === "ios" && (
             <>
-              <Step num={1}>Tap the <strong>Share</strong> button at the bottom of Safari</Step>
-              <Step num={2}>Scroll down and tap <strong>&quot;Add to Home Screen&quot;</strong></Step>
-              <Step num={3}>Tap <strong>&quot;Add&quot;</strong> in the top-right — done!</Step>
-              <p className="text-xs text-white/40 italic pt-1">
-                On some iOS versions, tap the ⋯ menu first, then Share.
-              </p>
+              <Step num={1}>Tap the <strong>⋯</strong> at the bottom-right of Safari</Step>
+              <Step num={2}>Tap the <strong>Share</strong> button</Step>
+              <Step num={3}>Scroll down and tap <strong>&quot;Add to Home Screen&quot;</strong></Step>
+              <Step num={4}>Tap <strong>&quot;Add&quot;</strong> in the top-right — done!</Step>
             </>
           )}
           {platform === "android" && (
@@ -94,9 +95,6 @@ export function WebInstallPage({ seasonInfo }: WebInstallPageProps) {
             <>
               <Step num={1}>Look for the <strong>install icon</strong> in the address bar</Step>
               <Step num={2}>Click <strong>&quot;Install&quot;</strong> — done!</Step>
-              <p className="text-xs text-white/40 italic pt-1">
-                Or open the browser menu and look for &quot;Install Forecaster&quot;.
-              </p>
             </>
           )}
         </div>
@@ -110,11 +108,6 @@ export function WebInstallPage({ seasonInfo }: WebInstallPageProps) {
           </button>
         )}
       </div>
-
-      <p className="text-white/30 text-xs mt-6 text-center max-w-xs">
-        Install for push notifications, instant access & the full experience.
-      </p>
-
     </div>
   );
 }
