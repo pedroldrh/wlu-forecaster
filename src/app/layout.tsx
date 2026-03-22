@@ -92,7 +92,7 @@ export default async function RootLayout({
           <Providers>
             <InAppBrowserGate />
             <Nav />
-            <main className="max-w-7xl mx-auto px-4 pt-6 min-h-screen">{children}</main>
+            <main className="max-w-7xl mx-auto px-4 min-h-screen pt-[max(env(safe-area-inset-top,12px),12px)] md:pt-6">{children}</main>
             <Footer />
             <BottomNav />
           </Providers>

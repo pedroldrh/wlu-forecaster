@@ -100,12 +100,9 @@ export function Nav() {
 
   if (pathname === "/signin") return null;
 
-  // On homepage (swipe feed), hide nav on mobile
-  const hideOnMobile = pathname === "/";
-
   return (
     <>
-      <nav className={`relative border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 pt-[env(safe-area-inset-top,0px)] ${hideOnMobile ? "hidden md:block" : ""}`}>
+      <nav className="relative border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 pt-[env(safe-area-inset-top,0px)] hidden md:block">
         <div className="max-w-7xl mx-auto px-4 h-14 md:h-20 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 md:gap-3 font-bold text-xl md:text-2xl">
