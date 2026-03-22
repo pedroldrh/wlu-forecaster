@@ -1,20 +1,16 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { HomeFeed } from "@/components/home-feed";
 
-export default async function HomePage() {
-  const supabase = await createAdminClient();
+export const dynamic = "force-dynamic";
 
-  // Parallel: get user + season at the same time
+export default async function HomePage() {
+  // Create clients first (both need cookies(), must be sequential)
+  const supabase = await createAdminClient();
+  const authClient = await createClient();
+
+  // Now run queries in parallel
   const [userResult, seasonResult] = await Promise.all([
-    (async () => {
-      try {
-        const authClient = await createClient();
-        const { data } = await authClient.auth.getUser();
-        return data.user;
-      } catch {
-        return null;
-      }
-    })(),
+    authClient.auth.getUser().then(({ data }) => data.user).catch(() => null),
     supabase
       .from("seasons")
       .select("id, name, prize_1st_cents, prize_2nd_cents, prize_3rd_cents, prize_4th_cents, prize_5th_cents, prize_bonus_cents")
