@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { House, ChartBar, Trophy, User } from "@phosphor-icons/react";
-import { useUnvotedCount } from "@/hooks/use-unvoted-count";
+import { PlayCircle, Trophy } from "@phosphor-icons/react";
+import { UserAvatar } from "@/components/user-avatar";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 export function BottomNav() {
   const pathname = usePathname();
-  const unvotedCount = useUnvotedCount();
   const [userId, setUserId] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -20,42 +19,79 @@ export function BottomNav() {
     });
   }, []);
 
-  const tabs = [
-    { href: "/", label: "Home", icon: House },
-    { href: "/questions", label: "Markets", icon: ChartBar },
-    { href: "/leaderboard", label: "Board", icon: Trophy },
-    { href: userId ? `/u/${userId}` : "/signin", label: "Profile", icon: User },
-  ];
-
   if (!mounted || pathname === "/signin") return null;
 
+  const isHome = pathname === "/";
+  const isLeaderboard = pathname.startsWith("/leaderboard");
+  const isProfile = pathname.startsWith("/u/");
+
+  const profileHref = userId ? `/u/${userId}` : "/signin";
+
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden pb-[env(safe-area-inset-bottom,0px)]">
-      <div className="flex items-center justify-around h-16">
-        {tabs.map((tab) => {
-          const isActive = tab.href === "/" ? pathname === "/" : tab.label === "Profile" ? pathname.startsWith("/u/") : pathname.startsWith(tab.href);
-          const Icon = tab.icon;
-          return (
-            <Link
-              key={tab.href}
-              href={tab.href}
-              className={`relative flex flex-col items-center justify-center gap-1 flex-1 h-full transition-colors ${
-                isActive ? "text-primary" : "text-muted-foreground active:text-foreground"
-              }`}
-            >
-              {isActive && (
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-primary" />
-              )}
-              <Icon className={`h-5 w-5 transition-transform ${isActive ? "scale-110" : ""}`} />
-              <span className={`text-[10px] leading-none ${isActive ? "font-semibold" : "font-medium"}`}>{tab.label}</span>
-              {tab.href === "/questions" && unvotedCount > 0 && (
-                <span className="absolute top-2 left-1/2 ml-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-white px-1">
-                  {unvotedCount}
-                </span>
-              )}
-            </Link>
-          );
-        })}
+    <nav className="fixed bottom-0 inset-x-0 z-50 md:hidden pb-[env(safe-area-inset-bottom,0px)]">
+      {/* Glassmorphism background */}
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-xl border-t border-white/10" />
+
+      <div className="relative flex items-center justify-around h-16">
+        {/* Feed tab */}
+        <Link
+          href="/"
+          className={`relative flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all ${
+            isHome ? "text-white" : "text-white/40 active:text-white/60"
+          }`}
+        >
+          {isHome && (
+            <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-white" />
+          )}
+          <PlayCircle
+            className={`h-6 w-6 transition-transform ${isHome ? "scale-110" : ""}`}
+            weight={isHome ? "fill" : "regular"}
+          />
+          <span className={`text-[10px] leading-none ${isHome ? "font-semibold" : "font-medium"}`}>
+            Feed
+          </span>
+        </Link>
+
+        {/* Leaderboard tab */}
+        <Link
+          href="/leaderboard"
+          className={`relative flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all ${
+            isLeaderboard ? "text-white" : "text-white/40 active:text-white/60"
+          }`}
+        >
+          {isLeaderboard && (
+            <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-white" />
+          )}
+          <Trophy
+            className={`h-6 w-6 transition-transform ${isLeaderboard ? "scale-110" : ""}`}
+            weight={isLeaderboard ? "fill" : "regular"}
+          />
+          <span className={`text-[10px] leading-none ${isLeaderboard ? "font-semibold" : "font-medium"}`}>
+            Board
+          </span>
+        </Link>
+
+        {/* Profile tab with actual avatar */}
+        <Link
+          href={profileHref}
+          className={`relative flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all ${
+            isProfile ? "text-white" : "text-white/40 active:text-white/60"
+          }`}
+        >
+          {isProfile && (
+            <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-white" />
+          )}
+          {userId ? (
+            <div className={`rounded-full transition-all ${isProfile ? "ring-2 ring-white scale-110" : "ring-1 ring-white/30"}`}>
+              <UserAvatar userId={userId} size="xs" />
+            </div>
+          ) : (
+            <div className="h-5 w-5 rounded-full bg-white/20 ring-1 ring-white/30" />
+          )}
+          <span className={`text-[10px] leading-none ${isProfile ? "font-semibold" : "font-medium"}`}>
+            Profile
+          </span>
+        </Link>
       </div>
     </nav>
   );

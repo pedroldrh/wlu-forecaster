@@ -6,11 +6,10 @@ import { winLossRecord, isCorrect } from "@/lib/scoring";
 import { formatDate } from "@/lib/utils";
 import { UserAvatar } from "@/components/user-avatar";
 import { ReferralCard } from "@/components/referral-card";
-import { ScoreCard } from "@/components/score-card";
 import { EnableNotificationsButton } from "@/components/enable-notifications-button";
 import { SignOutButton } from "@/components/sign-out-button";
 import { HowItWorksButton } from "@/components/how-it-works-button";
-import { Hash, Pulse, Medal, Crown, Shield, ShieldCheck } from "@phosphor-icons/react/ssr";
+import { Crown, Shield, ShieldCheck } from "@phosphor-icons/react/ssr";
 import Link from "next/link";
 import type { Metadata } from "next";
 
@@ -73,7 +72,6 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   let questionsPlayed = 0;
   let resolvedForecasts: { questionId: string; probability: number; outcome: boolean; title: string; correct: boolean }[] = [];
   if (season) {
-    // Get resolved question IDs for this season
     const { data: resolvedQuestions } = await supabase
       .from("questions")
       .select("id, title, resolved_outcome")
@@ -83,7 +81,6 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
     const resolvedQs = resolvedQuestions ?? [];
     const resolvedQuestionIds = resolvedQs.map((q) => q.id);
 
-    // Get forecasts for this user on resolved questions
     if (resolvedQuestionIds.length > 0) {
       const { data: forecasts } = await supabase
         .from("forecasts")
@@ -172,48 +169,104 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
   const isOwnProfile = user?.id === id;
   const displayName = profile.display_name || profile.name || "Anonymous";
+  const isFounder = profile.role === "ADMIN" && displayName === "Forecast Founder";
 
-  // Count referrals for this user
+  // Count referrals
   const { count: referralCount } = await supabase
     .from("profiles")
     .select("*", { count: "exact", head: true })
     .eq("referred_by", id);
   const referrals = referralCount ?? 0;
 
+  const hasRecord = wins > 0 || losses > 0;
+
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      {/* Profile header */}
-      <Card className="overflow-hidden border-primary/20 bg-gradient-to-r from-primary/5 via-transparent to-blue-500/5">
-        <CardContent className="pt-6 pb-6">
-          <div className="flex items-center gap-4">
-            <UserAvatar userId={id} size="lg" />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                {profile.role === "ADMIN" && displayName === "Forecast Founder" && <Crown className="h-5 w-5 text-amber-500 shrink-0" />}
-                <h1 className="text-2xl font-bold break-words">{displayName}</h1>
-                {profile.role === "ADMIN" && displayName === "Forecast Founder" && (
-                  <Badge variant="secondary" className="shrink-0 bg-amber-500/10 text-amber-600 border-amber-500/20">
-                    Forecaster Founder
-                  </Badge>
-                )}
-                {badges.map((b) => (
-                  <Badge key={b} variant="secondary" className="shrink-0">{b}</Badge>
-                ))}
+    <div className="max-w-3xl mx-auto space-y-6 pb-24">
+      {/* Hero section — big record display */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-background to-blue-500/10 border border-primary/20 pt-8 pb-6 px-6">
+        {/* Decorative glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-primary/10 rounded-full blur-3xl" />
+
+        <div className="relative flex flex-col items-center text-center">
+          {/* Avatar */}
+          <div className="relative mb-4">
+            <UserAvatar userId={id} size="lg" className="h-20 w-20 ring-4 ring-primary/20" />
+            {isFounder && (
+              <div className="absolute -top-1 -right-1 h-6 w-6 rounded-full bg-amber-500 flex items-center justify-center">
+                <Crown className="h-3.5 w-3.5 text-white" weight="fill" />
               </div>
-              <p className="text-sm text-muted-foreground mt-0.5">
-                Joined {formatDate(new Date(profile.created_at))}
-              </p>
-              {isOwnProfile && (
-                <div className="mt-2">
-                  <EnableNotificationsButton />
-                </div>
-              )}
+            )}
+          </div>
+
+          {/* Name */}
+          <h1 className="text-xl font-bold mb-1">{displayName}</h1>
+
+          {/* Badges */}
+          <div className="flex flex-wrap items-center justify-center gap-1.5 mb-5">
+            {isFounder && (
+              <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-xs">
+                Forecaster Founder
+              </Badge>
+            )}
+            {badges.map((b) => (
+              <Badge key={b} variant="secondary" className="text-xs">{b}</Badge>
+            ))}
+            <span className="text-xs text-muted-foreground">
+              Joined {formatDate(new Date(profile.created_at))}
+            </span>
+          </div>
+
+          {/* Big record display */}
+          {hasRecord ? (
+            <div className="flex items-baseline gap-2 mb-2">
+              <span className="text-6xl sm:text-7xl font-extrabold font-mono text-green-500 leading-none">
+                {wins}
+              </span>
+              <span className="text-4xl sm:text-5xl font-bold text-muted-foreground/40 leading-none">
+                -
+              </span>
+              <span className="text-6xl sm:text-7xl font-extrabold font-mono text-red-500 leading-none">
+                {losses}
+              </span>
+            </div>
+          ) : (
+            <div className="flex items-baseline gap-2 mb-2">
+              <span className="text-5xl sm:text-6xl font-extrabold font-mono text-muted-foreground/30 leading-none">
+                0 - 0
+              </span>
+            </div>
+          )}
+          <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold mb-3">
+            {season ? `${season.name} Record` : "Record"}
+          </p>
+
+          {/* Quick stats row */}
+          <div className="flex items-center gap-6 text-sm text-muted-foreground">
+            <div className="text-center">
+              <p className="font-bold font-mono text-foreground">{allForecasts.length}</p>
+              <p className="text-xs">Forecasts</p>
+            </div>
+            <div className="h-6 w-px bg-border" />
+            <div className="text-center">
+              <p className="font-bold font-mono text-foreground">{questionsPlayed}</p>
+              <p className="text-xs">Resolved</p>
+            </div>
+            <div className="h-6 w-px bg-border" />
+            <div className="text-center">
+              <p className="font-bold font-mono text-foreground">{entries.length}</p>
+              <p className="text-xs">Seasons</p>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      <HowItWorksButton />
+      {/* Notifications + How It Works */}
+      {isOwnProfile && (
+        <div className="flex gap-3">
+          <EnableNotificationsButton />
+          <HowItWorksButton />
+        </div>
+      )}
 
       {/* Prize qualification */}
       {season && qualifiesForPrizes && (
@@ -222,52 +275,6 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           <span className="font-medium">
             Qualifies for {season.name} prizes
           </span>
-        </div>
-      )}
-
-      {/* Stats grid */}
-      {season && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <ScoreCard wins={wins} losses={losses} hasBreakdown={resolvedForecasts.length > 0} />
-          <Link href="#score-breakdown" className="block">
-            <Card className="h-full transition-colors hover:border-primary/30">
-              <CardContent className="pt-4 pb-4">
-                <div className="flex items-center gap-2">
-                  <Hash className="h-4 w-4 text-blue-400 shrink-0" />
-                  <div>
-                    <p className="text-2xl font-bold font-mono">{questionsPlayed}</p>
-                    <p className="text-xs text-muted-foreground">Resolved</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-          <Link href="#recent-forecasts" className="block">
-            <Card className="h-full transition-colors hover:border-primary/30">
-              <CardContent className="pt-4 pb-4">
-                <div className="flex items-center gap-2">
-                  <Pulse className="h-4 w-4 text-green-500 shrink-0" />
-                  <div>
-                    <p className="text-2xl font-bold font-mono">{allForecasts.length}</p>
-                    <p className="text-xs text-muted-foreground">Forecasts</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-          <Link href="/leaderboard">
-            <Card className="h-full transition-colors hover:border-primary/30">
-              <CardContent className="pt-4 pb-4">
-                <div className="flex items-center gap-2">
-                  <Medal className="h-4 w-4 text-amber-500 shrink-0" />
-                  <div>
-                    <p className="text-2xl font-bold font-mono">{entries.length}</p>
-                    <p className="text-xs text-muted-foreground">Seasons</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
         </div>
       )}
 
@@ -337,7 +344,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
       {/* Own profile actions */}
       {isOwnProfile && (
-        <div className="space-y-3 pb-8">
+        <div className="space-y-3">
           {profile.role === "ADMIN" && (
             <Link href="/admin" className="flex items-center justify-center gap-2 w-full rounded-md border border-primary/30 bg-primary/5 px-4 py-2.5 text-sm font-medium text-primary hover:bg-primary/10 transition-colors">
               <Shield className="h-4 w-4" />
@@ -347,7 +354,6 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           <SignOutButton />
         </div>
       )}
-
     </div>
   );
 }

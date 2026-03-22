@@ -1,5 +1,6 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { LeaderboardTable } from "@/components/leaderboard-table";
+import { SeasonBanner } from "@/components/season-banner";
 import { winLossRecord, rankUsers, UserScore } from "@/lib/scoring";
 import { formatDollars } from "@/lib/utils";
 
@@ -119,14 +120,29 @@ export default async function LeaderboardPage() {
   const totalPrizeCents = prizeAmounts.reduce((sum: number, val) => sum + (val || 0), 0);
 
   return (
-    <div className="space-y-6">
-      <div className="text-center space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight">{season.name} Leaderboard</h1>
+    <div className="space-y-6 pb-24">
+      {/* Prize pool banner */}
+      <SeasonBanner
+        id={season.id}
+        name={season.name}
+        startDate={season.start_date}
+        endDate={season.end_date}
+        prize1stCents={season.prize_1st_cents}
+        prize2ndCents={season.prize_2nd_cents}
+        prize3rdCents={season.prize_3rd_cents}
+        prize4thCents={season.prize_4th_cents}
+        prize5thCents={season.prize_5th_cents}
+        prizeBonusCents={season.prize_bonus_cents}
+        status={season.status}
+        participantIds={ranked.map((u) => u.userId)}
+      />
+
+      <div className="text-center">
         <p className="text-sm text-muted-foreground">
           {resolvedCount} question{resolvedCount !== 1 ? "s" : ""} resolved
-          {totalPrizeCents > 0 && ` · ${formatDollars(totalPrizeCents)} prize pool`}
         </p>
       </div>
+
       <LeaderboardTable entries={leaderboardEntries} />
     </div>
   );

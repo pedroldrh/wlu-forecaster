@@ -4,10 +4,11 @@ import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { submitForecast } from "@/actions/forecasts";
 import { CATEGORY_LABELS, getQuestionEmoji } from "@/lib/constants";
-import { Check, ChatCircle, ArrowLeft, CaretDown } from "@phosphor-icons/react";
+import { Check, ChatCircle, CaretDown, Trophy } from "@phosphor-icons/react";
 import { CountdownTimer } from "@/components/countdown-timer";
 import { toast } from "sonner";
 import Link from "next/link";
+import { formatDollars } from "@/lib/utils";
 
 interface Market {
   id: string;
@@ -29,7 +30,13 @@ const CATEGORY_GRADIENTS: Record<string, string> = {
   OTHER: "from-zinc-900/90 to-zinc-600/40",
 };
 
-export function SwipeFeed({ markets, isLoggedIn }: { markets: Market[]; isLoggedIn: boolean }) {
+interface SwipeFeedProps {
+  markets: Market[];
+  isLoggedIn: boolean;
+  seasonInfo?: { name: string; totalPrizeCents: number } | null;
+}
+
+export function SwipeFeed({ markets, isLoggedIn, seasonInfo }: SwipeFeedProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [votes, setVotes] = useState<Map<string, boolean>>(() => {
     const map = new Map();
@@ -40,7 +47,10 @@ export function SwipeFeed({ markets, isLoggedIn }: { markets: Market[]; isLogged
   });
   const [submitting, setSubmitting] = useState<boolean | null>(null);
   const [showComments, setShowComments] = useState(false);
+  const [slideDirection, setSlideDirection] = useState<"up" | "down" | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const touchStartY = useRef<number>(0);
+  const touchStartX = useRef<number>(0);
   const router = useRouter();
 
   const market = markets[currentIndex];
@@ -49,21 +59,49 @@ export function SwipeFeed({ markets, isLoggedIn }: { markets: Market[]; isLogged
 
   const goNext = useCallback(() => {
     if (currentIndex < markets.length - 1) {
-      setCurrentIndex((i) => i + 1);
-      setShowComments(false);
+      setSlideDirection("up");
+      setTimeout(() => {
+        setCurrentIndex((i) => i + 1);
+        setShowComments(false);
+        setSlideDirection(null);
+      }, 200);
     }
   }, [currentIndex, markets.length]);
 
   const goPrev = useCallback(() => {
     if (currentIndex > 0) {
-      setCurrentIndex((i) => i - 1);
-      setShowComments(false);
+      setSlideDirection("down");
+      setTimeout(() => {
+        setCurrentIndex((i) => i - 1);
+        setShowComments(false);
+        setSlideDirection(null);
+      }, 200);
     }
   }, [currentIndex]);
 
+  // Touch gesture handling for vertical swiping
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+    touchStartX.current = e.touches[0].clientX;
+  }, []);
+
+  const handleTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      const deltaY = touchStartY.current - e.changedTouches[0].clientY;
+      const deltaX = Math.abs(touchStartX.current - e.changedTouches[0].clientX);
+
+      // Only trigger if vertical swipe is dominant and exceeds threshold
+      if (Math.abs(deltaY) > 60 && Math.abs(deltaY) > deltaX) {
+        if (deltaY > 0) goNext(); // swiped up → next
+        else goPrev(); // swiped down → previous
+      }
+    },
+    [goNext, goPrev]
+  );
+
   const handleVote = async (vote: boolean) => {
     if (!isLoggedIn) {
-      router.push("/signin?next=/swipe");
+      router.push("/signin?next=/");
       return;
     }
     if (submitting !== null) return;
@@ -72,7 +110,7 @@ export function SwipeFeed({ markets, isLoggedIn }: { markets: Market[]; isLogged
       await submitForecast(market.id, vote);
       setVotes((prev) => new Map(prev).set(market.id, vote));
       toast.success(vote ? "Voted YES!" : "Voted NO!", { duration: 1000 });
-      // Auto-advance after voting (if not already voted)
+      // Auto-advance after first vote
       if (userVote === null) {
         setTimeout(goNext, 800);
       }
@@ -88,47 +126,66 @@ export function SwipeFeed({ markets, isLoggedIn }: { markets: Market[]; isLogged
         <div className="text-center space-y-4 px-6">
           <p className="text-4xl">🎉</p>
           <h2 className="text-xl font-bold">All caught up!</h2>
-          <p className="text-muted-foreground">You've seen all open markets.</p>
-          <Link href="/questions" className="text-primary underline text-sm">
-            Back to markets
+          <p className="text-muted-foreground">No open markets right now.</p>
+          <Link href="/leaderboard" className="text-primary underline text-sm">
+            Check the leaderboard
           </Link>
         </div>
       </div>
     );
   }
 
+  // Slide animation classes
+  const slideClass = slideDirection === "up"
+    ? "animate-slide-out-up"
+    : slideDirection === "down"
+      ? "animate-slide-out-down"
+      : "animate-slide-in";
+
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 bg-black select-none"
+      className="fixed inset-0 bg-black select-none overflow-hidden"
       style={{ touchAction: "none" }}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
-      {/* Background image */}
-      {market.imageUrl ? (
-        <img
-          src={market.imageUrl}
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover"
-          draggable={false}
-        />
-      ) : (
-        <div className={`absolute inset-0 bg-gradient-to-b ${gradient}`} />
-      )}
+      {/* Card container with animation */}
+      <div key={market.id} className={`absolute inset-0 ${slideClass}`}>
+        {/* Background image */}
+        {market.imageUrl ? (
+          <img
+            src={market.imageUrl}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+            draggable={false}
+          />
+        ) : (
+          <div className={`absolute inset-0 bg-gradient-to-b ${gradient}`} />
+        )}
 
-      {/* Dark overlay for readability */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/80" />
+        {/* Dark overlay for readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/80" />
+      </div>
 
       {/* Content */}
       <div className="relative z-10 flex flex-col h-full">
         {/* Top bar */}
         <div className="flex items-center justify-between px-4 pt-[env(safe-area-inset-top,12px)] pb-2">
-          <Link
-            href="/questions"
-            className="flex items-center gap-1 text-white/70 hover:text-white text-sm"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Link>
+          {/* Prize pool mini indicator */}
+          {seasonInfo && seasonInfo.totalPrizeCents > 0 ? (
+            <Link
+              href="/leaderboard"
+              className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1.5"
+            >
+              <Trophy className="h-3.5 w-3.5 text-amber-300" weight="fill" />
+              <span className="text-white/80 text-xs font-bold font-mono">
+                {formatDollars(seasonInfo.totalPrizeCents)}
+              </span>
+            </Link>
+          ) : (
+            <div />
+          )}
           <span className="text-white/50 text-xs font-mono">
             {currentIndex + 1} / {markets.length}
           </span>
@@ -248,23 +305,15 @@ export function SwipeFeed({ markets, isLoggedIn }: { markets: Market[]; isLogged
           </div>
         </div>
 
-        {/* Navigation arrows */}
-        <div className="flex justify-center gap-6 pb-[env(safe-area-inset-bottom,16px)] pb-4">
-          <button
-            onClick={goPrev}
-            disabled={currentIndex === 0}
-            className="text-white/30 hover:text-white/60 disabled:opacity-20 text-xs"
-          >
-            ← Previous
-          </button>
-          <button
-            onClick={goNext}
-            disabled={currentIndex === markets.length - 1}
-            className="text-white/30 hover:text-white/60 disabled:opacity-20 text-xs"
-          >
-            Next →
-          </button>
-        </div>
+        {/* Swipe hint (shown on first card only) */}
+        {currentIndex === 0 && markets.length > 1 && (
+          <div className="flex justify-center pb-2 animate-bounce-slow">
+            <span className="text-white/30 text-xs">Swipe up for next</span>
+          </div>
+        )}
+
+        {/* Bottom spacer for nav bar */}
+        <div className="h-20 pb-[env(safe-area-inset-bottom,0px)]" />
       </div>
     </div>
   );
