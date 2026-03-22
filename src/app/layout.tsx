@@ -6,8 +6,10 @@ import { Nav } from "@/components/nav";
 import { BottomNav } from "@/components/bottom-nav";
 import { Footer } from "@/components/footer";
 import { InAppBrowserGate } from "@/components/in-app-browser-gate";
+import { PwaGate } from "@/components/pwa-gate";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { createAdminClient } from "@/lib/supabase/server";
 
 const sora = localFont({
   src: "../fonts/Sora-VariableFont_wght.ttf",
@@ -52,24 +54,49 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Fetch season info for the PWA gate install page
+  let seasonInfo: { name: string; totalPrizeCents: number } | null = null;
+  try {
+    const supabase = await createAdminClient();
+    const { data: season } = await supabase
+      .from("seasons")
+      .select("name, prize_1st_cents, prize_2nd_cents, prize_3rd_cents, prize_4th_cents, prize_5th_cents, prize_bonus_cents")
+      .eq("status", "LIVE")
+      .single();
+    if (season) {
+      seasonInfo = {
+        name: season.name,
+        totalPrizeCents:
+          (season.prize_1st_cents || 0) +
+          (season.prize_2nd_cents || 0) +
+          (season.prize_3rd_cents || 0) +
+          (season.prize_4th_cents || 0) +
+          (season.prize_5th_cents || 0) +
+          (season.prize_bonus_cents || 0),
+      };
+    }
+  } catch {}
+
   return (
     <html lang="en">
       <body
         className={`${sora.variable} antialiased`}
         style={{ backgroundColor: '#3b82f6' }}
       >
-        <Providers>
-          <InAppBrowserGate />
-          <Nav />
-          <main className="max-w-7xl mx-auto px-4 pt-6">{children}</main>
-          <Footer />
-          <BottomNav />
-        </Providers>
+        <PwaGate seasonInfo={seasonInfo}>
+          <Providers>
+            <InAppBrowserGate />
+            <Nav />
+            <main className="max-w-7xl mx-auto px-4 pt-6">{children}</main>
+            <Footer />
+            <BottomNav />
+          </Providers>
+        </PwaGate>
         <Analytics />
         <SpeedInsights />
       </body>

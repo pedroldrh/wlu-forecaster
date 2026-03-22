@@ -1,16 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { SwipeFeed } from "@/app/swipe/swipe-feed";
-import { WebInstallPage } from "@/components/web-install-page";
-
-function isPWA() {
-  if (typeof window === "undefined") return true;
-  return (
-    window.matchMedia("(display-mode: standalone)").matches ||
-    (navigator as unknown as { standalone?: boolean }).standalone === true
-  );
-}
 
 interface Market {
   id: string;
@@ -30,15 +20,5 @@ interface HomeFeedProps {
 }
 
 export function HomeFeed({ markets, isLoggedIn, seasonInfo }: HomeFeedProps) {
-  const [isPwaMode, setIsPwaMode] = useState(true); // default true to avoid flash
-
-  useEffect(() => {
-    setIsPwaMode(isPWA());
-  }, []);
-
-  if (!isPwaMode) {
-    return <WebInstallPage seasonInfo={seasonInfo} />;
-  }
-
   return <SwipeFeed markets={markets} isLoggedIn={isLoggedIn} seasonInfo={seasonInfo} />;
 }
