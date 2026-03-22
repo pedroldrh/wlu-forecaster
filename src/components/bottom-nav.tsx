@@ -63,11 +63,11 @@ export function BottomNav() {
           className="flex items-center justify-center w-12 h-10 transition-all"
         >
           {userId ? (
-            <div className={`rounded-full transition-all ${isProfile ? "ring-2 ring-white" : "opacity-50"}`}>
+            <div className={`rounded-full transition-all ${isProfile ? "ring-2 ring-white scale-110" : ""}`}>
               <UserAvatar userId={userId} size="sm" />
             </div>
           ) : (
-            <div className={`h-7 w-7 rounded-full transition-all ${isProfile ? "bg-white/40 ring-2 ring-white" : "bg-white/20"}`} />
+            <div className={`h-7 w-7 rounded-full transition-all ${isProfile ? "bg-white/40 ring-2 ring-white" : "bg-white/30"}`} />
           )}
         </Link>
       </div>
