@@ -18,7 +18,7 @@ const sora = localFont({
 });
 
 export const viewport: Viewport = {
-  themeColor: "#3b82f6",
+  themeColor: "#000000",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -86,13 +86,13 @@ export default async function RootLayout({
     <html lang="en">
       <body
         className={`${sora.variable} antialiased`}
-        style={{ backgroundColor: '#3b82f6' }}
+        style={{ backgroundColor: '#000' }}
       >
         <PwaGate seasonInfo={seasonInfo}>
           <Providers>
             <InAppBrowserGate />
             <Nav />
-            <main className="max-w-7xl mx-auto px-4 pt-6">{children}</main>
+            <main className="max-w-7xl mx-auto px-4 pt-6 min-h-screen">{children}</main>
             <Footer />
             <BottomNav />
           </Providers>

@@ -28,17 +28,21 @@ export function BottomNav() {
   const profileHref = userId ? `/u/${userId}` : "/signin";
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-50 md:hidden pb-[env(safe-area-inset-bottom,0px)]">
-      <div className="flex items-center justify-around h-14">
+    <nav className="fixed bottom-0 inset-x-0 z-50 md:hidden">
+      {/* Thin top border like IG */}
+      <div className="h-px bg-white/10" />
+
+      {/* Nav content with safe area */}
+      <div className="flex items-end justify-around px-6 pt-2 pb-[max(env(safe-area-inset-bottom,8px),8px)]">
         {/* Leaderboard */}
         <Link
           href="/leaderboard"
-          className={`flex items-center justify-center flex-1 h-full transition-all ${
-            isLeaderboard ? "text-white" : "text-white/40 active:text-white/60"
+          className={`flex items-center justify-center w-12 h-10 transition-all ${
+            isLeaderboard ? "text-white" : "text-white/50 active:text-white/70"
           }`}
         >
           <Trophy
-            className={`h-7 w-7 transition-transform ${isLeaderboard ? "scale-110" : ""}`}
+            className="h-7 w-7"
             weight={isLeaderboard ? "fill" : "regular"}
           />
         </Link>
@@ -46,12 +50,12 @@ export function BottomNav() {
         {/* Feed */}
         <Link
           href="/"
-          className={`flex items-center justify-center flex-1 h-full transition-all ${
-            isHome ? "text-white" : "text-white/40 active:text-white/60"
+          className={`flex items-center justify-center w-12 h-10 transition-all ${
+            isHome ? "text-white" : "text-white/50 active:text-white/70"
           }`}
         >
           <PlayCircle
-            className={`h-7 w-7 transition-transform ${isHome ? "scale-110" : ""}`}
+            className="h-7 w-7"
             weight={isHome ? "fill" : "regular"}
           />
         </Link>
@@ -59,16 +63,14 @@ export function BottomNav() {
         {/* Profile */}
         <Link
           href={profileHref}
-          className={`flex items-center justify-center flex-1 h-full transition-all ${
-            isProfile ? "text-white" : "text-white/40 active:text-white/60"
-          }`}
+          className="flex items-center justify-center w-12 h-10 transition-all"
         >
           {userId ? (
-            <div className={`rounded-full transition-all ${isProfile ? "ring-2 ring-white scale-110" : "opacity-60"}`}>
+            <div className={`rounded-full transition-all ${isProfile ? "ring-2 ring-white" : "opacity-50"}`}>
               <UserAvatar userId={userId} size="sm" />
             </div>
           ) : (
-            <div className="h-7 w-7 rounded-full bg-white/20" />
+            <div className={`h-7 w-7 rounded-full transition-all ${isProfile ? "bg-white/40 ring-2 ring-white" : "bg-white/20"}`} />
           )}
         </Link>
       </div>
