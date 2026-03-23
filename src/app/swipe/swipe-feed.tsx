@@ -210,9 +210,11 @@ export function SwipeFeed() {
 
               <div className="relative z-10 h-full flex flex-col justify-end px-5 pb-24">
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-2xl">{getQuestionEmoji(market.title, market.category)}</span>
-                  <span className="text-xs font-bold text-white/70 uppercase tracking-wider">
-                    {CATEGORY_LABELS[market.category] || market.category}
+                  <span className="flex items-center gap-1.5 bg-white/15 backdrop-blur-sm rounded-full px-3 py-1">
+                    <span className="text-base">{getQuestionEmoji(market.title, market.category)}</span>
+                    <span className="text-xs font-bold text-white/80 uppercase tracking-wider">
+                      {CATEGORY_LABELS[market.category] || market.category}
+                    </span>
                   </span>
                 </div>
 
