@@ -53,7 +53,7 @@ export function SwipeFeed() {
     showFeed();
     setFeedHidden(false);
     const unsub = onFeedVisibilityChange(() => setFeedHidden(true));
-    return unsub;
+    return () => { unsub(); };
   }, []);
 
   const feed = useMemo(
