@@ -122,15 +122,15 @@ export function SwipeFeed() {
     setSubmittingMap((prev) => new Map(prev).set(marketId, vote));
     try {
       await submitForecast(marketId, vote);
-      // Mark as voted and scroll to next
+      // Scroll to next immediately, then collapse voted card
+      scrollToNextUnvoted(marketId);
       setTimeout(() => {
         setVotedIds((prev) => {
           const next = new Set(prev).add(marketId);
           cachedVotedIds = next;
           return next;
         });
-        scrollToNextUnvoted(marketId);
-      }, 500);
+      }, 300);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to vote");
     }
