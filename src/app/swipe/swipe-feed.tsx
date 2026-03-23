@@ -42,7 +42,7 @@ let cachedScrollMarketId: string | null = null;
 let cachedUserId: string | null = null;
 let cachedStreakBefore: number = 0;
 let cachedVotedTodayBefore: boolean = false;
-let cachedActivity: { displayName: string; questionTitle: string }[] = [];
+let cachedActivity: { userId: string; displayName: string; questionTitle: string }[] = [];
 let cachedCategoryFilter: string | null = null;
 
 export function SwipeFeed() {

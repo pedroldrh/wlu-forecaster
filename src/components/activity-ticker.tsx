@@ -1,38 +1,41 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { User } from "@phosphor-icons/react";
 
 interface ActivityItem {
+  userId: string;
   displayName: string;
   questionTitle: string;
 }
 
 interface Bubble {
   id: number;
-  x: number; // percentage from left (20-80)
-  y: number; // percentage from top (25-55)
+  userId: string;
+  x: number;
+  y: number;
 }
 
 let bubbleCounter = 0;
 
 export function ActivityTicker({ items, paused }: { items: ActivityItem[]; paused: boolean }) {
   const [bubbles, setBubbles] = useState<Bubble[]>([]);
+  const idxRef = useRef(0);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const spawnBubble = useCallback(() => {
     if (items.length === 0) return;
 
+    const item = items[idxRef.current % items.length];
+    idxRef.current++;
+
     const bubble: Bubble = {
       id: bubbleCounter++,
-      x: 20 + Math.random() * 60,
-      y: 25 + Math.random() * 30,
+      userId: item.userId,
+      x: 15 + Math.random() * 70,
+      y: 28 + Math.random() * 25,
     };
 
-    setBubbles((prev) => {
-      const kept = prev.slice(-2);
-      return [...kept, bubble];
-    });
+    setBubbles((prev) => prev.slice(-2).concat(bubble));
 
     setTimeout(() => {
       setBubbles((prev) => prev.filter((b) => b.id !== bubble.id));
@@ -68,11 +71,13 @@ export function ActivityTicker({ items, paused }: { items: ActivityItem[]; pause
             transform: "translate(-50%, -50%)",
           }}
         >
-          <div className="flex flex-col items-center gap-1">
-            <div className="h-10 w-10 rounded-full bg-white/[0.08] backdrop-blur-sm flex items-center justify-center">
-              <User className="h-5 w-5 text-white/50" weight="fill" />
-            </div>
-            <span className="text-[10px] font-bold text-white/40 uppercase tracking-wider">
+          <div className="flex flex-col items-center gap-1.5">
+            <img
+              src={`/api/avatar/${bubble.userId}`}
+              alt=""
+              className="h-12 w-12 rounded-full ring-2 ring-white/20 shadow-lg shadow-black/40"
+            />
+            <span className="text-[11px] font-bold text-white/70 bg-black/40 backdrop-blur-sm rounded-full px-2.5 py-0.5">
               Voted!
             </span>
           </div>

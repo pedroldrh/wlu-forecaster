@@ -72,7 +72,7 @@ export async function GET() {
     .order("submitted_at", { ascending: false })
     .limit(15);
 
-  let recentActivity: { displayName: string; questionTitle: string }[] = [];
+  let recentActivity: { userId: string; displayName: string; questionTitle: string }[] = [];
   if (recentVotes && recentVotes.length > 0) {
     const userIds = [...new Set(recentVotes.map((v) => v.user_id))];
     const { data: profiles } = await supabase
@@ -93,7 +93,7 @@ export async function GET() {
       const name = nameMap.get(v.user_id);
       const title = titleMap.get(v.question_id);
       if (name && title) {
-        recentActivity.push({ displayName: name, questionTitle: title });
+        recentActivity.push({ userId: v.user_id, displayName: name, questionTitle: title });
       }
       if (recentActivity.length >= 10) break;
     }
