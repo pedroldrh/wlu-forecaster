@@ -44,6 +44,7 @@ export function SwipeFeed() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showResolution, setShowResolution] = useState(false);
   const [touchStartY, setTouchStartY] = useState(0);
+  const [animating, setAnimating] = useState<"up" | "down" | null>(null);
   const router = useRouter();
 
   // Filter to only unvoted markets
@@ -106,16 +107,24 @@ export function SwipeFeed() {
   }, [loadFeed]);
 
   const goNext = useCallback(() => {
-    if (currentIndex < feed.length - 1) {
-      setCurrentIndex((i) => i + 1);
+    if (currentIndex < feed.length - 1 && !animating) {
+      setAnimating("up");
+      setTimeout(() => {
+        setCurrentIndex((i) => i + 1);
+        setAnimating(null);
+      }, 250);
     }
-  }, [currentIndex, feed.length]);
+  }, [currentIndex, feed.length, animating]);
 
   const goPrev = useCallback(() => {
-    if (currentIndex > 0) {
-      setCurrentIndex((i) => i - 1);
+    if (currentIndex > 0 && !animating) {
+      setAnimating("down");
+      setTimeout(() => {
+        setCurrentIndex((i) => i - 1);
+        setAnimating(null);
+      }, 250);
     }
-  }, [currentIndex]);
+  }, [currentIndex, animating]);
 
   const handleVote = async (vote: boolean) => {
     if (!market) return;
@@ -128,18 +137,21 @@ export function SwipeFeed() {
     setSubmitting(true);
     try {
       await submitForecast(market.id, vote);
-      // Mark as voted — feed recalculates, currentIndex now points to the next card
-      setVotedIds((prev) => {
-        const next = new Set(prev).add(market.id);
-        cachedVotedIds = next;
-        return next;
-      });
-      // Don't increment index — the voted card disappears from feed array,
-      // so currentIndex now naturally points to what was the next card
+      // Slide up then swap card
+      setAnimating("up");
+      setTimeout(() => {
+        setVotedIds((prev) => {
+          const next = new Set(prev).add(market.id);
+          cachedVotedIds = next;
+          return next;
+        });
+        setAnimating(null);
+        setSubmitting(false);
+      }, 250);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to vote");
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   // Touch handling for swipe
@@ -198,8 +210,15 @@ export function SwipeFeed() {
         </div>
       )}
 
-      {/* Single card — no scroll container, no DOM manipulation */}
-      <div key={market.id} className="absolute inset-0">
+      {/* Single card with slide animation */}
+      <div
+        key={market.id}
+        className={`absolute inset-0 transition-all duration-250 ease-out ${
+          animating === "up" ? "-translate-y-full opacity-0" :
+          animating === "down" ? "translate-y-full opacity-0" :
+          "translate-y-0 opacity-100"
+        }`}
+      >
         {market.imageUrl ? (
           <img
             src={market.imageUrl}
@@ -247,14 +266,14 @@ export function SwipeFeed() {
           <button
             onClick={() => handleVote(true)}
             disabled={submitting}
-            className="h-[72px] rounded-2xl font-bold text-2xl transition-all duration-150 active:scale-[0.92] active:brightness-125 bg-green-500/25 text-green-300 backdrop-blur-sm border border-green-400/25 hover:bg-green-500/35"
+            className="h-[72px] rounded-2xl font-bold text-2xl transition-all duration-150 active:scale-[0.92] bg-green-500/25 text-green-300 backdrop-blur-sm border border-green-400/25 hover:bg-green-500/35"
           >
             YES
           </button>
           <button
             onClick={() => handleVote(false)}
             disabled={submitting}
-            className="h-[72px] rounded-2xl font-bold text-2xl transition-all duration-150 active:scale-[0.92] active:brightness-125 bg-red-500/25 text-red-300 backdrop-blur-sm border border-red-400/25 hover:bg-red-500/35"
+            className="h-[72px] rounded-2xl font-bold text-2xl transition-all duration-150 active:scale-[0.92] bg-red-500/25 text-red-300 backdrop-blur-sm border border-red-400/25 hover:bg-red-500/35"
           >
             NO
           </button>
