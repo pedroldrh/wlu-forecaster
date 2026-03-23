@@ -31,8 +31,25 @@ export function useSwipeNav(options: SwipeNavOptions) {
     const root = containerRef.current;
     if (!root) return;
 
+    const isHorizontallyScrollable = (el: EventTarget | null): boolean => {
+      let node = el as HTMLElement | null;
+      while (node && node !== root) {
+        const overflow = getComputedStyle(node).overflowX;
+        if (overflow === "auto" || overflow === "scroll") {
+          return node.scrollWidth > node.clientWidth;
+        }
+        node = node.parentElement;
+      }
+      return false;
+    };
+
     const onTouchStart = (e: TouchEvent) => {
       if (navigating) return;
+      // Don't intercept touches on horizontally scrollable areas (e.g. filter chips)
+      if (isHorizontallyScrollable(e.target)) {
+        touchRef.current = { startX: 0, startY: 0, locked: "v", currentX: 0 };
+        return;
+      }
       const t = e.touches[0];
       touchRef.current = { startX: t.clientX, startY: t.clientY, locked: null, currentX: 0 };
       setSwiping(true);
