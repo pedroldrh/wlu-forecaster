@@ -90,6 +90,25 @@ export function SwipeFeed() {
     } catch (e) {
       console.error("Feed load error:", e);
     }
+    // Don't show feed until first image is loaded
+    const allMarkets = cachedMarkets ?? [];
+    const firstUnvoted = allMarkets.find((m) => !cachedVotedIds.has(m.id));
+    if (firstUnvoted?.imageUrl) {
+      await new Promise<void>((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve();
+        img.onerror = () => resolve();
+        img.src = firstUnvoted.imageUrl!;
+      });
+    }
+    // Preload next few images in background
+    const unvoted = allMarkets.filter((m) => !cachedVotedIds.has(m.id));
+    unvoted.slice(1, 4).forEach((m) => {
+      if (m.imageUrl) {
+        const img = new Image();
+        img.src = m.imageUrl;
+      }
+    });
     setLoading(false);
   }, []);
 
@@ -137,6 +156,12 @@ export function SwipeFeed() {
         setTimeout(() => {
           cardRefs.current.get(nextCard.id)?.scrollIntoView({ behavior: "smooth" });
         }, 50);
+        // Preload the card after next
+        const nextNextCard = feed[currentFeedIdx + 2];
+        if (nextNextCard?.imageUrl) {
+          const img = new Image();
+          img.src = nextNextCard.imageUrl;
+        }
       }
     }, 600);
   };
