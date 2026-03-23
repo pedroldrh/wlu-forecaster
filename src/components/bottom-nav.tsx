@@ -6,6 +6,7 @@ import { Trophy, MonitorPlay } from "@phosphor-icons/react";
 import { UserAvatar } from "@/components/user-avatar";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { hideFeed } from "@/lib/feed-visibility";
 
 let prefetched = false;
 function prefetchPages(userId: string | null) {
@@ -35,12 +36,18 @@ export function BottomNav() {
   const isProfile = pathname.startsWith("/u/");
   const profileHref = userId ? `/u/${userId}` : "/signin";
 
+  // Hide feed image before navigating away
+  const handleNavAway = () => {
+    if (isHome) hideFeed();
+  };
+
   return (
     <nav className="fixed bottom-0 inset-x-0 z-50 md:hidden bg-black">
       <div className="h-px bg-white/10" />
       <div className="flex items-end justify-around px-6 pt-2 pb-[max(env(safe-area-inset-bottom,8px),8px)]">
         <Link
           href="/leaderboard"
+          onClick={handleNavAway}
           className={`flex items-center justify-center w-14 h-11 transition-transform duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.75] ${
             isLeaderboard ? "text-white scale-110" : "text-white/50"
           }`}
@@ -59,6 +66,7 @@ export function BottomNav() {
 
         <Link
           href={profileHref}
+          onClick={handleNavAway}
           className="flex items-center justify-center w-14 h-11 transition-transform duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.75]"
         >
           {userId ? (

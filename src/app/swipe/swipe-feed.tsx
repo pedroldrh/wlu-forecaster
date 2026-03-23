@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { formatDollars } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
+import { hideFeed, showFeed, isFeedHidden, onFeedVisibilityChange } from "@/lib/feed-visibility";
 
 interface Market {
   id: string;
@@ -42,9 +43,18 @@ export function SwipeFeed() {
   const [votedIds, setVotedIds] = useState<Set<string>>(cachedVotedIds);
   const [confirmedVote, setConfirmedVote] = useState<{ marketId: string; vote: boolean } | null>(null);
   const [showResolution, setShowResolution] = useState<string | null>(null);
+  const [feedHidden, setFeedHidden] = useState(isFeedHidden());
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const router = useRouter();
   const pathname = usePathname();
+
+  // Listen for hide signal from bottom nav
+  useEffect(() => {
+    showFeed();
+    setFeedHidden(false);
+    const unsub = onFeedVisibilityChange(() => setFeedHidden(true));
+    return unsub;
+  }, []);
 
   const feed = useMemo(
     () => markets.filter((m) => !votedIds.has(m.id)),
@@ -168,7 +178,7 @@ export function SwipeFeed() {
   };
 
   // Hide feed instantly when navigating to other pages
-  if (pathname !== "/") return null;
+  if (pathname !== "/" || feedHidden) return <div className="fixed inset-0 z-0 bg-black" />;
 
   if (loading) {
     return <div className="fixed inset-0 z-0 bg-black" />;
