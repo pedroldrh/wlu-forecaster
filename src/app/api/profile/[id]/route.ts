@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { winLossRecord, isCorrect } from "@/lib/scoring";
+import { computeStreak } from "@/lib/streaks";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -93,6 +94,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   if (profile.is_wlu_verified) badges.push("W&L Verified");
   if (totalResolved > 0 && questionsPlayed >= totalResolved * 0.9) badges.push("Most Active");
 
+  // Compute voting streak from all forecast timestamps
+  const streak = computeStreak(allForecasts.map((f) => f.submitted_at));
+
   return NextResponse.json({
     profile: {
       id: profile.id, display_name: profile.display_name, name: profile.name,
@@ -100,7 +104,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     },
     season: season ? { id: season.id, name: season.name } : null,
     wins, losses, questionsPlayed, totalForecasts: allForecasts.length,
-    seasonCount: entries.length, referrals, badges,
+    seasonCount: entries.length, referrals, badges, streak,
     resolvedForecasts, allForecasts,
   });
 }

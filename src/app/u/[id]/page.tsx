@@ -7,7 +7,7 @@ import { formatDate } from "@/lib/utils";
 import { UserAvatar } from "@/components/user-avatar";
 import { ReferralCard } from "@/components/referral-card";
 import { SignOutButton } from "@/components/sign-out-button";
-import { Crown, Shield, Bell, BellRinging, BellSlash, Info, Crosshair, Trophy, ChartLineUp, X } from "@phosphor-icons/react";
+import { Crown, Shield, Bell, BellRinging, BellSlash, Info, Crosshair, Trophy, ChartLineUp, X, Fire } from "@phosphor-icons/react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { subscribeToPush } from "@/lib/push-utils";
@@ -168,6 +168,14 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
             <div className="text-center">
               <p className="font-bold font-mono text-foreground">{data.questionsPlayed}</p>
               <p className="text-xs">Resolved</p>
+            </div>
+            <div className="h-6 w-px bg-white/10" />
+            <div className="text-center">
+              <p className="font-bold font-mono text-foreground flex items-center justify-center gap-1">
+                {data.streak?.current > 0 && <Fire className="h-4 w-4 text-orange-400" weight="fill" />}
+                {data.streak?.current ?? 0}
+              </p>
+              <p className="text-xs">Day Streak</p>
             </div>
             <div className="h-6 w-px bg-white/10" />
             <div className="text-center">

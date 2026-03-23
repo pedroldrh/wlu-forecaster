@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { submitForecast } from "@/actions/forecasts";
 import { CATEGORY_LABELS, getQuestionEmoji } from "@/lib/constants";
-import { Trophy, Info, X, CheckCircle } from "@phosphor-icons/react";
+import { Trophy, Info, X, CheckCircle, Fire } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { formatDollars } from "@/lib/utils";
@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/client";
 import { hideFeed, showFeed } from "@/lib/feed-visibility";
 import { useSwipeNav } from "@/lib/use-swipe-nav";
 import { SwipePeek } from "@/components/swipe-peek";
+import { computeStreak } from "@/lib/streaks";
 
 interface Market {
   id: string;
@@ -38,6 +39,8 @@ let cachedVotedIds: Set<string> = new Set();
 let cachedIsLoggedIn = false;
 let cachedScrollMarketId: string | null = null;
 let cachedUserId: string | null = null;
+let cachedStreakBefore: number = 0;
+let cachedVotedTodayBefore: boolean = false;
 
 export function SwipeFeed() {
   const [markets, setMarkets] = useState<Market[]>(cachedMarkets ?? []);
@@ -49,6 +52,8 @@ export function SwipeFeed() {
   const [confirmedVote, setConfirmedVote] = useState<{ marketId: string; vote: boolean } | null>(null);
   const [consensus, setConsensus] = useState<{ marketId: string; yesPct: number; vote: boolean } | null>(null);
   const [showResolution, setShowResolution] = useState<string | null>(null);
+  const [streakToast, setStreakToast] = useState<number | null>(null);
+  const hadVotedTodayRef = useRef(cachedVotedTodayBefore);
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -164,6 +169,20 @@ export function SwipeFeed() {
         const newVoted = new Set((userForecasts ?? []).map((f: { question_id: string }) => f.question_id));
         cachedVotedIds = newVoted;
         setVotedIds(newVoted);
+
+        // Fetch streak data (last 60 days of forecast timestamps)
+        const { data: streakData } = await supabase
+          .from("forecasts")
+          .select("submitted_at")
+          .eq("user_id", user.id)
+          .order("submitted_at", { ascending: false })
+          .limit(500);
+        if (streakData) {
+          const streak = computeStreak(streakData.map((f: { submitted_at: string }) => f.submitted_at));
+          cachedStreakBefore = streak.current;
+          cachedVotedTodayBefore = streak.votedToday;
+          hadVotedTodayRef.current = streak.votedToday;
+        }
       } else {
         cachedVotedIds = new Set();
         setVotedIds(new Set());
@@ -235,9 +254,18 @@ export function SwipeFeed() {
     const newYes = market.yesCount + (vote ? 1 : 0);
     const yesPct = Math.round((newYes / newTotal) * 100);
 
+    // Show streak toast on first vote of the day
+    const isFirstVoteToday = !hadVotedTodayRef.current;
+    if (isFirstVoteToday) {
+      hadVotedTodayRef.current = true;
+      const newStreak = cachedStreakBefore + 1;
+      cachedStreakBefore = newStreak;
+      setStreakToast(newStreak);
+    }
+
     // Phase 1 (0-500ms): show checkmark
-    // Phase 2 (500-2000ms): show consensus bar
-    // Phase 3 (2000ms): remove card + scroll
+    // Phase 2 (500-2300ms): show consensus bar + streak
+    // Phase 3 (2300ms): remove card + scroll
     setTimeout(() => {
       setConfirmedVote(null);
       setConsensus({ marketId, yesPct, vote });
@@ -245,6 +273,7 @@ export function SwipeFeed() {
 
     setTimeout(() => {
       setConsensus(null);
+      setStreakToast(null);
       setVotedIds((prev) => {
         const next = new Set(prev).add(marketId);
         cachedVotedIds = next;
@@ -262,7 +291,7 @@ export function SwipeFeed() {
           img.src = nextNextCard.imageUrl;
         }
       }
-    }, 2000);
+    }, 2300);
   };
 
   // Hide feed when not on homepage
@@ -387,9 +416,17 @@ export function SwipeFeed() {
                         </div>
                       </div>
                     </div>
-                    <p className="text-center text-xs text-white/40">
-                      {market.voteCount + 1} vote{market.voteCount !== 0 ? "s" : ""}
-                    </p>
+                    <div className="flex items-center justify-center gap-3">
+                      <p className="text-xs text-white/40">
+                        {market.voteCount + 1} vote{market.voteCount !== 0 ? "s" : ""}
+                      </p>
+                      {streakToast && consensus?.marketId === market.id && (
+                        <div className="flex items-center gap-1 bg-orange-500/20 rounded-full px-2.5 py-0.5 animate-[scale-in_300ms_ease-out]">
+                          <Fire className="h-3.5 w-3.5 text-orange-400" weight="fill" />
+                          <span className="text-xs font-bold text-orange-300">{streakToast}-day streak</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ) : (
                   /* ── Vote buttons ── */
