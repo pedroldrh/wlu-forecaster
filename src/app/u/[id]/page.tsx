@@ -96,25 +96,25 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
 
         {/* Top-right action buttons */}
         {isOwnProfile && (
-          <div className="absolute top-4 right-4 flex items-center gap-2">
+          <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
             {notifStatus === "prompt" && (
               <button
                 onClick={handleEnableNotifications}
-                className="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center active:scale-[0.85] transition-all duration-200"
+                className="h-9 w-9 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center active:scale-[0.85] transition-all duration-200"
               >
-                <Bell className="h-4.5 w-4.5 text-white/70" />
+                <Bell className="h-4.5 w-4.5 text-white" />
               </button>
             )}
             {notifStatus === "granted" && (
-              <div className="h-9 w-9 rounded-full bg-white/5 flex items-center justify-center">
-                <BellRinging className="h-4.5 w-4.5 text-white/30" />
+              <div className="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center">
+                <BellRinging className="h-4.5 w-4.5 text-white/40" />
               </div>
             )}
             <button
               onClick={() => setShowHowItWorks(true)}
-              className="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center active:scale-[0.85] transition-all duration-200"
+              className="h-9 w-9 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center active:scale-[0.85] transition-all duration-200"
             >
-              <Info className="h-4.5 w-4.5 text-white/70" />
+              <Info className="h-4.5 w-4.5 text-white" />
             </button>
           </div>
         )}
