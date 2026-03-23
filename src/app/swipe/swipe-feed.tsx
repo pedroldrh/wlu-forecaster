@@ -344,25 +344,25 @@ export function SwipeFeed() {
     <div id="swipe-feed" ref={feedRootRef} className="fixed inset-0 z-0 bg-black">
       <SwipePeek label={peekLabel} />
 
-      <div style={swipeStyle} className="relative z-[1] h-full">
-        {seasonInfo && seasonInfo.totalPrizeCents > 0 && (
-          <div className="fixed top-0 left-0 right-0 z-[5] flex justify-center pt-[env(safe-area-inset-top,12px)]" style={swipeStyle}>
-            <Link
-              href="/leaderboard"
-              className="flex items-center gap-1.5 bg-black/40 backdrop-blur-sm rounded-full px-4 py-2 mt-2 active:scale-[0.93] transition-all duration-150"
-            >
-              <Trophy className="h-4 w-4 text-amber-300" weight="fill" />
-              <span className="text-white font-bold text-sm font-mono">
-                {formatDollars(seasonInfo.totalPrizeCents)}
-              </span>
-            </Link>
-          </div>
-        )}
+      {/* Prize banner — above swipe layer */}
+      {seasonInfo && seasonInfo.totalPrizeCents > 0 && (
+        <div className="fixed top-0 left-0 right-0 z-[5] flex justify-center pt-[env(safe-area-inset-top,12px)]" style={swipeStyle}>
+          <Link
+            href="/leaderboard"
+            className="flex items-center gap-1.5 bg-black/40 backdrop-blur-sm rounded-full px-4 py-2 mt-2 active:scale-[0.93] transition-all duration-150"
+          >
+            <Trophy className="h-4 w-4 text-amber-300" weight="fill" />
+            <span className="text-white font-bold text-sm font-mono">
+              {formatDollars(seasonInfo.totalPrizeCents)}
+            </span>
+          </Link>
+        </div>
+      )}
 
-      {/* Category filter chips */}
+      {/* Category filter chips — above swipe layer */}
       {availableCategories.size > 1 && (
         <div
-          className="fixed z-[5] left-0 right-0 flex gap-2 px-4 overflow-x-auto no-scrollbar"
+          className="fixed z-[6] left-0 right-0 flex gap-2 px-4 overflow-x-auto no-scrollbar"
           style={{
             ...swipeStyle,
             top: seasonInfo?.totalPrizeCents ? "calc(env(safe-area-inset-top, 12px) + 48px)" : "calc(env(safe-area-inset-top, 12px) + 12px)",
@@ -399,6 +399,8 @@ export function SwipeFeed() {
       )}
 
       <ActivityTicker items={activity} paused={!!submittingId} />
+
+      <div style={swipeStyle} className="relative z-[1] h-full">
 
       <div ref={scrollContainerRef} className="h-full overflow-y-auto snap-y snap-mandatory">
         {feed.map((market) => {
