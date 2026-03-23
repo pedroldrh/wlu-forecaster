@@ -18,11 +18,18 @@ const cache = new Map<string, any>();
 export default function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [data, setData] = useState<any>(cache.get(id) ?? null);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(
+    // Check cache immediately to avoid layout shift
+    cache.get("__currentUserId__") ?? null
+  );
+  const [authChecked, setAuthChecked] = useState(!!cache.get("__currentUserId__"));
 
   useEffect(() => {
     createClient().auth.getUser().then(({ data: { user } }) => {
-      setCurrentUserId(user?.id ?? null);
+      const uid = user?.id ?? null;
+      setCurrentUserId(uid);
+      cache.set("__currentUserId__", uid);
+      setAuthChecked(true);
     });
 
     fetch(`/api/profile/${id}`, { cache: "no-store" }).then((r) => r.json()).then((d) => {
@@ -35,7 +42,7 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
   if (data.error) return <div className="text-center py-12 text-muted-foreground">User not found.</div>;
 
   const profile = data.profile;
-  const isOwnProfile = currentUserId === id;
+  const isOwnProfile = authChecked && currentUserId === id;
   const displayName = profile.display_name || profile.name || "Anonymous";
   const isFounder = profile.role === "ADMIN" && displayName === "Forecast Founder";
   const hasRecord = data.wins > 0 || data.losses > 0;
