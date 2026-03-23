@@ -33,6 +33,7 @@ let cachedMarkets: Market[] | null = null;
 let cachedSeasonInfo: { name: string; totalPrizeCents: number } | null = null;
 let cachedVotedIds: Set<string> = new Set();
 let cachedIsLoggedIn = false;
+let cachedScrollMarketId: string | null = null;
 
 export function SwipeFeed() {
   const [markets, setMarkets] = useState<Market[]>(cachedMarkets ?? []);
@@ -44,30 +45,87 @@ export function SwipeFeed() {
   const [confirmedVote, setConfirmedVote] = useState<{ marketId: string; vote: boolean } | null>(null);
   const [showResolution, setShowResolution] = useState<string | null>(null);
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
-
-  // Restore feed visibility when returning to /
-  useEffect(() => {
-    if (pathname === "/") showFeed();
-  }, [pathname]);
 
   const feed = useMemo(
     () => markets.filter((m) => !votedIds.has(m.id)),
     [markets, votedIds]
   );
 
+  // Track which card is currently visible so we can restore position
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container || feed.length === 0) return;
+
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        // Find which card is most visible
+        const containerRect = container.getBoundingClientRect();
+        const centerY = containerRect.top + containerRect.height / 2;
+        let closestId: string | null = null;
+        let closestDist = Infinity;
+        for (const [id, el] of cardRefs.current) {
+          const rect = el.getBoundingClientRect();
+          const cardCenter = rect.top + rect.height / 2;
+          const dist = Math.abs(cardCenter - centerY);
+          if (dist < closestDist) {
+            closestDist = dist;
+            closestId = id;
+          }
+        }
+        if (closestId) cachedScrollMarketId = closestId;
+        ticking = false;
+      });
+    };
+
+    container.addEventListener("scroll", onScroll, { passive: true });
+    return () => container.removeEventListener("scroll", onScroll);
+  }, [feed]);
+
+  // Restore feed visibility and scroll position when returning to /
+  useEffect(() => {
+    if (pathname === "/") {
+      showFeed();
+      // Restore scroll to the card user was viewing
+      if (cachedScrollMarketId) {
+        requestAnimationFrame(() => {
+          const el = cardRefs.current.get(cachedScrollMarketId!);
+          if (el) el.scrollIntoView({ behavior: "instant" as ScrollBehavior });
+        });
+      }
+    }
+  }, [pathname]);
+
   const loadFeed = useCallback(async () => {
     try {
       const res = await fetch("/api/feed", { cache: "no-store" });
       const data = await res.json();
-      // Shuffle markets randomly for each load (Fisher-Yates)
       const raw: Market[] = data.markets ?? [];
-      for (let i = raw.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [raw[i], raw[j]] = [raw[j], raw[i]];
+
+      // Only shuffle on first load — reuse cached order when returning to feed
+      let feedMarkets: Market[];
+      if (cachedMarkets) {
+        // Keep existing order, but add any new markets and remove stale ones
+        const newIds = new Set(raw.map((m) => m.id));
+        const existingIds = new Set(cachedMarkets.map((m) => m.id));
+        feedMarkets = cachedMarkets.filter((m) => newIds.has(m.id));
+        // Append any truly new markets at the end
+        for (const m of raw) {
+          if (!existingIds.has(m.id)) feedMarkets.push(m);
+        }
+      } else {
+        // First load — shuffle (Fisher-Yates)
+        for (let i = raw.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [raw[i], raw[j]] = [raw[j], raw[i]];
+        }
+        feedMarkets = raw;
       }
-      const feedMarkets = raw;
 
       cachedMarkets = feedMarkets;
       cachedSeasonInfo = data.seasonInfo ?? null;
@@ -117,6 +175,14 @@ export function SwipeFeed() {
       }
     });
     setLoading(false);
+
+    // Restore scroll position after render
+    if (cachedScrollMarketId) {
+      requestAnimationFrame(() => {
+        const el = cardRefs.current.get(cachedScrollMarketId!);
+        if (el) el.scrollIntoView({ behavior: "instant" as ScrollBehavior });
+      });
+    }
   }, []);
 
   useEffect(() => {
@@ -211,7 +277,7 @@ export function SwipeFeed() {
         </div>
       )}
 
-      <div className="h-full overflow-y-auto snap-y snap-mandatory">
+      <div ref={scrollContainerRef} className="h-full overflow-y-auto snap-y snap-mandatory">
         {feed.map((market) => {
           const gradient = CATEGORY_GRADIENTS[market.category] || CATEGORY_GRADIENTS.OTHER;
 
