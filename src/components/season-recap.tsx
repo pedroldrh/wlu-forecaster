@@ -53,15 +53,33 @@ export function SeasonRecapButton({ userId }: { userId: string }) {
 
 function SeasonRecapModal({ userId, onClose }: { userId: string; onClose: () => void }) {
   const [data, setData] = useState<RecapData | null>(null);
+  const [error, setError] = useState(false);
   const [slide, setSlide] = useState(0);
   const [direction, setDirection] = useState<"next" | "prev">("next");
 
   useEffect(() => {
     fetch(`/api/recap/${userId}`, { cache: "no-store" })
-      .then((r) => r.json())
-      .then(setData)
-      .catch(() => onClose());
-  }, [userId, onClose]);
+      .then((r) => {
+        if (!r.ok) throw new Error("not ok");
+        return r.json();
+      })
+      .then((d) => {
+        if (d.error) throw new Error(d.error);
+        setData(d);
+      })
+      .catch(() => setError(true));
+  }, [userId]);
+
+  if (error) {
+    return (
+      <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center" onClick={onClose}>
+        <div className="text-center space-y-3">
+          <p className="text-white/50">No recap data available yet.</p>
+          <p className="text-sm text-white/30">Vote on more markets to generate your recap!</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!data) {
     return (
@@ -113,7 +131,7 @@ function SeasonRecapModal({ userId, onClose }: { userId: string; onClose: () => 
       </div>
 
       {/* Tap zones */}
-      <div className="absolute inset-0 z-10 flex">
+      <div className="absolute inset-0 z-[15] flex">
         <div className="w-1/3 h-full" onClick={goPrev} />
         <div className="w-1/3 h-full" />
         <div className="w-1/3 h-full" onClick={goNext} />
@@ -122,10 +140,11 @@ function SeasonRecapModal({ userId, onClose }: { userId: string; onClose: () => 
       {/* Slide content */}
       <div
         key={slide}
-        className={`relative z-0 h-full flex flex-col items-center justify-center px-8 animate-[${
-          direction === "next" ? "fade-up" : "fade-up"
-        }_400ms_ease-out]`}
-        style={{ background: current.bg }}
+        className="absolute inset-0 z-[5] flex flex-col items-center justify-center px-8"
+        style={{
+          background: current.bg,
+          animation: "fade-up 400ms ease-out",
+        }}
       >
         {current.content}
       </div>
