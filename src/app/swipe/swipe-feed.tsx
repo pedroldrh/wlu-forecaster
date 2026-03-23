@@ -43,6 +43,7 @@ let cachedUserId: string | null = null;
 let cachedStreakBefore: number = 0;
 let cachedVotedTodayBefore: boolean = false;
 let cachedActivity: { displayName: string; questionTitle: string }[] = [];
+let cachedCategoryFilter: string | null = null;
 
 export function SwipeFeed() {
   const [markets, setMarkets] = useState<Market[]>(cachedMarkets ?? []);
@@ -56,6 +57,7 @@ export function SwipeFeed() {
   const [showResolution, setShowResolution] = useState<string | null>(null);
   const [streakToast, setStreakToast] = useState<number | null>(null);
   const [activity, setActivity] = useState(cachedActivity);
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(cachedCategoryFilter);
   const hadVotedTodayRef = useRef(cachedVotedTodayBefore);
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -72,9 +74,26 @@ export function SwipeFeed() {
   });
 
   const feed = useMemo(
-    () => markets.filter((m) => !votedIds.has(m.id)),
-    [markets, votedIds]
+    () => markets.filter((m) => !votedIds.has(m.id) && (!categoryFilter || m.category === categoryFilter)),
+    [markets, votedIds, categoryFilter]
   );
+
+  // Categories that have unvoted markets (for showing chip counts)
+  const availableCategories = useMemo(() => {
+    const unvoted = markets.filter((m) => !votedIds.has(m.id));
+    const counts = new Map<string, number>();
+    for (const m of unvoted) {
+      counts.set(m.category, (counts.get(m.category) || 0) + 1);
+    }
+    return counts;
+  }, [markets, votedIds]);
+
+  const handleCategoryChange = (cat: string | null) => {
+    cachedCategoryFilter = cat;
+    setCategoryFilter(cat);
+    // Scroll to top when changing filter
+    scrollContainerRef.current?.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+  };
 
   // Track which card is currently visible so we can restore position
   useEffect(() => {
@@ -339,6 +358,45 @@ export function SwipeFeed() {
             </Link>
           </div>
         )}
+
+      {/* Category filter chips */}
+      {availableCategories.size > 1 && (
+        <div
+          className="fixed z-[5] left-0 right-0 flex gap-2 px-4 overflow-x-auto no-scrollbar"
+          style={{
+            ...swipeStyle,
+            top: seasonInfo?.totalPrizeCents ? "calc(env(safe-area-inset-top, 12px) + 48px)" : "calc(env(safe-area-inset-top, 12px) + 12px)",
+          }}
+        >
+          <button
+            onClick={() => handleCategoryChange(null)}
+            className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-200 active:scale-[0.9] ${
+              !categoryFilter
+                ? "bg-white text-black"
+                : "bg-white/10 text-white/50"
+            }`}
+          >
+            All
+          </button>
+          {Object.entries(CATEGORY_LABELS).map(([key, label]) => {
+            const count = availableCategories.get(key);
+            if (!count) return null;
+            return (
+              <button
+                key={key}
+                onClick={() => handleCategoryChange(categoryFilter === key ? null : key)}
+                className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-200 active:scale-[0.9] ${
+                  categoryFilter === key
+                    ? "bg-white text-black"
+                    : "bg-white/10 text-white/50"
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       <ActivityTicker items={activity} paused={!!submittingId} />
 
