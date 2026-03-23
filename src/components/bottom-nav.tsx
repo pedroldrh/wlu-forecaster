@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Trophy, PlayCircle } from "@phosphor-icons/react";
+import { Trophy, MonitorPlay } from "@phosphor-icons/react";
 import { UserAvatar } from "@/components/user-avatar";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -60,7 +60,7 @@ export function BottomNav() {
             isHome ? "text-white" : "text-white/50 active:text-white/70"
           }`}
         >
-          <PlayCircle
+          <MonitorPlay
             className="h-7 w-7"
             weight={isHome ? "fill" : "regular"}
           />
