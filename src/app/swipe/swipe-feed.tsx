@@ -20,6 +20,7 @@ interface Market {
   description: string | null;
   imageUrl: string | null;
   voteCount: number;
+  yesCount: number;
 }
 
 const CATEGORY_GRADIENTS: Record<string, string> = {
@@ -46,6 +47,7 @@ export function SwipeFeed() {
   const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [votedIds, setVotedIds] = useState<Set<string>>(cachedVotedIds);
   const [confirmedVote, setConfirmedVote] = useState<{ marketId: string; vote: boolean } | null>(null);
+  const [consensus, setConsensus] = useState<{ marketId: string; yesPct: number; vote: boolean } | null>(null);
   const [showResolution, setShowResolution] = useState<string | null>(null);
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -219,38 +221,48 @@ export function SwipeFeed() {
     if (submittingId) return;
 
     setSubmittingId(marketId);
-
-    // Show check immediately — don't wait for network
     setConfirmedVote({ marketId, vote });
 
     const currentFeedIdx = feed.findIndex((m) => m.id === marketId);
     const nextCard = feed[currentFeedIdx + 1];
+    const market = feed[currentFeedIdx];
 
     // Fire API in background
     submitForecast(marketId, vote).catch(() => {});
 
-    // After 600ms: remove card + scroll to next
+    // Compute consensus including this vote
+    const newTotal = market.voteCount + 1;
+    const newYes = market.yesCount + (vote ? 1 : 0);
+    const yesPct = Math.round((newYes / newTotal) * 100);
+
+    // Phase 1 (0-500ms): show checkmark
+    // Phase 2 (500-2000ms): show consensus bar
+    // Phase 3 (2000ms): remove card + scroll
     setTimeout(() => {
+      setConfirmedVote(null);
+      setConsensus({ marketId, yesPct, vote });
+    }, 500);
+
+    setTimeout(() => {
+      setConsensus(null);
       setVotedIds((prev) => {
         const next = new Set(prev).add(marketId);
         cachedVotedIds = next;
         return next;
       });
-      setConfirmedVote(null);
       setSubmittingId(null);
 
       if (nextCard) {
         setTimeout(() => {
           cardRefs.current.get(nextCard.id)?.scrollIntoView({ behavior: "smooth" });
         }, 50);
-        // Preload the card after next
         const nextNextCard = feed[currentFeedIdx + 2];
         if (nextNextCard?.imageUrl) {
           const img = new Image();
           img.src = nextNextCard.imageUrl;
         }
       }
-    }, 600);
+    }, 2000);
   };
 
   // Hide feed when not on homepage
@@ -345,48 +357,85 @@ export function SwipeFeed() {
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => handleVote(market.id, true)}
-                    disabled={!!submittingId}
-                    className={`h-[72px] rounded-2xl font-bold text-2xl transition-all duration-200 backdrop-blur-sm flex items-center justify-center gap-2 ${
-                      confirmedVote?.marketId === market.id && confirmedVote.vote === true
-                        ? "scale-105"
-                        : "active:scale-[0.92]"
-                    }`}
-                    style={
-                      confirmedVote?.marketId === market.id && confirmedVote.vote === true
-                        ? { backgroundColor: "rgba(74, 222, 128, 0.6)", color: "#fff", borderWidth: 1, borderColor: "rgba(74, 222, 128, 0.6)" }
-                        : { backgroundColor: "rgba(74, 222, 128, 0.35)", color: "#bbf7d0", borderWidth: 1, borderColor: "rgba(74, 222, 128, 0.35)" }
-                    }
-                  >
-                    {confirmedVote?.marketId === market.id && confirmedVote.vote === true ? (
-                      <CheckCircle className="h-7 w-7 animate-scale-in" weight="fill" />
-                    ) : (
-                      "YES"
-                    )}
-                  </button>
-                  <button
-                    onClick={() => handleVote(market.id, false)}
-                    disabled={!!submittingId}
-                    className={`h-[72px] rounded-2xl font-bold text-2xl transition-all duration-200 backdrop-blur-sm flex items-center justify-center gap-2 ${
-                      confirmedVote?.marketId === market.id && confirmedVote.vote === false
-                        ? "scale-105"
-                        : "active:scale-[0.92]"
-                    }`}
-                    style={
-                      confirmedVote?.marketId === market.id && confirmedVote.vote === false
-                        ? { backgroundColor: "rgba(248, 113, 113, 0.6)", color: "#fff", borderWidth: 1, borderColor: "rgba(248, 113, 113, 0.6)" }
-                        : { backgroundColor: "rgba(248, 113, 113, 0.35)", color: "#fecaca", borderWidth: 1, borderColor: "rgba(248, 113, 113, 0.35)" }
-                    }
-                  >
-                    {confirmedVote?.marketId === market.id && confirmedVote.vote === false ? (
-                      <CheckCircle className="h-7 w-7 animate-scale-in" weight="fill" />
-                    ) : (
-                      "NO"
-                    )}
-                  </button>
-                </div>
+                {consensus?.marketId === market.id ? (
+                  /* ── Consensus reveal ── */
+                  <div className="space-y-3 animate-[fade-up_400ms_ease-out]">
+                    <div className="relative h-14 rounded-2xl overflow-hidden backdrop-blur-sm bg-white/5">
+                      {/* YES bar */}
+                      <div
+                        className="absolute inset-y-0 left-0 rounded-2xl transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+                        style={{
+                          width: `${consensus.yesPct}%`,
+                          background: consensus.vote
+                            ? "linear-gradient(90deg, rgba(74, 222, 128, 0.5), rgba(74, 222, 128, 0.25))"
+                            : "rgba(74, 222, 128, 0.2)",
+                        }}
+                      />
+                      {/* Labels */}
+                      <div className="relative h-full flex items-center justify-between px-4">
+                        <div className="flex items-center gap-2">
+                          {consensus.vote && <CheckCircle className="h-5 w-5 text-green-400" weight="fill" />}
+                          <span className={`font-bold text-lg ${consensus.vote ? "text-green-400" : "text-white/60"}`}>
+                            YES {consensus.yesPct}%
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`font-bold text-lg ${!consensus.vote ? "text-red-400" : "text-white/60"}`}>
+                            {100 - consensus.yesPct}% NO
+                          </span>
+                          {!consensus.vote && <CheckCircle className="h-5 w-5 text-red-400" weight="fill" />}
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-center text-xs text-white/40">
+                      {market.voteCount + 1} vote{market.voteCount !== 0 ? "s" : ""}
+                    </p>
+                  </div>
+                ) : (
+                  /* ── Vote buttons ── */
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => handleVote(market.id, true)}
+                      disabled={!!submittingId}
+                      className={`h-[72px] rounded-2xl font-bold text-2xl transition-all duration-200 backdrop-blur-sm flex items-center justify-center gap-2 ${
+                        confirmedVote?.marketId === market.id && confirmedVote.vote === true
+                          ? "scale-105"
+                          : "active:scale-[0.92]"
+                      }`}
+                      style={
+                        confirmedVote?.marketId === market.id && confirmedVote.vote === true
+                          ? { backgroundColor: "rgba(74, 222, 128, 0.6)", color: "#fff", borderWidth: 1, borderColor: "rgba(74, 222, 128, 0.6)" }
+                          : { backgroundColor: "rgba(74, 222, 128, 0.35)", color: "#bbf7d0", borderWidth: 1, borderColor: "rgba(74, 222, 128, 0.35)" }
+                      }
+                    >
+                      {confirmedVote?.marketId === market.id && confirmedVote.vote === true ? (
+                        <CheckCircle className="h-7 w-7 animate-scale-in" weight="fill" />
+                      ) : (
+                        "YES"
+                      )}
+                    </button>
+                    <button
+                      onClick={() => handleVote(market.id, false)}
+                      disabled={!!submittingId}
+                      className={`h-[72px] rounded-2xl font-bold text-2xl transition-all duration-200 backdrop-blur-sm flex items-center justify-center gap-2 ${
+                        confirmedVote?.marketId === market.id && confirmedVote.vote === false
+                          ? "scale-105"
+                          : "active:scale-[0.92]"
+                      }`}
+                      style={
+                        confirmedVote?.marketId === market.id && confirmedVote.vote === false
+                          ? { backgroundColor: "rgba(248, 113, 113, 0.6)", color: "#fff", borderWidth: 1, borderColor: "rgba(248, 113, 113, 0.6)" }
+                          : { backgroundColor: "rgba(248, 113, 113, 0.35)", color: "#fecaca", borderWidth: 1, borderColor: "rgba(248, 113, 113, 0.35)" }
+                      }
+                    >
+                      {confirmedVote?.marketId === market.id && confirmedVote.vote === false ? (
+                        <CheckCircle className="h-7 w-7 animate-scale-in" weight="fill" />
+                      ) : (
+                        "NO"
+                      )}
+                    </button>
+                  </div>
+                )}
               </div>
 
               {showResolution === market.id && market.description && (

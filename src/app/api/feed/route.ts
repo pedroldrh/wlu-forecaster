@@ -36,16 +36,20 @@ export async function GET() {
     });
   }
 
-  // Vote counts in single query
+  // Vote counts + YES/NO split in single query
   const questionIds = questions.map((q) => q.id);
   const { data: allForecasts } = await supabase
     .from("forecasts")
-    .select("question_id")
+    .select("question_id, probability")
     .in("question_id", questionIds);
 
   const voteCounts = new Map<string, number>();
+  const yesCounts = new Map<string, number>();
   for (const f of allForecasts ?? []) {
     voteCounts.set(f.question_id, (voteCounts.get(f.question_id) || 0) + 1);
+    if (f.probability >= 0.5) {
+      yesCounts.set(f.question_id, (yesCounts.get(f.question_id) || 0) + 1);
+    }
   }
 
   const markets = questions.map((q) => ({
@@ -55,6 +59,7 @@ export async function GET() {
     category: q.category,
     imageUrl: q.image_url,
     voteCount: voteCounts.get(q.id) || 0,
+    yesCount: yesCounts.get(q.id) || 0,
   }));
 
   return NextResponse.json({
