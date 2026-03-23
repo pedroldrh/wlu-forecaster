@@ -11,6 +11,7 @@ export type Database = {
           referred_by: string | null;
           role: "USER" | "ADMIN";
           is_wlu_verified: boolean;
+          user_type: "UNDERGRAD" | "LAW" | null;
           created_at: string;
         };
         Insert: {
@@ -22,6 +23,7 @@ export type Database = {
           referred_by?: string | null;
           role?: "USER" | "ADMIN";
           is_wlu_verified?: boolean;
+          user_type?: "UNDERGRAD" | "LAW" | null;
           created_at?: string;
         };
         Update: {
@@ -33,6 +35,7 @@ export type Database = {
           referred_by?: string | null;
           role?: "USER" | "ADMIN";
           is_wlu_verified?: boolean;
+          user_type?: "UNDERGRAD" | "LAW" | null;
           created_at?: string;
         };
         Relationships: [];

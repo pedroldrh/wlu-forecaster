@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { useSwipeNav } from "@/lib/use-swipe-nav";
 import { SwipePeek } from "@/components/swipe-peek";
 import { SeasonRecapButton } from "@/components/season-recap";
+import { UserTypeToggle } from "@/components/user-type-toggle";
 
 const cache = new Map<string, any>();
 
@@ -249,6 +250,8 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
           </CardContent>
         </Card>
       )}
+
+      {isOwnProfile && <UserTypeToggle />}
 
       {isOwnProfile && (
         <div className="space-y-3">

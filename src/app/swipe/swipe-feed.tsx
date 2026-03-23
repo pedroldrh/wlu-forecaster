@@ -14,6 +14,7 @@ import { useSwipeNav } from "@/lib/use-swipe-nav";
 import { SwipePeek } from "@/components/swipe-peek";
 import { computeStreak } from "@/lib/streaks";
 import { ActivityTicker } from "@/components/activity-ticker";
+import { getCachedUserType } from "@/components/user-type-gate";
 
 interface Market {
   id: string;
@@ -73,10 +74,17 @@ export function SwipeFeed() {
     onNavigate: hideFeed,
   });
 
-  const feed = useMemo(
-    () => markets.filter((m) => !votedIds.has(m.id) && (!categoryFilter || m.category === categoryFilter)),
-    [markets, votedIds, categoryFilter]
-  );
+  const feed = useMemo(() => {
+    const userType = getCachedUserType();
+    return markets.filter((m) => {
+      if (votedIds.has(m.id)) return false;
+      if (categoryFilter && m.category !== categoryFilter) return false;
+      // User type filtering: LAW sees only LAW_SCHOOL, UNDERGRAD sees everything except LAW_SCHOOL
+      if (userType === "LAW" && m.category !== "LAW_SCHOOL") return false;
+      if (userType === "UNDERGRAD" && m.category === "LAW_SCHOOL") return false;
+      return true;
+    });
+  }, [markets, votedIds, categoryFilter]);
 
   // Categories that have unvoted markets (for showing chip counts)
   const availableCategories = useMemo(() => {
