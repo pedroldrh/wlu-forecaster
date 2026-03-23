@@ -6,23 +6,25 @@ import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
 import { UserAvatar } from "@/components/user-avatar";
 import { ReferralCard } from "@/components/referral-card";
-import { EnableNotificationsButton } from "@/components/enable-notifications-button";
 import { SignOutButton } from "@/components/sign-out-button";
-import { Crown, Shield } from "@phosphor-icons/react";
+import { Crown, Shield, Bell, BellRinging, BellSlash, Info, Crosshair, Trophy, ChartLineUp, X } from "@phosphor-icons/react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { subscribeToPush } from "@/lib/push-utils";
+import { savePushSubscription } from "@/actions/push-subscriptions";
+import { toast } from "sonner";
 
-// In-memory cache per profile ID
 const cache = new Map<string, any>();
 
 export default function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [data, setData] = useState<any>(cache.get(id) ?? null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(
-    // Check cache immediately to avoid layout shift
     cache.get("__currentUserId__") ?? null
   );
   const [authChecked, setAuthChecked] = useState(!!cache.get("__currentUserId__"));
+  const [notifStatus, setNotifStatus] = useState<"loading" | "granted" | "denied" | "prompt" | "unsupported">("loading");
+  const [showHowItWorks, setShowHowItWorks] = useState(false);
 
   useEffect(() => {
     createClient().auth.getUser().then(({ data: { user } }) => {
@@ -36,7 +38,35 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
       cache.set(id, d);
       setData(d);
     });
+
+    // Check notification status
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+      setNotifStatus("unsupported");
+    } else {
+      setNotifStatus(Notification.permission as "granted" | "denied" | "prompt");
+    }
   }, [id]);
+
+  async function handleEnableNotifications() {
+    const perm = await Notification.requestPermission();
+    if (perm === "granted") {
+      try {
+        const sub = await subscribeToPush();
+        const json = sub.toJSON();
+        await savePushSubscription({
+          endpoint: json.endpoint!,
+          keys: { p256dh: json.keys!.p256dh!, auth: json.keys!.auth! },
+        });
+        setNotifStatus("granted");
+        toast.success("Notifications enabled!");
+      } catch {
+        setNotifStatus("prompt");
+        toast.error("Something went wrong. Try again.");
+      }
+    } else if (perm === "denied") {
+      setNotifStatus("denied");
+    }
+  }
 
   if (!data) return <div className="min-h-screen" />;
   if (data.error) return <div className="text-center py-12 text-muted-foreground">User not found.</div>;
@@ -52,6 +82,31 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
       {/* Hero section */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600/15 via-background to-purple-500/10 border border-white/8 pt-8 pb-6 px-6">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-blue-500/10 rounded-full blur-3xl" />
+
+        {/* Top-right action buttons */}
+        {isOwnProfile && (
+          <div className="absolute top-4 right-4 flex items-center gap-2">
+            {notifStatus === "prompt" && (
+              <button
+                onClick={handleEnableNotifications}
+                className="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center active:scale-[0.85] transition-all duration-200"
+              >
+                <Bell className="h-4.5 w-4.5 text-white/70" />
+              </button>
+            )}
+            {notifStatus === "granted" && (
+              <div className="h-9 w-9 rounded-full bg-white/5 flex items-center justify-center">
+                <BellRinging className="h-4.5 w-4.5 text-white/30" />
+              </div>
+            )}
+            <button
+              onClick={() => setShowHowItWorks(true)}
+              className="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center active:scale-[0.85] transition-all duration-200"
+            >
+              <Info className="h-4.5 w-4.5 text-white/70" />
+            </button>
+          </div>
+        )}
 
         <div className="relative flex flex-col items-center text-center">
           <div className="relative mb-4">
@@ -112,8 +167,6 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
           </div>
         </div>
       </div>
-
-      {isOwnProfile && <EnableNotificationsButton />}
 
       {isOwnProfile && <ReferralCard userId={id} referralCount={data.referrals} />}
 
@@ -179,12 +232,65 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
       {isOwnProfile && (
         <div className="space-y-3">
           {profile.role === "ADMIN" && (
-            <Link href="/admin" className="flex items-center justify-center gap-2 w-full rounded-md border border-blue-500/30 bg-blue-500/5 px-4 py-2.5 text-sm font-medium text-blue-400 hover:bg-blue-500/10 transition-colors">
+            <Link href="/admin" className="flex items-center justify-center gap-2 w-full rounded-md border border-blue-500/30 bg-blue-500/5 px-4 py-2.5 text-sm font-medium text-blue-400 hover:bg-blue-500/10 active:scale-[0.98] transition-all">
               <Shield className="h-4 w-4" />
               Admin Dashboard
             </Link>
           )}
           <SignOutButton />
+        </div>
+      )}
+
+      {/* How It Works modal */}
+      {showHowItWorks && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center px-6"
+          onClick={() => setShowHowItWorks(false)}
+        >
+          <div
+            className="bg-zinc-900 rounded-2xl p-6 max-w-sm w-full space-y-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-white text-lg">How It Works</h3>
+              <button
+                onClick={() => setShowHowItWorks(false)}
+                className="text-white/40 hover:text-white/70 active:scale-[0.85] transition-all duration-150"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex gap-3">
+                <div className="h-8 w-8 rounded-lg bg-blue-500/15 flex items-center justify-center shrink-0">
+                  <Crosshair className="h-4 w-4 text-blue-400" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm text-white">Swipe & Vote</p>
+                  <p className="text-xs text-white/50">Swipe through markets and vote YES or NO on each prediction.</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <div className="h-8 w-8 rounded-lg bg-green-500/15 flex items-center justify-center shrink-0">
+                  <ChartLineUp className="h-4 w-4 text-green-400" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm text-white">Build Your Record</p>
+                  <p className="text-xs text-white/50">Correct predictions earn a W, wrong ones an L. Your record shows on the leaderboard.</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <div className="h-8 w-8 rounded-lg bg-amber-500/15 flex items-center justify-center shrink-0">
+                  <Trophy className="h-4 w-4 text-amber-400" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm text-white">Win Real Money</p>
+                  <p className="text-xs text-white/50">Vote on 15+ markets to qualify. Best record at the end of the season wins cash from the prize pool.</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

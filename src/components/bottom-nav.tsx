@@ -7,7 +7,6 @@ import { UserAvatar } from "@/components/user-avatar";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-// Prefetch data so pages load instantly when tapped
 let prefetched = false;
 function prefetchPages(userId: string | null) {
   if (prefetched) return;
@@ -25,7 +24,6 @@ export function BottomNav() {
     setMounted(true);
     createClient().auth.getUser().then(({ data: { user } }) => {
       setUserId(user?.id ?? null);
-      // Prefetch other pages in the background
       prefetchPages(user?.id ?? null);
     });
   }, []);
@@ -35,7 +33,6 @@ export function BottomNav() {
   const isHome = pathname === "/";
   const isLeaderboard = pathname.startsWith("/leaderboard");
   const isProfile = pathname.startsWith("/u/");
-
   const profileHref = userId ? `/u/${userId}` : "/signin";
 
   return (
@@ -44,38 +41,32 @@ export function BottomNav() {
       <div className="flex items-end justify-around px-6 pt-2 pb-[max(env(safe-area-inset-bottom,8px),8px)]">
         <Link
           href="/leaderboard"
-          className={`flex items-center justify-center w-12 h-10 transition-all duration-150 active:scale-[0.85] ${
-            isLeaderboard ? "text-white" : "text-white/50 active:text-white/80"
+          className={`flex items-center justify-center w-14 h-11 transition-transform duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.75] ${
+            isLeaderboard ? "text-white scale-110" : "text-white/50"
           }`}
         >
-          <Trophy
-            className="h-7 w-7"
-            weight={isLeaderboard ? "fill" : "regular"}
-          />
+          <Trophy className="h-7 w-7" weight={isLeaderboard ? "fill" : "regular"} />
         </Link>
 
         <Link
           href="/"
-          className={`flex items-center justify-center w-12 h-10 transition-all duration-150 active:scale-[0.85] ${
-            isHome ? "text-white" : "text-white/50 active:text-white/80"
+          className={`flex items-center justify-center w-14 h-11 transition-transform duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.75] ${
+            isHome ? "text-white scale-110" : "text-white/50"
           }`}
         >
-          <MonitorPlay
-            className="h-7 w-7"
-            weight={isHome ? "fill" : "regular"}
-          />
+          <MonitorPlay className="h-7 w-7" weight={isHome ? "fill" : "regular"} />
         </Link>
 
         <Link
           href={profileHref}
-          className="flex items-center justify-center w-12 h-10 transition-all duration-150 active:scale-[0.85]"
+          className="flex items-center justify-center w-14 h-11 transition-transform duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.75]"
         >
           {userId ? (
-            <div className={`rounded-full transition-all ${isProfile ? "ring-2 ring-white scale-110" : ""}`}>
+            <div className={`rounded-full transition-all duration-200 ${isProfile ? "ring-2 ring-white scale-110" : ""}`}>
               <UserAvatar userId={userId} size="sm" />
             </div>
           ) : (
-            <div className={`h-7 w-7 rounded-full transition-all ${isProfile ? "bg-white/40 ring-2 ring-white" : "bg-white/30"}`} />
+            <div className={`h-7 w-7 rounded-full transition-all duration-200 ${isProfile ? "bg-white/40 ring-2 ring-white" : "bg-white/30"}`} />
           )}
         </Link>
       </div>
