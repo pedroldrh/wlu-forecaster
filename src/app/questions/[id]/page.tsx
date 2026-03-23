@@ -12,6 +12,7 @@ import { isCorrect } from "@/lib/scoring";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ShareButton } from "@/components/share-button";
+import { ShareCardButton } from "@/components/share-card";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
@@ -77,6 +78,28 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
       .eq("question_id", id)
       .single();
     userForecast = forecast;
+  }
+
+  // Get YES% for share card
+  let yesPctForShare: number | null = null;
+  const { data: allVotes } = await supabase
+    .from("forecasts")
+    .select("probability")
+    .eq("question_id", id);
+  if (allVotes && allVotes.length > 0) {
+    const yesVotes = allVotes.filter((f) => f.probability >= 0.5).length;
+    yesPctForShare = Math.round((yesVotes / allVotes.length) * 100);
+  }
+
+  // Get display name for share card
+  let userDisplayName = "Anonymous";
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("display_name, name")
+      .eq("id", user.id)
+      .single();
+    if (profile) userDisplayName = profile.display_name || profile.name || "Anonymous";
   }
 
   // Get comments (no FK join — comments.user_id -> auth.users, not profiles)
@@ -196,7 +219,22 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
           <ArrowLeft className="h-4 w-4" />
           All Markets
         </Link>
-        <ShareButton title={question.title} url={`https://wluforcaster.com/questions/${id}`} />
+        <div className="flex items-center gap-2">
+          {wasCorrect && (
+            <ShareCardButton
+              questionTitle={question.title}
+              category={question.category}
+              outcome={question.resolved_outcome!}
+              userVotedYes={userForecast!.probability >= 0.5}
+              correct={true}
+              yesPct={yesPctForShare}
+              totalVotes={forecastCount || 0}
+              displayName={userDisplayName}
+              questionId={id}
+            />
+          )}
+          <ShareButton title={question.title} url={`https://wluforcaster.com/questions/${id}`} />
+        </div>
       </div>
 
       {/* Hero header */}
