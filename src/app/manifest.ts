@@ -8,6 +8,7 @@ export default function manifest(): MetadataRoute.Manifest {
       "Free campus forecasting tournament at Washington & Lee. Predict campus events, compete on the leaderboard, and win prizes.",
     start_url: "/",
     display: "standalone",
+    orientation: "portrait",
     background_color: "#000000",
     theme_color: "#000000",
     icons: [
