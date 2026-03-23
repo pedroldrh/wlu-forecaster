@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { submitForecast } from "@/actions/forecasts";
 import { CATEGORY_LABELS, getQuestionEmoji } from "@/lib/constants";
@@ -42,6 +42,7 @@ export function SwipeFeed() {
   const [submittingMap, setSubmittingMap] = useState<Map<string, boolean | null>>(new Map());
   const [votedIds, setVotedIds] = useState<Set<string>>(cachedVotedIds);
   const [showResolution, setShowResolution] = useState<string | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   const loadFeed = useCallback(async () => {
@@ -86,7 +87,6 @@ export function SwipeFeed() {
 
     const supabase = createClient();
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      // Only reload on actual sign-in/sign-out, not INITIAL_SESSION
       if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
         setIsLoggedIn(!!session?.user);
         loadFeed();
@@ -96,7 +96,21 @@ export function SwipeFeed() {
     return () => subscription.unsubscribe();
   }, [loadFeed]);
 
-  const visibleMarkets = markets.filter((m) => !votedIds.has(m.id));
+  // Auto-scroll to next unvoted card after voting
+  const scrollToNextUnvoted = useCallback((votedMarketId: string) => {
+    if (!scrollRef.current) return;
+    const currentIdx = markets.findIndex((m) => m.id === votedMarketId);
+    // Find next unvoted market after current
+    for (let i = currentIdx + 1; i < markets.length; i++) {
+      if (!votedIds.has(markets[i].id) && markets[i].id !== votedMarketId) {
+        const card = scrollRef.current.children[i] as HTMLElement;
+        if (card) {
+          card.scrollIntoView({ behavior: "smooth" });
+        }
+        return;
+      }
+    }
+  }, [markets, votedIds]);
 
   const handleVote = async (marketId: string, vote: boolean) => {
     if (!isLoggedIn) {
@@ -108,14 +122,15 @@ export function SwipeFeed() {
     setSubmittingMap((prev) => new Map(prev).set(marketId, vote));
     try {
       await submitForecast(marketId, vote);
-      toast.success(vote ? "Voted YES!" : "Voted NO!", { duration: 1000 });
+      // Mark as voted and scroll to next
       setTimeout(() => {
         setVotedIds((prev) => {
           const next = new Set(prev).add(marketId);
           cachedVotedIds = next;
           return next;
         });
-      }, 600);
+        scrollToNextUnvoted(marketId);
+      }, 500);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to vote");
     }
@@ -126,7 +141,10 @@ export function SwipeFeed() {
     return <div className="fixed inset-0 bg-black" />;
   }
 
-  if (visibleMarkets.length === 0) {
+  // Check if ALL markets are voted
+  const allVoted = markets.length > 0 && markets.every((m) => votedIds.has(m.id));
+
+  if (markets.length === 0 || allVoted) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-black">
         <div className="text-center space-y-4 px-6">
@@ -158,12 +176,20 @@ export function SwipeFeed() {
       )}
 
       <div
+        ref={scrollRef}
         className="h-full overflow-y-auto snap-y snap-mandatory"
         style={{ WebkitOverflowScrolling: "touch" }}
       >
-        {visibleMarkets.map((market) => {
+        {markets.map((market) => {
           const gradient = CATEGORY_GRADIENTS[market.category] || CATEGORY_GRADIENTS.OTHER;
           const isSubmitting = submittingMap.get(market.id);
+          const isVoted = votedIds.has(market.id);
+
+          // Skip voted cards — render as zero-height so they don't take space
+          // but stay in the DOM so scroll position is stable
+          if (isVoted) {
+            return <div key={market.id} className="h-0 overflow-hidden" />;
+          }
 
           return (
             <div
