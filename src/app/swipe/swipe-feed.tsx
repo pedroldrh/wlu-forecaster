@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { submitForecast } from "@/actions/forecasts";
 import { CATEGORY_LABELS, getQuestionEmoji } from "@/lib/constants";
@@ -28,7 +28,7 @@ const CATEGORY_GRADIENTS: Record<string, string> = {
   OTHER: "from-zinc-900/90 to-zinc-600/40",
 };
 
-// In-memory cache for instant revisits
+// In-memory cache
 let cachedMarkets: Market[] | null = null;
 let cachedSeasonInfo: { name: string; totalPrizeCents: number } | null = null;
 let cachedVotedIds: Set<string> = new Set();
@@ -39,11 +39,20 @@ export function SwipeFeed() {
   const [loading, setLoading] = useState(cachedMarkets === null);
   const [seasonInfo, setSeasonInfo] = useState(cachedSeasonInfo);
   const [isLoggedIn, setIsLoggedIn] = useState(cachedIsLoggedIn);
-  const [submittingMap, setSubmittingMap] = useState<Map<string, boolean | null>>(new Map());
+  const [submitting, setSubmitting] = useState(false);
   const [votedIds, setVotedIds] = useState<Set<string>>(cachedVotedIds);
-  const [showResolution, setShowResolution] = useState<string | null>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [showResolution, setShowResolution] = useState(false);
+  const [touchStartY, setTouchStartY] = useState(0);
   const router = useRouter();
+
+  // Filter to only unvoted markets
+  const feed = useMemo(
+    () => markets.filter((m) => !votedIds.has(m.id)),
+    [markets, votedIds]
+  );
+
+  const market = feed[currentIndex] ?? null;
 
   const loadFeed = useCallback(async () => {
     try {
@@ -96,36 +105,61 @@ export function SwipeFeed() {
     return () => subscription.unsubscribe();
   }, [loadFeed]);
 
-  const handleVote = async (marketId: string, vote: boolean) => {
+  const goNext = useCallback(() => {
+    if (currentIndex < feed.length - 1) {
+      setCurrentIndex((i) => i + 1);
+    }
+  }, [currentIndex, feed.length]);
+
+  const goPrev = useCallback(() => {
+    if (currentIndex > 0) {
+      setCurrentIndex((i) => i - 1);
+    }
+  }, [currentIndex]);
+
+  const handleVote = async (vote: boolean) => {
+    if (!market) return;
     if (!isLoggedIn) {
       router.push("/signin?next=/");
       return;
     }
-    if (submittingMap.get(marketId) !== undefined && submittingMap.get(marketId) !== null) return;
+    if (submitting) return;
 
-    setSubmittingMap((prev) => new Map(prev).set(marketId, vote));
+    setSubmitting(true);
     try {
-      await submitForecast(marketId, vote);
-      // Collapse immediately — snap container auto-scrolls to next
+      await submitForecast(market.id, vote);
+      // Mark as voted — feed recalculates, currentIndex now points to the next card
       setVotedIds((prev) => {
-        const next = new Set(prev).add(marketId);
+        const next = new Set(prev).add(market.id);
         cachedVotedIds = next;
         return next;
       });
+      // Don't increment index — the voted card disappears from feed array,
+      // so currentIndex now naturally points to what was the next card
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to vote");
     }
-    setSubmittingMap((prev) => new Map(prev).set(marketId, null));
+    setSubmitting(false);
+  };
+
+  // Touch handling for swipe
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartY(e.touches[0].clientY);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const deltaY = touchStartY - e.changedTouches[0].clientY;
+    if (Math.abs(deltaY) > 60) {
+      if (deltaY > 0) goNext();
+      else goPrev();
+    }
   };
 
   if (loading) {
     return <div className="fixed inset-0 bg-black" />;
   }
 
-  // Check if ALL markets are voted
-  const allVoted = markets.length > 0 && markets.every((m) => votedIds.has(m.id));
-
-  if (markets.length === 0 || allVoted) {
+  if (!market) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-black">
         <div className="text-center space-y-4 px-6">
@@ -140,8 +174,16 @@ export function SwipeFeed() {
     );
   }
 
+  const gradient = CATEGORY_GRADIENTS[market.category] || CATEGORY_GRADIENTS.OTHER;
+
   return (
-    <div className="fixed inset-0 bg-black">
+    <div
+      className="fixed inset-0 bg-black"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      style={{ touchAction: "none" }}
+    >
+      {/* Prize pool */}
       {seasonInfo && seasonInfo.totalPrizeCents > 0 && (
         <div className="fixed top-0 left-0 right-0 z-20 flex justify-center pt-[env(safe-area-inset-top,12px)]">
           <Link
@@ -156,114 +198,94 @@ export function SwipeFeed() {
         </div>
       )}
 
-      <div
-        ref={scrollRef}
-        className="h-full overflow-y-auto snap-y snap-mandatory"
-        style={{ WebkitOverflowScrolling: "touch" }}
-      >
-        {markets.map((market) => {
-          const gradient = CATEGORY_GRADIENTS[market.category] || CATEGORY_GRADIENTS.OTHER;
-          const isSubmitting = submittingMap.get(market.id);
-          const isVoted = votedIds.has(market.id);
-
-          // Skip voted cards — render as zero-height so they don't take space
-          // but stay in the DOM so scroll position is stable
-          if (isVoted) {
-            return <div key={market.id} className="h-0 overflow-hidden" />;
-          }
-
-          return (
-            <div
-              key={market.id}
-              className="h-[100dvh] w-full snap-start snap-always relative"
-            >
-              {market.imageUrl ? (
-                <img
-                  src={market.imageUrl}
-                  alt=""
-                  className="absolute inset-0 w-full h-full object-cover"
-                  draggable={false}
-                />
-              ) : (
-                <div className={`absolute inset-0 bg-gradient-to-b ${gradient}`} />
-              )}
-              <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/70" />
-
-              <div className="relative z-10 h-full flex flex-col justify-end px-5 pb-24">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="flex items-center gap-1.5 bg-white/15 backdrop-blur-sm rounded-full px-3 py-1">
-                    <span className="text-base">{getQuestionEmoji(market.title, market.category)}</span>
-                    <span className="text-xs font-bold text-white/80 uppercase tracking-wider">
-                      {CATEGORY_LABELS[market.category] || market.category}
-                    </span>
-                  </span>
-                </div>
-
-                <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight mb-2">
-                  {market.title}
-                </h1>
-
-                <div className="flex items-center gap-3 mb-5">
-                  <span className="text-sm text-white/50">
-                    {market.voteCount} vote{market.voteCount !== 1 ? "s" : ""}
-                  </span>
-                  {market.description && (
-                    <button
-                      onClick={() => setShowResolution(market.id)}
-                      className="flex items-center gap-1 text-xs text-white/40 hover:text-white/60 active:scale-[0.93] transition-all duration-150"
-                    >
-                      <Info className="h-3.5 w-3.5" />
-                      Resolution
-                    </button>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => handleVote(market.id, true)}
-                    disabled={isSubmitting !== undefined && isSubmitting !== null}
-                    className="h-[72px] rounded-2xl font-bold text-2xl transition-all duration-150 active:scale-[0.92] active:brightness-125 bg-green-500/25 text-green-300 backdrop-blur-sm border border-green-400/25 hover:bg-green-500/35"
-                  >
-                    YES
-                  </button>
-                  <button
-                    onClick={() => handleVote(market.id, false)}
-                    disabled={isSubmitting !== undefined && isSubmitting !== null}
-                    className="h-[72px] rounded-2xl font-bold text-2xl transition-all duration-150 active:scale-[0.92] active:brightness-125 bg-red-500/25 text-red-300 backdrop-blur-sm border border-red-400/25 hover:bg-red-500/35"
-                  >
-                    NO
-                  </button>
-                </div>
-              </div>
-
-              {showResolution === market.id && (
-                <div
-                  className="absolute inset-0 z-30 bg-black/70 backdrop-blur-sm flex items-center justify-center px-6"
-                  onClick={() => setShowResolution(null)}
-                >
-                  <div
-                    className="bg-zinc-900 rounded-2xl p-6 max-w-sm w-full space-y-3"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-bold text-white text-lg">Resolution Criteria</h3>
-                      <button
-                        onClick={() => setShowResolution(null)}
-                        className="text-white/40 hover:text-white/70 transition-colors"
-                      >
-                        <X className="h-5 w-5" />
-                      </button>
-                    </div>
-                    <p className="text-sm text-white/70 leading-relaxed">
-                      {market.description}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
+      {/* Single card — no scroll container, no DOM manipulation */}
+      <div key={market.id} className="absolute inset-0">
+        {market.imageUrl ? (
+          <img
+            src={market.imageUrl}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+            draggable={false}
+          />
+        ) : (
+          <div className={`absolute inset-0 bg-gradient-to-b ${gradient}`} />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/70" />
       </div>
+
+      {/* Content */}
+      <div className="relative z-10 h-full flex flex-col justify-end px-5 pb-24">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="flex items-center gap-1.5 bg-white/15 backdrop-blur-sm rounded-full px-3 py-1">
+            <span className="text-base">{getQuestionEmoji(market.title, market.category)}</span>
+            <span className="text-xs font-bold text-white/80 uppercase tracking-wider">
+              {CATEGORY_LABELS[market.category] || market.category}
+            </span>
+          </span>
+        </div>
+
+        <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight mb-2">
+          {market.title}
+        </h1>
+
+        <div className="flex items-center gap-3 mb-5">
+          <span className="text-sm text-white/50">
+            {market.voteCount} vote{market.voteCount !== 1 ? "s" : ""}
+          </span>
+          {market.description && (
+            <button
+              onClick={() => setShowResolution(true)}
+              className="flex items-center gap-1 text-xs text-white/40 hover:text-white/60 active:scale-[0.93] transition-all duration-150"
+            >
+              <Info className="h-3.5 w-3.5" />
+              Resolution
+            </button>
+          )}
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => handleVote(true)}
+            disabled={submitting}
+            className="h-[72px] rounded-2xl font-bold text-2xl transition-all duration-150 active:scale-[0.92] active:brightness-125 bg-green-500/25 text-green-300 backdrop-blur-sm border border-green-400/25 hover:bg-green-500/35"
+          >
+            YES
+          </button>
+          <button
+            onClick={() => handleVote(false)}
+            disabled={submitting}
+            className="h-[72px] rounded-2xl font-bold text-2xl transition-all duration-150 active:scale-[0.92] active:brightness-125 bg-red-500/25 text-red-300 backdrop-blur-sm border border-red-400/25 hover:bg-red-500/35"
+          >
+            NO
+          </button>
+        </div>
+      </div>
+
+      {/* Resolution modal */}
+      {showResolution && market.description && (
+        <div
+          className="absolute inset-0 z-30 bg-black/70 backdrop-blur-sm flex items-center justify-center px-6"
+          onClick={() => setShowResolution(false)}
+        >
+          <div
+            className="bg-zinc-900 rounded-2xl p-6 max-w-sm w-full space-y-3"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-white text-lg">Resolution Criteria</h3>
+              <button
+                onClick={() => setShowResolution(false)}
+                className="text-white/40 hover:text-white/70 active:scale-[0.85] transition-all duration-150"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <p className="text-sm text-white/70 leading-relaxed">
+              {market.description}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
