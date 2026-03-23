@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { submitForecast } from "@/actions/forecasts";
 import { CATEGORY_LABELS, getQuestionEmoji } from "@/lib/constants";
 import { Trophy, Info, X, CheckCircle } from "@phosphor-icons/react";
@@ -44,6 +44,7 @@ export function SwipeFeed() {
   const [showResolution, setShowResolution] = useState<string | null>(null);
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const router = useRouter();
+  const pathname = usePathname();
 
   const feed = useMemo(
     () => markets.filter((m) => !votedIds.has(m.id)),
@@ -165,6 +166,9 @@ export function SwipeFeed() {
       }
     }, 600);
   };
+
+  // Hide feed instantly when navigating to other pages
+  if (pathname !== "/") return null;
 
   if (loading) {
     return <div className="fixed inset-0 bg-black" />;
