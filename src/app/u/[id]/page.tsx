@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, use } from "react";
+import { createPortal } from "react-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
@@ -264,10 +265,10 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
     </div>
       </div>
 
-      {/* How It Works modal — outside swipe wrapper so transform doesn't trap it */}
-      {showHowItWorks && (
+      {/* How It Works modal — portaled to body to escape all stacking contexts */}
+      {showHowItWorks && createPortal(
         <div
-          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center px-6"
+          className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center px-6"
           onClick={() => setShowHowItWorks(false)}
         >
           <div
@@ -314,7 +315,8 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
