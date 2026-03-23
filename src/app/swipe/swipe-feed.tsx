@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { formatDollars } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
-import { hideFeed, showFeed, isFeedHidden, onFeedVisibilityChange } from "@/lib/feed-visibility";
+import { showFeed } from "@/lib/feed-visibility";
 
 interface Market {
   id: string;
@@ -43,18 +43,14 @@ export function SwipeFeed() {
   const [votedIds, setVotedIds] = useState<Set<string>>(cachedVotedIds);
   const [confirmedVote, setConfirmedVote] = useState<{ marketId: string; vote: boolean } | null>(null);
   const [showResolution, setShowResolution] = useState<string | null>(null);
-  const [feedHidden, setFeedHidden] = useState(isFeedHidden());
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const router = useRouter();
   const pathname = usePathname();
 
-  // Listen for hide signal from bottom nav
+  // Restore feed visibility when returning to /
   useEffect(() => {
-    showFeed();
-    setFeedHidden(false);
-    const unsub = onFeedVisibilityChange(() => setFeedHidden(true));
-    return () => { unsub(); };
-  }, []);
+    if (pathname === "/") showFeed();
+  }, [pathname]);
 
   const feed = useMemo(
     () => markets.filter((m) => !votedIds.has(m.id)),
@@ -177,16 +173,16 @@ export function SwipeFeed() {
     }, 600);
   };
 
-  // Hide feed instantly when navigating to other pages
-  if (pathname !== "/" || feedHidden) return <div className="fixed inset-0 z-0 bg-black" />;
+  // Hide feed when not on homepage
+  if (pathname !== "/") return null;
 
   if (loading) {
-    return <div className="fixed inset-0 z-0 bg-black" />;
+    return <div id="swipe-feed" className="fixed inset-0 z-0 bg-black" />;
   }
 
   if (feed.length === 0) {
     return (
-      <div className="fixed inset-0 z-0 flex items-center justify-center bg-black">
+      <div id="swipe-feed" className="fixed inset-0 z-0 flex items-center justify-center bg-black">
         <div className="text-center space-y-4 px-6">
           <p className="text-4xl">🎉</p>
           <h2 className="text-xl font-bold text-white">All caught up!</h2>
@@ -200,7 +196,7 @@ export function SwipeFeed() {
   }
 
   return (
-    <div className="fixed inset-0 z-0 bg-black">
+    <div id="swipe-feed" className="fixed inset-0 z-0 bg-black">
       {seasonInfo && seasonInfo.totalPrizeCents > 0 && (
         <div className="fixed top-0 left-0 right-0 z-[5] flex justify-center pt-[env(safe-area-inset-top,12px)]">
           <Link

@@ -1,21 +1,10 @@
-// Global signal to hide the feed instantly during navigation
-let listeners: Set<() => void> = new Set();
-let hidden = false;
-
+// Hide the feed via direct DOM manipulation — synchronous, same frame
 export function hideFeed() {
-  hidden = true;
-  listeners.forEach((fn) => fn());
+  const el = document.getElementById("swipe-feed");
+  if (el) el.style.display = "none";
 }
 
 export function showFeed() {
-  hidden = false;
-}
-
-export function isFeedHidden() {
-  return hidden;
-}
-
-export function onFeedVisibilityChange(fn: () => void) {
-  listeners.add(fn);
-  return () => listeners.delete(fn);
+  const el = document.getElementById("swipe-feed");
+  if (el) el.style.display = "";
 }
