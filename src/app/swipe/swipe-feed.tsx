@@ -113,35 +113,32 @@ export function SwipeFeed() {
     if (submittingId) return;
 
     setSubmittingId(marketId);
-    try {
-      await submitForecast(marketId, vote);
 
-      // Show check confirmation
-      setConfirmedVote({ marketId, vote });
+    // Show check immediately — don't wait for network
+    setConfirmedVote({ marketId, vote });
 
-      const currentFeedIdx = feed.findIndex((m) => m.id === marketId);
-      const nextCard = feed[currentFeedIdx + 1];
+    const currentFeedIdx = feed.findIndex((m) => m.id === marketId);
+    const nextCard = feed[currentFeedIdx + 1];
 
-      // After showing confirmation, scroll to next and remove card
-      setTimeout(() => {
-        setVotedIds((prev) => {
-          const next = new Set(prev).add(marketId);
-          cachedVotedIds = next;
-          return next;
-        });
-        setConfirmedVote(null);
-        setSubmittingId(null);
+    // Fire API in background
+    submitForecast(marketId, vote).catch(() => {});
 
-        if (nextCard) {
-          setTimeout(() => {
-            cardRefs.current.get(nextCard.id)?.scrollIntoView({ behavior: "smooth" });
-          }, 50);
-        }
-      }, 600);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to vote");
+    // After 600ms: remove card + scroll to next
+    setTimeout(() => {
+      setVotedIds((prev) => {
+        const next = new Set(prev).add(marketId);
+        cachedVotedIds = next;
+        return next;
+      });
+      setConfirmedVote(null);
       setSubmittingId(null);
-    }
+
+      if (nextCard) {
+        setTimeout(() => {
+          cardRefs.current.get(nextCard.id)?.scrollIntoView({ behavior: "smooth" });
+        }, 50);
+      }
+    }, 600);
   };
 
   if (loading) {
