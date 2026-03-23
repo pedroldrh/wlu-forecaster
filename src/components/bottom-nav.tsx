@@ -44,8 +44,8 @@ export function BottomNav() {
       <div className="flex items-end justify-around px-6 pt-2 pb-[max(env(safe-area-inset-bottom,8px),8px)]">
         <Link
           href="/leaderboard"
-          className={`flex items-center justify-center w-12 h-10 transition-all ${
-            isLeaderboard ? "text-white" : "text-white/50 active:text-white/70"
+          className={`flex items-center justify-center w-12 h-10 transition-all duration-150 active:scale-[0.85] ${
+            isLeaderboard ? "text-white" : "text-white/50 active:text-white/80"
           }`}
         >
           <Trophy
@@ -56,8 +56,8 @@ export function BottomNav() {
 
         <Link
           href="/"
-          className={`flex items-center justify-center w-12 h-10 transition-all ${
-            isHome ? "text-white" : "text-white/50 active:text-white/70"
+          className={`flex items-center justify-center w-12 h-10 transition-all duration-150 active:scale-[0.85] ${
+            isHome ? "text-white" : "text-white/50 active:text-white/80"
           }`}
         >
           <MonitorPlay
@@ -68,7 +68,7 @@ export function BottomNav() {
 
         <Link
           href={profileHref}
-          className="flex items-center justify-center w-12 h-10 transition-all"
+          className="flex items-center justify-center w-12 h-10 transition-all duration-150 active:scale-[0.85]"
         >
           {userId ? (
             <div className={`rounded-full transition-all ${isProfile ? "ring-2 ring-white scale-110" : ""}`}>

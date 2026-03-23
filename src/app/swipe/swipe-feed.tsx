@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { submitForecast } from "@/actions/forecasts";
 import { CATEGORY_LABELS, getQuestionEmoji } from "@/lib/constants";
-import { Check, Trophy, Info, X } from "@phosphor-icons/react";
+import { Trophy, Info, X } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { formatDollars } from "@/lib/utils";
@@ -96,22 +96,6 @@ export function SwipeFeed() {
     return () => subscription.unsubscribe();
   }, [loadFeed]);
 
-  // Auto-scroll to next unvoted card after voting
-  const scrollToNextUnvoted = useCallback((votedMarketId: string) => {
-    if (!scrollRef.current) return;
-    const currentIdx = markets.findIndex((m) => m.id === votedMarketId);
-    // Find next unvoted market after current
-    for (let i = currentIdx + 1; i < markets.length; i++) {
-      if (!votedIds.has(markets[i].id) && markets[i].id !== votedMarketId) {
-        const card = scrollRef.current.children[i] as HTMLElement;
-        if (card) {
-          card.scrollIntoView({ behavior: "smooth" });
-        }
-        return;
-      }
-    }
-  }, [markets, votedIds]);
-
   const handleVote = async (marketId: string, vote: boolean) => {
     if (!isLoggedIn) {
       router.push("/signin?next=/");
@@ -122,15 +106,12 @@ export function SwipeFeed() {
     setSubmittingMap((prev) => new Map(prev).set(marketId, vote));
     try {
       await submitForecast(marketId, vote);
-      // Scroll to next first, then collapse the voted card
-      setTimeout(() => scrollToNextUnvoted(marketId), 200);
-      setTimeout(() => {
-        setVotedIds((prev) => {
-          const next = new Set(prev).add(marketId);
-          cachedVotedIds = next;
-          return next;
-        });
-      }, 800);
+      // Collapse immediately — snap container auto-scrolls to next
+      setVotedIds((prev) => {
+        const next = new Set(prev).add(marketId);
+        cachedVotedIds = next;
+        return next;
+      });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to vote");
     }
@@ -165,7 +146,7 @@ export function SwipeFeed() {
         <div className="fixed top-0 left-0 right-0 z-20 flex justify-center pt-[env(safe-area-inset-top,12px)]">
           <Link
             href="/leaderboard"
-            className="flex items-center gap-1.5 bg-black/40 backdrop-blur-sm rounded-full px-4 py-2 mt-2"
+            className="flex items-center gap-1.5 bg-black/40 backdrop-blur-sm rounded-full px-4 py-2 mt-2 active:scale-[0.93] active:bg-black/60 transition-all duration-150"
           >
             <Trophy className="h-4 w-4 text-amber-300" weight="fill" />
             <span className="text-white font-bold text-sm font-mono">
@@ -229,7 +210,7 @@ export function SwipeFeed() {
                   {market.description && (
                     <button
                       onClick={() => setShowResolution(market.id)}
-                      className="flex items-center gap-1 text-xs text-white/40 hover:text-white/60 transition-colors"
+                      className="flex items-center gap-1 text-xs text-white/40 hover:text-white/60 active:scale-[0.93] transition-all duration-150"
                     >
                       <Info className="h-3.5 w-3.5" />
                       Resolution
@@ -241,25 +222,15 @@ export function SwipeFeed() {
                   <button
                     onClick={() => handleVote(market.id, true)}
                     disabled={isSubmitting !== undefined && isSubmitting !== null}
-                    className={`relative h-[72px] rounded-2xl font-bold text-2xl transition-all active:scale-[0.96] bg-green-500/25 text-green-300 backdrop-blur-sm border border-green-400/25 ${
-                      isSubmitting === true ? "!bg-green-400 !text-white shadow-lg shadow-green-400/30" : ""
-                    }`}
+                    className="h-[72px] rounded-2xl font-bold text-2xl transition-all duration-150 active:scale-[0.92] active:brightness-125 bg-green-500/25 text-green-300 backdrop-blur-sm border border-green-400/25 hover:bg-green-500/35"
                   >
-                    {isSubmitting === true && (
-                      <Check className="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6" weight="bold" />
-                    )}
                     YES
                   </button>
                   <button
                     onClick={() => handleVote(market.id, false)}
                     disabled={isSubmitting !== undefined && isSubmitting !== null}
-                    className={`relative h-[72px] rounded-2xl font-bold text-2xl transition-all active:scale-[0.96] bg-red-500/25 text-red-300 backdrop-blur-sm border border-red-400/25 ${
-                      isSubmitting === false ? "!bg-red-400 !text-white shadow-lg shadow-red-400/30" : ""
-                    }`}
+                    className="h-[72px] rounded-2xl font-bold text-2xl transition-all duration-150 active:scale-[0.92] active:brightness-125 bg-red-500/25 text-red-300 backdrop-blur-sm border border-red-400/25 hover:bg-red-500/35"
                   >
-                    {isSubmitting === false && (
-                      <Check className="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6" weight="bold" />
-                    )}
                     NO
                   </button>
                 </div>
