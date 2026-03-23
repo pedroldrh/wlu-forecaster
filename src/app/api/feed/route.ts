@@ -62,8 +62,46 @@ export async function GET() {
     yesCount: yesCounts.get(q.id) || 0,
   }));
 
+  // Recent activity — last 10 votes in the past 60 minutes
+  const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  const { data: recentVotes } = await supabase
+    .from("forecasts")
+    .select("user_id, question_id, submitted_at")
+    .in("question_id", questionIds)
+    .gt("submitted_at", since)
+    .order("submitted_at", { ascending: false })
+    .limit(15);
+
+  let recentActivity: { displayName: string; questionTitle: string }[] = [];
+  if (recentVotes && recentVotes.length > 0) {
+    const userIds = [...new Set(recentVotes.map((v) => v.user_id))];
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, display_name, name")
+      .in("id", userIds);
+    const nameMap = new Map<string, string>();
+    for (const p of profiles ?? []) {
+      nameMap.set(p.id, p.display_name || p.name || "Anonymous");
+    }
+    const titleMap = new Map(questions.map((q) => [q.id, q.title]));
+
+    // Deduplicate by user (one entry per user, most recent)
+    const seen = new Set<string>();
+    for (const v of recentVotes) {
+      if (seen.has(v.user_id)) continue;
+      seen.add(v.user_id);
+      const name = nameMap.get(v.user_id);
+      const title = titleMap.get(v.question_id);
+      if (name && title) {
+        recentActivity.push({ displayName: name, questionTitle: title });
+      }
+      if (recentActivity.length >= 10) break;
+    }
+  }
+
   return NextResponse.json({
     markets,
     seasonInfo: { name: season.name, totalPrizeCents },
+    recentActivity,
   });
 }

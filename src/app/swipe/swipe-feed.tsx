@@ -13,6 +13,7 @@ import { hideFeed, showFeed } from "@/lib/feed-visibility";
 import { useSwipeNav } from "@/lib/use-swipe-nav";
 import { SwipePeek } from "@/components/swipe-peek";
 import { computeStreak } from "@/lib/streaks";
+import { ActivityTicker } from "@/components/activity-ticker";
 
 interface Market {
   id: string;
@@ -41,6 +42,7 @@ let cachedScrollMarketId: string | null = null;
 let cachedUserId: string | null = null;
 let cachedStreakBefore: number = 0;
 let cachedVotedTodayBefore: boolean = false;
+let cachedActivity: { displayName: string; questionTitle: string }[] = [];
 
 export function SwipeFeed() {
   const [markets, setMarkets] = useState<Market[]>(cachedMarkets ?? []);
@@ -53,6 +55,7 @@ export function SwipeFeed() {
   const [consensus, setConsensus] = useState<{ marketId: string; yesPct: number; vote: boolean } | null>(null);
   const [showResolution, setShowResolution] = useState<string | null>(null);
   const [streakToast, setStreakToast] = useState<number | null>(null);
+  const [activity, setActivity] = useState(cachedActivity);
   const hadVotedTodayRef = useRef(cachedVotedTodayBefore);
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -149,8 +152,10 @@ export function SwipeFeed() {
 
       cachedMarkets = feedMarkets;
       cachedSeasonInfo = data.seasonInfo ?? null;
+      cachedActivity = data.recentActivity ?? [];
       setMarkets(feedMarkets);
       setSeasonInfo(cachedSeasonInfo);
+      setActivity(cachedActivity);
 
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
@@ -334,6 +339,8 @@ export function SwipeFeed() {
             </Link>
           </div>
         )}
+
+      <ActivityTicker items={activity} paused={!!submittingId} />
 
       <div ref={scrollContainerRef} className="h-full overflow-y-auto snap-y snap-mandatory">
         {feed.map((market) => {
