@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { LeaderboardTable } from "@/components/leaderboard-table";
 import { SeasonBanner } from "@/components/season-banner";
 import { createClient } from "@/lib/supabase/client";
+import { useSwipeNav } from "@/lib/use-swipe-nav";
+import { SwipePeek } from "@/components/swipe-peek";
 
 // In-memory cache for instant revisits
 let cachedData: any = null;
@@ -11,6 +13,11 @@ let cachedData: any = null;
 export default function LeaderboardPage() {
   const [data, setData] = useState<any>(cachedData);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  const { containerRef, swipeStyle, peekLabel } = useSwipeNav({
+    leftHref: "/",
+    leftLabel: "Feed",
+  });
 
   useEffect(() => {
     // Get current user for "You" badge
@@ -33,6 +40,9 @@ export default function LeaderboardPage() {
   }));
 
   return (
+    <div ref={containerRef} className="relative">
+      <SwipePeek label={peekLabel} />
+      <div style={swipeStyle}>
     <div className="space-y-6 pb-24">
       <SeasonBanner
         id={data.season.id}
@@ -56,6 +66,8 @@ export default function LeaderboardPage() {
       </div>
 
       <LeaderboardTable entries={entries} />
+    </div>
+      </div>
     </div>
   );
 }

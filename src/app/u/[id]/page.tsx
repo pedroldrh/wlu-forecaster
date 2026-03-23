@@ -13,6 +13,8 @@ import { createClient } from "@/lib/supabase/client";
 import { subscribeToPush } from "@/lib/push-utils";
 import { savePushSubscription } from "@/actions/push-subscriptions";
 import { toast } from "sonner";
+import { useSwipeNav } from "@/lib/use-swipe-nav";
+import { SwipePeek } from "@/components/swipe-peek";
 
 const cache = new Map<string, any>();
 
@@ -25,6 +27,11 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
   const [authChecked, setAuthChecked] = useState(!!cache.get("__currentUserId__"));
   const [notifStatus, setNotifStatus] = useState<"loading" | "granted" | "denied" | "prompt" | "unsupported">("loading");
   const [showHowItWorks, setShowHowItWorks] = useState(false);
+
+  const { containerRef, swipeStyle, peekLabel } = useSwipeNav({
+    rightHref: "/",
+    rightLabel: "Feed",
+  });
 
   useEffect(() => {
     createClient().auth.getUser().then(({ data: { user } }) => {
@@ -78,6 +85,9 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
   const hasRecord = data.wins > 0 || data.losses > 0;
 
   return (
+    <div ref={containerRef} className="relative">
+      <SwipePeek label={peekLabel} />
+      <div style={swipeStyle}>
     <div className="max-w-3xl mx-auto space-y-6 pb-24">
       {/* Hero section */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600/15 via-background to-purple-500/10 border border-white/8 pt-8 pb-6 px-6">
@@ -293,6 +303,8 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
           </div>
         </div>
       )}
+    </div>
+      </div>
     </div>
   );
 }
