@@ -77,7 +77,7 @@ export function ActivityTicker({ items, paused }: { items: ActivityItem[]; pause
               alt=""
               className="h-12 w-12 rounded-full ring-2 ring-white/20 shadow-lg shadow-black/40"
             />
-            <span className="text-[11px] font-bold text-white/70 bg-black/40 backdrop-blur-sm rounded-full px-2.5 py-0.5">
+            <span className="text-[11px] font-bold text-white/30 bg-black/20 backdrop-blur-sm rounded-full px-2.5 py-0.5">
               Voted!
             </span>
           </div>
