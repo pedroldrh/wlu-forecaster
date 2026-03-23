@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { submitForecast } from "@/actions/forecasts";
 import { CATEGORY_LABELS, getQuestionEmoji } from "@/lib/constants";
-import { Trophy, Info, X } from "@phosphor-icons/react";
+import { Trophy, Info, X, CheckCircle } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { formatDollars } from "@/lib/utils";
@@ -40,6 +40,7 @@ export function SwipeFeed() {
   const [isLoggedIn, setIsLoggedIn] = useState(cachedIsLoggedIn);
   const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [votedIds, setVotedIds] = useState<Set<string>>(cachedVotedIds);
+  const [confirmedVote, setConfirmedVote] = useState<{ marketId: string; vote: boolean } | null>(null);
   const [showResolution, setShowResolution] = useState<string | null>(null);
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const router = useRouter();
@@ -114,26 +115,33 @@ export function SwipeFeed() {
     setSubmittingId(marketId);
     try {
       await submitForecast(marketId, vote);
-      // Find the next unvoted card BEFORE updating state
+
+      // Show check confirmation
+      setConfirmedVote({ marketId, vote });
+
       const currentFeedIdx = feed.findIndex((m) => m.id === marketId);
       const nextCard = feed[currentFeedIdx + 1];
 
-      setVotedIds((prev) => {
-        const next = new Set(prev).add(marketId);
-        cachedVotedIds = next;
-        return next;
-      });
+      // After showing confirmation, scroll to next and remove card
+      setTimeout(() => {
+        setVotedIds((prev) => {
+          const next = new Set(prev).add(marketId);
+          cachedVotedIds = next;
+          return next;
+        });
+        setConfirmedVote(null);
+        setSubmittingId(null);
 
-      // Scroll to next card after DOM updates
-      if (nextCard) {
-        setTimeout(() => {
-          cardRefs.current.get(nextCard.id)?.scrollIntoView({ behavior: "smooth" });
-        }, 50);
-      }
+        if (nextCard) {
+          setTimeout(() => {
+            cardRefs.current.get(nextCard.id)?.scrollIntoView({ behavior: "smooth" });
+          }, 50);
+        }
+      }, 600);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to vote");
+      setSubmittingId(null);
     }
-    setSubmittingId(null);
   };
 
   if (loading) {
@@ -226,18 +234,42 @@ export function SwipeFeed() {
                   <button
                     onClick={() => handleVote(market.id, true)}
                     disabled={!!submittingId}
-                    className="h-[72px] rounded-2xl font-bold text-2xl transition-all duration-150 active:scale-[0.92] backdrop-blur-sm"
-                    style={{ backgroundColor: "rgba(74, 222, 128, 0.35)", color: "#bbf7d0", borderWidth: 1, borderColor: "rgba(74, 222, 128, 0.35)" }}
+                    className={`h-[72px] rounded-2xl font-bold text-2xl transition-all duration-200 backdrop-blur-sm flex items-center justify-center gap-2 ${
+                      confirmedVote?.marketId === market.id && confirmedVote.vote === true
+                        ? "scale-105"
+                        : "active:scale-[0.92]"
+                    }`}
+                    style={
+                      confirmedVote?.marketId === market.id && confirmedVote.vote === true
+                        ? { backgroundColor: "rgba(74, 222, 128, 0.6)", color: "#fff", borderWidth: 1, borderColor: "rgba(74, 222, 128, 0.6)" }
+                        : { backgroundColor: "rgba(74, 222, 128, 0.35)", color: "#bbf7d0", borderWidth: 1, borderColor: "rgba(74, 222, 128, 0.35)" }
+                    }
                   >
-                    YES
+                    {confirmedVote?.marketId === market.id && confirmedVote.vote === true ? (
+                      <CheckCircle className="h-7 w-7 animate-scale-in" weight="fill" />
+                    ) : (
+                      "YES"
+                    )}
                   </button>
                   <button
                     onClick={() => handleVote(market.id, false)}
                     disabled={!!submittingId}
-                    className="h-[72px] rounded-2xl font-bold text-2xl transition-all duration-150 active:scale-[0.92] backdrop-blur-sm"
-                    style={{ backgroundColor: "rgba(248, 113, 113, 0.35)", color: "#fecaca", borderWidth: 1, borderColor: "rgba(248, 113, 113, 0.35)" }}
+                    className={`h-[72px] rounded-2xl font-bold text-2xl transition-all duration-200 backdrop-blur-sm flex items-center justify-center gap-2 ${
+                      confirmedVote?.marketId === market.id && confirmedVote.vote === false
+                        ? "scale-105"
+                        : "active:scale-[0.92]"
+                    }`}
+                    style={
+                      confirmedVote?.marketId === market.id && confirmedVote.vote === false
+                        ? { backgroundColor: "rgba(248, 113, 113, 0.6)", color: "#fff", borderWidth: 1, borderColor: "rgba(248, 113, 113, 0.6)" }
+                        : { backgroundColor: "rgba(248, 113, 113, 0.35)", color: "#fecaca", borderWidth: 1, borderColor: "rgba(248, 113, 113, 0.35)" }
+                    }
                   >
-                    NO
+                    {confirmedVote?.marketId === market.id && confirmedVote.vote === false ? (
+                      <CheckCircle className="h-7 w-7 animate-scale-in" weight="fill" />
+                    ) : (
+                      "NO"
+                    )}
                   </button>
                 </div>
               </div>
