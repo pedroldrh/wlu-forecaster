@@ -261,7 +261,10 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
         </div>
       )}
 
-      {/* How It Works modal */}
+    </div>
+      </div>
+
+      {/* How It Works modal — outside swipe wrapper so transform doesn't trap it */}
       {showHowItWorks && (
         <div
           className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center px-6"
@@ -313,8 +316,6 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
           </div>
         </div>
       )}
-    </div>
-      </div>
     </div>
   );
 }
