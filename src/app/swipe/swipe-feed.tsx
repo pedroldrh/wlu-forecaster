@@ -85,10 +85,12 @@ export function SwipeFeed() {
     loadFeed();
 
     const supabase = createClient();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsLoggedIn(!!session?.user);
-      // Reload feed on any auth change (sign in or sign out)
-      loadFeed();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // Only reload on actual sign-in/sign-out, not INITIAL_SESSION
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
+        setIsLoggedIn(!!session?.user);
+        loadFeed();
+      }
     });
 
     return () => subscription.unsubscribe();
