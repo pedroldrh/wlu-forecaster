@@ -171,12 +171,12 @@ export function SwipeFeed() {
   if (pathname !== "/") return null;
 
   if (loading) {
-    return <div className="fixed inset-0 bg-black" />;
+    return <div className="fixed inset-0 z-0 bg-black" />;
   }
 
   if (feed.length === 0) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-black">
+      <div className="fixed inset-0 z-0 flex items-center justify-center bg-black">
         <div className="text-center space-y-4 px-6">
           <p className="text-4xl">🎉</p>
           <h2 className="text-xl font-bold text-white">All caught up!</h2>
@@ -190,9 +190,9 @@ export function SwipeFeed() {
   }
 
   return (
-    <div className="fixed inset-0 bg-black">
+    <div className="fixed inset-0 z-0 bg-black">
       {seasonInfo && seasonInfo.totalPrizeCents > 0 && (
-        <div className="fixed top-0 left-0 right-0 z-20 flex justify-center pt-[env(safe-area-inset-top,12px)]">
+        <div className="fixed top-0 left-0 right-0 z-[5] flex justify-center pt-[env(safe-area-inset-top,12px)]">
           <Link
             href="/leaderboard"
             className="flex items-center gap-1.5 bg-black/40 backdrop-blur-sm rounded-full px-4 py-2 mt-2 active:scale-[0.93] transition-all duration-150"

@@ -1,3 +1,3 @@
 export default function LeaderboardLoading() {
-  return <div className="fixed inset-0 bg-background z-30" />;
+  return <div className="min-h-screen" />;
 }

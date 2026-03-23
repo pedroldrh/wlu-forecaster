@@ -24,7 +24,7 @@ export default function LeaderboardPage() {
     });
   }, []);
 
-  if (!data) return <div className="fixed inset-0 bg-background z-30" />;
+  if (!data) return <div className="min-h-screen" />;
   if (!data.season) return <div className="text-center py-12 text-muted-foreground">No active season found.</div>;
 
   const entries = (data.entries ?? []).map((e: any) => ({
