@@ -5,22 +5,25 @@ import { createClient } from "@/lib/supabase/client";
 import { setUserType } from "@/actions/user-type";
 import { GraduationCap, Scales } from "@phosphor-icons/react";
 
-let cachedUserType: "UNDERGRAD" | "LAW" | null | undefined = undefined;
+// "skip" means not logged in (don't gate), undefined means still loading
+let cachedUserType: "UNDERGRAD" | "LAW" | null | "skip" | undefined = undefined;
 
 export function UserTypeGate({ children }: { children: React.ReactNode }) {
-  const [userType, setUserTypeState] = useState<"UNDERGRAD" | "LAW" | null | undefined>(cachedUserType);
+  const [userType, setUserTypeState] = useState<"UNDERGRAD" | "LAW" | null | "skip" | undefined>(cachedUserType);
   const [loading, setLoading] = useState(cachedUserType === undefined);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (cachedUserType !== undefined) return;
+    if (cachedUserType !== undefined) {
+      setLoading(false);
+      return;
+    }
 
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) {
-        // Not logged in — don't gate
-        cachedUserType = null;
-        setUserTypeState(null);
+        cachedUserType = "skip";
+        setUserTypeState("skip");
         setLoading(false);
         return;
       }
@@ -37,6 +40,30 @@ export function UserTypeGate({ children }: { children: React.ReactNode }) {
           setLoading(false);
         });
     });
+
+    // Also listen for sign-in to re-check
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN") {
+        cachedUserType = undefined;
+        setUserTypeState(undefined);
+        setLoading(true);
+        supabase.auth.getUser().then(({ data: { user } }) => {
+          if (!user) { setLoading(false); return; }
+          supabase
+            .from("profiles")
+            .select("user_type")
+            .eq("id", user.id)
+            .single()
+            .then(({ data }) => {
+              const ut = data?.user_type as "UNDERGRAD" | "LAW" | null;
+              cachedUserType = ut;
+              setUserTypeState(ut);
+              setLoading(false);
+            });
+        });
+      }
+    });
+    return () => subscription.unsubscribe();
   }, []);
 
   async function handleSelect(type: "UNDERGRAD" | "LAW") {
@@ -54,9 +81,9 @@ export function UserTypeGate({ children }: { children: React.ReactNode }) {
   if (loading) return null;
 
   // Not logged in or already has a type — show the app
-  if (userType !== null || userType === undefined) return <>{children}</>;
+  if (userType === "skip" || userType === "UNDERGRAD" || userType === "LAW") return <>{children}</>;
 
-  // Needs to pick — show full-screen gate
+  // userType is null (logged in but no type) — show full-screen gate
   return (
     <div className="fixed inset-0 z-[300] bg-black flex flex-col items-center justify-center px-8">
       <div className="max-w-sm w-full space-y-8 text-center">
@@ -103,5 +130,6 @@ export function UserTypeGate({ children }: { children: React.ReactNode }) {
 
 /** Export cached value for other components to read */
 export function getCachedUserType(): "UNDERGRAD" | "LAW" | null {
-  return cachedUserType ?? null;
+  if (cachedUserType === "UNDERGRAD" || cachedUserType === "LAW") return cachedUserType;
+  return null;
 }
