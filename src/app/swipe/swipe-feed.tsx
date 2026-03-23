@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { formatDollars } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
-import { showFeed } from "@/lib/feed-visibility";
+import { hideFeed, showFeed } from "@/lib/feed-visibility";
 
 interface Market {
   id: string;
@@ -34,6 +34,7 @@ let cachedSeasonInfo: { name: string; totalPrizeCents: number } | null = null;
 let cachedVotedIds: Set<string> = new Set();
 let cachedIsLoggedIn = false;
 let cachedScrollMarketId: string | null = null;
+let cachedUserId: string | null = null;
 
 export function SwipeFeed() {
   const [markets, setMarkets] = useState<Market[]>(cachedMarkets ?? []);
@@ -44,8 +45,13 @@ export function SwipeFeed() {
   const [votedIds, setVotedIds] = useState<Set<string>>(cachedVotedIds);
   const [confirmedVote, setConfirmedVote] = useState<{ marketId: string; vote: boolean } | null>(null);
   const [showResolution, setShowResolution] = useState<string | null>(null);
+  const [swipeX, setSwipeX] = useState(0);
+  const [swiping, setSwiping] = useState(false);
+  const [swipeNavigating, setSwipeNavigating] = useState(false);
+  const touchRef = useRef<{ startX: number; startY: number; locked: "h" | "v" | null; currentX: number }>({ startX: 0, startY: 0, locked: null, currentX: 0 });
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const feedRootRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -91,6 +97,8 @@ export function SwipeFeed() {
   useEffect(() => {
     if (pathname === "/") {
       showFeed();
+      setSwipeNavigating(false);
+      setSwipeX(0);
       // Restore scroll to the card user was viewing
       if (cachedScrollMarketId) {
         requestAnimationFrame(() => {
@@ -100,6 +108,80 @@ export function SwipeFeed() {
       }
     }
   }, [pathname]);
+
+  // Horizontal swipe to navigate: left → profile, right → leaderboard
+  const SWIPE_THRESHOLD = 80;
+  useEffect(() => {
+    const root = feedRootRef.current;
+    if (!root) return;
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (swipeNavigating) return;
+      const t = e.touches[0];
+      touchRef.current = { startX: t.clientX, startY: t.clientY, locked: null, currentX: 0 };
+      setSwiping(true);
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (swipeNavigating) return;
+      const t = e.touches[0];
+      const dx = t.clientX - touchRef.current.startX;
+      const dy = t.clientY - touchRef.current.startY;
+
+      // Lock direction after 10px of movement
+      if (!touchRef.current.locked) {
+        if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+          touchRef.current.locked = Math.abs(dx) > Math.abs(dy) ? "h" : "v";
+        }
+        return;
+      }
+
+      if (touchRef.current.locked === "v") return;
+
+      // Horizontal swipe — prevent vertical scroll and apply drag
+      e.preventDefault();
+      const dampened = dx * 0.5;
+      touchRef.current.currentX = dampened;
+      setSwipeX(dampened);
+    };
+
+    const onTouchEnd = () => {
+      if (swipeNavigating) return;
+      setSwiping(false);
+      if (touchRef.current.locked !== "h") {
+        setSwipeX(0);
+        return;
+      }
+
+      const dx = touchRef.current.currentX;
+      if (Math.abs(dx) > SWIPE_THRESHOLD) {
+        // Animate off-screen then navigate
+        const direction = dx > 0 ? 1 : -1;
+        setSwipeX(direction * window.innerWidth);
+        setSwipeNavigating(true);
+        hideFeed();
+        setTimeout(() => {
+          if (direction > 0) {
+            router.push("/leaderboard");
+          } else {
+            const profileHref = cachedUserId ? `/u/${cachedUserId}` : "/signin";
+            router.push(profileHref);
+          }
+        }, 250);
+      } else {
+        setSwipeX(0);
+      }
+    };
+
+    root.addEventListener("touchstart", onTouchStart, { passive: true });
+    root.addEventListener("touchmove", onTouchMove, { passive: false });
+    root.addEventListener("touchend", onTouchEnd, { passive: true });
+    return () => {
+      root.removeEventListener("touchstart", onTouchStart);
+      root.removeEventListener("touchmove", onTouchMove);
+      root.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [swipeNavigating, router]);
 
   const loadFeed = useCallback(async () => {
     try {
@@ -135,6 +217,7 @@ export function SwipeFeed() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       cachedIsLoggedIn = !!user;
+      cachedUserId = user?.id ?? null;
       setIsLoggedIn(cachedIsLoggedIn);
 
       if (user && feedMarkets.length > 0) {
@@ -242,13 +325,21 @@ export function SwipeFeed() {
   // Hide feed when not on homepage
   if (pathname !== "/") return null;
 
+  const swipeStyle = {
+    transform: `translateX(${swipeX}px)`,
+    transition: swiping ? "none" : "transform 250ms cubic-bezier(0.2, 0, 0, 1)",
+  };
+
+  // Peek labels that show behind the feed when swiping
+  const peekLabel = swipeX > 20 ? "leaderboard" : swipeX < -20 ? "profile" : null;
+
   if (loading) {
-    return <div id="swipe-feed" className="fixed inset-0 z-0 bg-black" />;
+    return <div id="swipe-feed" ref={feedRootRef} className="fixed inset-0 z-0 bg-black" />;
   }
 
   if (feed.length === 0) {
     return (
-      <div id="swipe-feed" className="fixed inset-0 z-0 flex items-center justify-center bg-black">
+      <div id="swipe-feed" ref={feedRootRef} className="fixed inset-0 z-0 flex items-center justify-center bg-black">
         <div className="text-center space-y-4 px-6">
           <p className="text-4xl">🎉</p>
           <h2 className="text-xl font-bold text-white">All caught up!</h2>
@@ -262,20 +353,37 @@ export function SwipeFeed() {
   }
 
   return (
-    <div id="swipe-feed" className="fixed inset-0 z-0 bg-black">
-      {seasonInfo && seasonInfo.totalPrizeCents > 0 && (
-        <div className="fixed top-0 left-0 right-0 z-[5] flex justify-center pt-[env(safe-area-inset-top,12px)]">
-          <Link
-            href="/leaderboard"
-            className="flex items-center gap-1.5 bg-black/40 backdrop-blur-sm rounded-full px-4 py-2 mt-2 active:scale-[0.93] transition-all duration-150"
-          >
-            <Trophy className="h-4 w-4 text-amber-300" weight="fill" />
-            <span className="text-white font-bold text-sm font-mono">
-              {formatDollars(seasonInfo.totalPrizeCents)}
+    <div id="swipe-feed" ref={feedRootRef} className="fixed inset-0 z-0 bg-black">
+      {/* Peek labels behind the feed */}
+      {peekLabel && (
+        <div className="absolute inset-0 z-0 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3 text-white/60">
+            {peekLabel === "leaderboard" ? (
+              <Trophy className="h-10 w-10" weight="bold" />
+            ) : (
+              <div className="h-10 w-10 rounded-full bg-white/20" />
+            )}
+            <span className="text-lg font-bold uppercase tracking-widest">
+              {peekLabel === "leaderboard" ? "Leaderboard" : "Profile"}
             </span>
-          </Link>
+          </div>
         </div>
       )}
+
+      <div style={swipeStyle} className="relative z-[1] h-full">
+        {seasonInfo && seasonInfo.totalPrizeCents > 0 && (
+          <div className="fixed top-0 left-0 right-0 z-[5] flex justify-center pt-[env(safe-area-inset-top,12px)]" style={swipeStyle}>
+            <Link
+              href="/leaderboard"
+              className="flex items-center gap-1.5 bg-black/40 backdrop-blur-sm rounded-full px-4 py-2 mt-2 active:scale-[0.93] transition-all duration-150"
+            >
+              <Trophy className="h-4 w-4 text-amber-300" weight="fill" />
+              <span className="text-white font-bold text-sm font-mono">
+                {formatDollars(seasonInfo.totalPrizeCents)}
+              </span>
+            </Link>
+          </div>
+        )}
 
       <div ref={scrollContainerRef} className="h-full overflow-y-auto snap-y snap-mandatory">
         {feed.map((market) => {
@@ -399,6 +507,7 @@ export function SwipeFeed() {
             </div>
           );
         })}
+        </div>
       </div>
     </div>
   );
