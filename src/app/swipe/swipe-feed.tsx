@@ -226,14 +226,16 @@ export function SwipeFeed() {
                   <button
                     onClick={() => handleVote(market.id, true)}
                     disabled={!!submittingId}
-                    className="h-[72px] rounded-2xl font-bold text-2xl transition-all duration-150 active:scale-[0.92] bg-green-400/30 text-green-100 backdrop-blur-sm border border-green-300/30"
+                    className="h-[72px] rounded-2xl font-bold text-2xl transition-all duration-150 active:scale-[0.92] backdrop-blur-sm"
+                    style={{ backgroundColor: "rgba(74, 222, 128, 0.35)", color: "#bbf7d0", borderWidth: 1, borderColor: "rgba(74, 222, 128, 0.35)" }}
                   >
                     YES
                   </button>
                   <button
                     onClick={() => handleVote(market.id, false)}
                     disabled={!!submittingId}
-                    className="h-[72px] rounded-2xl font-bold text-2xl transition-all duration-150 active:scale-[0.92] bg-red-400/30 text-red-100 backdrop-blur-sm border border-red-300/30"
+                    className="h-[72px] rounded-2xl font-bold text-2xl transition-all duration-150 active:scale-[0.92] backdrop-blur-sm"
+                    style={{ backgroundColor: "rgba(248, 113, 113, 0.35)", color: "#fecaca", borderWidth: 1, borderColor: "rgba(248, 113, 113, 0.35)" }}
                   >
                     NO
                   </button>
