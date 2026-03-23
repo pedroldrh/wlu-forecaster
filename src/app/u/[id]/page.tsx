@@ -15,6 +15,7 @@ import { savePushSubscription } from "@/actions/push-subscriptions";
 import { toast } from "sonner";
 import { useSwipeNav } from "@/lib/use-swipe-nav";
 import { SwipePeek } from "@/components/swipe-peek";
+import { SeasonRecapButton } from "@/components/season-recap";
 
 const cache = new Map<string, any>();
 
@@ -187,6 +188,7 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
       </div>
 
       {isOwnProfile && <ReferralCard userId={id} referralCount={data.referrals} />}
+      {isOwnProfile && data.totalForecasts > 0 && <SeasonRecapButton userId={id} />}
 
       {data.resolvedForecasts?.length > 0 && (
         <Card id="score-breakdown">
