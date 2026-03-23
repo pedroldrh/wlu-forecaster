@@ -68,7 +68,7 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
     }
   }
 
-  if (!data) return <div className="min-h-screen" />;
+  if (!data) return <div className="fixed inset-0 bg-background z-30" />;
   if (data.error) return <div className="text-center py-12 text-muted-foreground">User not found.</div>;
 
   const profile = data.profile;
