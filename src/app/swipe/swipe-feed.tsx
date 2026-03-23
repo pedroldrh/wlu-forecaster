@@ -53,7 +53,13 @@ export function SwipeFeed() {
     try {
       const res = await fetch("/api/feed", { cache: "no-store" });
       const data = await res.json();
-      const feedMarkets: Market[] = data.markets ?? [];
+      // Shuffle markets randomly for each load (Fisher-Yates)
+      const raw: Market[] = data.markets ?? [];
+      for (let i = raw.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [raw[i], raw[j]] = [raw[j], raw[i]];
+      }
+      const feedMarkets = raw;
 
       cachedMarkets = feedMarkets;
       cachedSeasonInfo = data.seasonInfo ?? null;
@@ -220,14 +226,14 @@ export function SwipeFeed() {
                   <button
                     onClick={() => handleVote(market.id, true)}
                     disabled={!!submittingId}
-                    className="h-[72px] rounded-2xl font-bold text-2xl transition-all duration-150 active:scale-[0.92] bg-green-500/25 text-green-300 backdrop-blur-sm border border-green-400/25"
+                    className="h-[72px] rounded-2xl font-bold text-2xl transition-all duration-150 active:scale-[0.92] bg-emerald-500/30 text-emerald-200 backdrop-blur-sm border border-emerald-400/30"
                   >
                     YES
                   </button>
                   <button
                     onClick={() => handleVote(market.id, false)}
                     disabled={!!submittingId}
-                    className="h-[72px] rounded-2xl font-bold text-2xl transition-all duration-150 active:scale-[0.92] bg-red-500/25 text-red-300 backdrop-blur-sm border border-red-400/25"
+                    className="h-[72px] rounded-2xl font-bold text-2xl transition-all duration-150 active:scale-[0.92] bg-rose-500/30 text-rose-200 backdrop-blur-sm border border-rose-400/30"
                   >
                     NO
                   </button>
