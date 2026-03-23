@@ -33,15 +33,6 @@ const TEXT_COLORS = [
   "text-sky-300",
 ];
 
-const DOT_COLORS = [
-  "bg-violet-400",
-  "bg-cyan-400",
-  "bg-amber-400",
-  "bg-emerald-400",
-  "bg-rose-400",
-  "bg-sky-400",
-];
-
 let bubbleCounter = 0;
 
 export function ActivityTicker({ items, paused }: { items: ActivityItem[]; paused: boolean }) {
@@ -101,9 +92,9 @@ export function ActivityTicker({ items, paused }: { items: ActivityItem[]; pause
   if (items.length === 0) return null;
 
   return (
-    <div className="fixed top-[calc(env(safe-area-inset-top,12px)+48px)] left-0 right-0 z-[4] pointer-events-none overflow-hidden h-32">
+    <div className="fixed top-[calc(env(safe-area-inset-top,12px)+48px)] left-0 right-0 z-[4] pointer-events-none h-40">
       {bubbles.map((bubble) => {
-        const colorIdx = bubble.id % COLORS.length;
+        const colorIdx = bubble.id % TEXT_COLORS.length;
         return (
           <div
             key={bubble.id}
@@ -113,13 +104,10 @@ export function ActivityTicker({ items, paused }: { items: ActivityItem[]; pause
             <div
               className={`bg-gradient-to-br ${bubble.color} border backdrop-blur-xl rounded-2xl px-3.5 py-2 shadow-lg shadow-black/20`}
             >
-              <div className="flex items-center gap-2">
-                <div className={`h-2 w-2 rounded-full ${DOT_COLORS[colorIdx]} animate-pulse`} />
-                <p className="text-xs font-semibold whitespace-nowrap">
-                  <span className={TEXT_COLORS[colorIdx]}>{bubble.displayName}</span>
-                  <span className="text-white/40"> voted</span>
-                </p>
-              </div>
+              <p className="text-xs font-semibold whitespace-nowrap">
+                <span className={TEXT_COLORS[colorIdx]}>{bubble.displayName}</span>
+                <span className="text-white/40"> voted</span>
+              </p>
             </div>
           </div>
         );
