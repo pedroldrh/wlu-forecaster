@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Trophy, MonitorPlay } from "@phosphor-icons/react";
 import { UserAvatar } from "@/components/user-avatar";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { hideFeed } from "@/lib/feed-visibility";
 
@@ -30,6 +30,7 @@ export function BottomNav() {
   const [userId, setUserId] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const [tapped, setTapped] = useState<Tab | null>(null);
+  const [pillLeft, setPillLeft] = useState<number | null>(null);
   const navRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<Map<Tab, HTMLAnchorElement>>(new Map());
 
@@ -41,9 +42,26 @@ export function BottomNav() {
     });
   }, []);
 
+  const active = getActiveTab(pathname);
+
+  const measurePill = useCallback(() => {
+    const tab = tabRefs.current.get(active);
+    const nav = navRef.current;
+    if (tab && nav) {
+      const tabRect = tab.getBoundingClientRect();
+      const navRect = nav.getBoundingClientRect();
+      setPillLeft(tabRect.left - navRect.left + tabRect.width / 2 - 16);
+    }
+  }, [active]);
+
+  useEffect(() => {
+    measurePill();
+    window.addEventListener("resize", measurePill);
+    return () => window.removeEventListener("resize", measurePill);
+  }, [measurePill]);
+
   if (!mounted || pathname === "/signin") return null;
 
-  const active = getActiveTab(pathname);
   const profileHref = userId ? `/u/${userId}` : "/signin";
 
   const handleNavAway = () => {
@@ -55,9 +73,6 @@ export function BottomNav() {
     setTimeout(() => setTapped(null), 400);
   };
 
-  // Pill position: 0 = left, 1 = center, 2 = right
-  const pillIndex = TABS.indexOf(active);
-
   return (
     <nav className="fixed bottom-0 inset-x-0 z-50 md:hidden">
       <div className="relative bg-black/90 backdrop-blur-xl">
@@ -68,15 +83,17 @@ export function BottomNav() {
           className="relative flex items-center justify-around px-6 pt-2.5 pb-[max(env(safe-area-inset-bottom,8px),8px)]"
         >
           {/* Sliding pill indicator */}
-          <div
-            className="absolute top-0 h-[3px] rounded-full transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
-            style={{
-              width: 32,
-              left: `calc(${(pillIndex * 2 + 1) * (100 / 6)}% - 16px)`,
-              background: "linear-gradient(90deg, rgba(255,255,255,0.7), rgba(255,255,255,0.3))",
-              boxShadow: "0 0 12px rgba(255,255,255,0.3), 0 0 4px rgba(255,255,255,0.2)",
-            }}
-          />
+          {pillLeft !== null && (
+            <div
+              className="absolute top-0 h-[3px] rounded-full transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+              style={{
+                width: 32,
+                left: pillLeft,
+                background: "linear-gradient(90deg, rgba(255,255,255,0.7), rgba(255,255,255,0.3))",
+                boxShadow: "0 0 12px rgba(255,255,255,0.3), 0 0 4px rgba(255,255,255,0.2)",
+              }}
+            />
+          )}
 
           {/* Leaderboard */}
           <Link
