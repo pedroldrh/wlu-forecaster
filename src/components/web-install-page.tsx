@@ -40,7 +40,7 @@ export function WebInstallPage({ seasonInfo }: WebInstallPageProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-b from-blue-600 via-blue-500 to-indigo-700 flex flex-col items-center justify-center px-6 text-white z-50">
+    <div className="fixed inset-0 bg-gradient-to-b from-indigo-700 via-blue-600 to-indigo-700 flex flex-col items-center justify-center px-6 text-white z-50">
       {/* Install card — top */}
       <div className="w-full max-w-sm bg-white/10 backdrop-blur-lg rounded-2xl p-6 space-y-4 mb-8 animate-fade-up">
         <h2 className="font-bold text-lg text-center flex items-center justify-center gap-2">
