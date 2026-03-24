@@ -559,7 +559,7 @@ export function SwipeFeed() {
                   </div>
                 )}
 
-                <div className="flex items-center gap-3 mt-3">
+                <div className="flex items-center justify-between mt-3">
                   <span className="text-sm text-white/50">
                     {market.voteCount} vote{market.voteCount !== 1 ? "s" : ""}
                   </span>

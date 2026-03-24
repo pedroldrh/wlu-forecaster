@@ -31,7 +31,17 @@ export default function LeaderboardPage() {
     });
   }, []);
 
-  if (!data) return <div className="min-h-screen" />;
+  if (!data) return (
+    <div className="min-h-screen space-y-6 pb-24">
+      <div className="h-40 rounded-2xl bg-white/5 animate-pulse" />
+      <div className="h-6 w-48 mx-auto rounded bg-white/5 animate-pulse" />
+      <div className="space-y-2">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="h-14 rounded-xl bg-white/5 animate-pulse" />
+        ))}
+      </div>
+    </div>
+  );
   if (!data.season) return <div className="text-center py-12 text-muted-foreground">No active season found.</div>;
 
   const entries = (data.entries ?? []).map((e: any) => ({

@@ -78,7 +78,22 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
     }
   }
 
-  if (!data) return <div className="min-h-screen" />;
+  if (!data) return (
+    <div className="max-w-3xl mx-auto space-y-6 pb-24">
+      <div className="rounded-2xl bg-white/5 animate-pulse pt-8 pb-6 px-6">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-20 w-20 rounded-full bg-white/10 animate-pulse" />
+          <div className="h-5 w-40 rounded bg-white/10 animate-pulse" />
+          <div className="h-16 w-48 rounded bg-white/5 animate-pulse" />
+          <div className="flex gap-6">
+            <div className="h-10 w-16 rounded bg-white/5 animate-pulse" />
+            <div className="h-10 w-16 rounded bg-white/5 animate-pulse" />
+            <div className="h-10 w-16 rounded bg-white/5 animate-pulse" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
   if (data.error) return <div className="text-center py-12 text-muted-foreground">User not found.</div>;
 
   const profile = data.profile;

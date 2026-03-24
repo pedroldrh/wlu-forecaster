@@ -96,7 +96,7 @@ export function useSwipeNav(options: SwipeNavOptions) {
           setSwipeX(direction * window.innerWidth);
           setNavigating(true);
           onNavigate?.();
-          setTimeout(() => router.push(href), 250);
+          setTimeout(() => router.push(href), 150);
         } else {
           setSwipeX(0);
         }
@@ -117,7 +117,7 @@ export function useSwipeNav(options: SwipeNavOptions) {
 
   const swipeStyle = {
     transform: `translateX(${swipeX}px)`,
-    transition: swiping ? "none" : "transform 250ms cubic-bezier(0.2, 0, 0, 1)",
+    transition: swiping ? "none" : "transform 180ms cubic-bezier(0.2, 0, 0, 1)",
   };
 
   const peekDirection = swipeX > 20 ? "right" : swipeX < -20 ? "left" : null;
