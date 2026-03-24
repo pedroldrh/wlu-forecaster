@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { CATEGORY_LABELS } from "@/lib/constants";
 import { submitQuestionRequest } from "@/actions/question-requests";
@@ -26,8 +26,20 @@ const CATEGORY_OPTIONS = Object.entries(CATEGORY_LABELS).map(([value, label]) =>
   }[value] || "from-zinc-500 to-zinc-600",
 }));
 
-export function SuggestQuestion() {
+// Global event to open the suggest dialog from anywhere
+export function openSuggestDialog() {
+  window.dispatchEvent(new Event("open-suggest-question"));
+}
+
+export function SuggestQuestion({ showButton = true }: { showButton?: boolean } = {}) {
   const [open, setOpen] = useState(false);
+
+  // Listen for external open triggers
+  useEffect(() => {
+    const handler = () => setOpen(true);
+    window.addEventListener("open-suggest-question", handler);
+    return () => window.removeEventListener("open-suggest-question", handler);
+  }, []);
   const [step, setStep] = useState(0);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -62,15 +74,17 @@ export function SuggestQuestion() {
 
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        className="group flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border border-blue-500/20 hover:border-blue-500/40 hover:from-blue-500/15 hover:to-indigo-500/15 active:scale-[0.98] px-4 py-2.5 text-sm font-semibold text-blue-600 dark:text-blue-400 transition-all"
-      >
-        <div className="flex items-center justify-center h-7 w-7 rounded-lg bg-blue-500/15 group-hover:bg-blue-500/25 transition-colors">
-          <Lightbulb className="h-4 w-4" />
-        </div>
-        Suggest a Market
-      </button>
+      {showButton && (
+        <button
+          onClick={() => setOpen(true)}
+          className="group flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border border-blue-500/20 hover:border-blue-500/40 hover:from-blue-500/15 hover:to-indigo-500/15 active:scale-[0.98] px-4 py-2.5 text-sm font-semibold text-blue-600 dark:text-blue-400 transition-all"
+        >
+          <div className="flex items-center justify-center h-7 w-7 rounded-lg bg-blue-500/15 group-hover:bg-blue-500/25 transition-colors">
+            <Lightbulb className="h-4 w-4" />
+          </div>
+          Suggest a Market
+        </button>
+      )}
 
       <Dialog open={open} onOpenChange={(v) => { if (!v) close(); }}>
         <DialogContent showCloseButton={false} className="max-w-[380px] gap-0 p-0 overflow-hidden rounded-2xl">
