@@ -475,26 +475,34 @@ export function SwipeFeed() {
                   /* ── Consensus reveal ── */
                   <div className="space-y-3 animate-[fade-up_400ms_ease-out]">
                     <div className="relative h-14 rounded-2xl overflow-hidden backdrop-blur-sm bg-white/5">
-                      {/* YES bar */}
-                      <div
-                        className="absolute inset-y-0 left-0 rounded-2xl transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
-                        style={{
-                          width: `${consensus.yesPct}%`,
-                          background: consensus.vote
-                            ? "linear-gradient(90deg, rgba(74, 222, 128, 0.5), rgba(74, 222, 128, 0.25))"
-                            : "rgba(74, 222, 128, 0.2)",
-                        }}
-                      />
+                      {/* Colored bar — green from left for YES, red from right for NO */}
+                      {consensus.vote ? (
+                        <div
+                          className="absolute inset-y-0 left-0 rounded-2xl transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+                          style={{
+                            width: `${consensus.yesPct}%`,
+                            background: "linear-gradient(90deg, rgba(74, 222, 128, 0.5), rgba(74, 222, 128, 0.2))",
+                          }}
+                        />
+                      ) : (
+                        <div
+                          className="absolute inset-y-0 right-0 rounded-2xl transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+                          style={{
+                            width: `${100 - consensus.yesPct}%`,
+                            background: "linear-gradient(270deg, rgba(248, 113, 113, 0.5), rgba(248, 113, 113, 0.2))",
+                          }}
+                        />
+                      )}
                       {/* Labels */}
                       <div className="relative h-full flex items-center justify-between px-4">
                         <div className="flex items-center gap-2">
                           {consensus.vote && <CheckCircle className="h-5 w-5 text-green-400" weight="fill" />}
-                          <span className={`font-bold text-lg ${consensus.vote ? "text-green-400" : "text-white/60"}`}>
+                          <span className={`font-bold text-lg ${consensus.vote ? "text-green-400" : "text-white/40"}`}>
                             YES {consensus.yesPct}%
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className={`font-bold text-lg ${!consensus.vote ? "text-red-400" : "text-white/60"}`}>
+                          <span className={`font-bold text-lg ${!consensus.vote ? "text-red-400" : "text-white/40"}`}>
                             {100 - consensus.yesPct}% NO
                           </span>
                           {!consensus.vote && <CheckCircle className="h-5 w-5 text-red-400" weight="fill" />}
