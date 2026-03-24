@@ -36,12 +36,25 @@ export async function GET() {
     });
   }
 
-  // Vote counts + YES/NO split in single query
+  // Vote counts + YES/NO split — fetch in batches to avoid row limit
   const questionIds = questions.map((q) => q.id);
-  const { data: allForecasts } = await supabase
-    .from("forecasts")
-    .select("question_id, probability")
-    .in("question_id", questionIds);
+  const allForecasts: { question_id: string; probability: number }[] = [];
+  const BATCH = 25;
+  for (let i = 0; i < questionIds.length; i += BATCH) {
+    const batch = questionIds.slice(i, i + BATCH);
+    let offset = 0;
+    while (true) {
+      const { data } = await supabase
+        .from("forecasts")
+        .select("question_id, probability")
+        .in("question_id", batch)
+        .range(offset, offset + 999);
+      if (!data || data.length === 0) break;
+      allForecasts.push(...data);
+      if (data.length < 1000) break;
+      offset += 1000;
+    }
+  }
 
   const voteCounts = new Map<string, number>();
   const yesCounts = new Map<string, number>();
