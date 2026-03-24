@@ -71,7 +71,6 @@ export function SwipeFeed() {
     leftHref: profileHref,
     rightLabel: "Leaderboard",
     leftLabel: "Profile",
-    onNavigate: hideFeed,
   });
 
   const feed = useMemo(() => {
@@ -355,7 +354,13 @@ export function SwipeFeed() {
   if (pathname !== "/") return null;
 
   if (loading) {
-    return <div id="swipe-feed" ref={feedRootRef} className="fixed inset-0 z-0 bg-black" />;
+    return (
+      <div id="swipe-feed" ref={feedRootRef} className="fixed inset-0 z-0 bg-black">
+        <div className="h-full flex flex-col items-center justify-center">
+          <div className="h-8 w-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+        </div>
+      </div>
+    );
   }
 
   if (feed.length === 0) {

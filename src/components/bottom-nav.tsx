@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Trophy, MonitorPlay } from "@phosphor-icons/react";
 import { UserAvatar } from "@/components/user-avatar";
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -27,6 +27,7 @@ function getActiveTab(pathname: string): Tab {
 
 export function BottomNav() {
   const pathname = usePathname();
+  const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const [tapped, setTapped] = useState<Tab | null>(null);
@@ -39,8 +40,12 @@ export function BottomNav() {
     createClient().auth.getUser().then(({ data: { user } }) => {
       setUserId(user?.id ?? null);
       prefetchPages(user?.id ?? null);
+      // Prefetch page bundles for instant transitions
+      router.prefetch("/");
+      router.prefetch("/leaderboard");
+      if (user?.id) router.prefetch(`/u/${user.id}`);
     });
-  }, []);
+  }, [router]);
 
   const active = getActiveTab(pathname);
 
