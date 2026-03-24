@@ -41,22 +41,8 @@ export function WebInstallPage({ seasonInfo }: WebInstallPageProps) {
 
   return (
     <div className="fixed inset-0 bg-gradient-to-b from-blue-600 via-blue-500 to-indigo-700 flex flex-col items-center justify-center px-6 text-white z-50">
-      {/* Logo */}
-      <div className="flex items-center gap-3 mb-6 animate-fade-up">
-        <div className="h-14 w-14 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center">
-          <ForecasterLogo className="h-8 w-8 text-white" />
-        </div>
-      </div>
-
-      <h1 className="text-2xl sm:text-3xl font-bold text-center mb-1 animate-fade-up">
-        Forecaster
-      </h1>
-      <p className="text-white/60 text-center text-sm max-w-xs mb-8 animate-fade-up" style={{ animationDelay: "0.1s" }}>
-        W&L Campus Predictions — vote on markets, build your record, win real money.
-      </p>
-
-      {/* Install card — first */}
-      <div className="w-full max-w-sm bg-white/10 backdrop-blur-lg rounded-2xl p-6 space-y-4 mb-8 animate-fade-up" style={{ animationDelay: "0.2s" }}>
+      {/* Install card — top */}
+      <div className="w-full max-w-sm bg-white/10 backdrop-blur-lg rounded-2xl p-6 space-y-4 mb-8 animate-fade-up">
         <h2 className="font-bold text-lg text-center flex items-center justify-center gap-2">
           <DownloadSimple className="h-5 w-5" weight="bold" />
           Install the App
@@ -107,6 +93,19 @@ export function WebInstallPage({ seasonInfo }: WebInstallPageProps) {
           </span>
         </div>
       )}
+
+      {/* Logo + Title — bottom */}
+      <div className="flex items-center gap-3 mt-8 mb-3 animate-fade-up" style={{ animationDelay: "0.4s" }}>
+        <div className="h-14 w-14 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center">
+          <ForecasterLogo className="h-8 w-8 text-white" />
+        </div>
+      </div>
+      <h1 className="text-2xl sm:text-3xl font-bold text-center mb-1 animate-fade-up" style={{ animationDelay: "0.4s" }}>
+        Forecaster
+      </h1>
+      <p className="text-white/60 text-center text-sm max-w-xs animate-fade-up" style={{ animationDelay: "0.5s" }}>
+        W&L Campus Predictions — vote on markets, build your record, win real money.
+      </p>
     </div>
   );
 }
