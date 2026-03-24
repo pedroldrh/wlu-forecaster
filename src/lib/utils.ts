@@ -28,7 +28,7 @@ export function formatCents(cents: number): string {
 }
 
 export function formatDollars(cents: number): string {
-  return `$${Math.round(cents / 100)}`;
+  return `$${Math.round(cents / 100).toLocaleString()}`;
 }
 
 export function formatPercent(value: number): string {
