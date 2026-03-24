@@ -336,15 +336,10 @@ export function SwipeFeed() {
       });
       setSubmittingId(null);
 
-      if (nextCard) {
-        setTimeout(() => {
-          cardRefs.current.get(nextCard.id)?.scrollIntoView({ behavior: "smooth" });
-        }, 50);
-        const nextNextCard = feed[currentFeedIdx + 2];
-        if (nextNextCard?.imageUrl) {
-          const img = new Image();
-          img.src = nextNextCard.imageUrl;
-        }
+      // Preload next card's image
+      if (nextCard?.imageUrl) {
+        const img = new Image();
+        img.src = nextCard.imageUrl;
       }
     }, 2300);
   };
