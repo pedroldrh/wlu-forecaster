@@ -55,20 +55,8 @@ export function WebInstallPage({ seasonInfo }: WebInstallPageProps) {
         W&L Campus Predictions — vote on markets, build your record, win real money.
       </p>
 
-      {/* Prize pool */}
-      {seasonInfo && seasonInfo.totalPrizeCents > 0 && (
-        <div className="flex flex-col items-center mb-10 animate-fade-up" style={{ animationDelay: "0.2s" }}>
-          <span className="text-7xl sm:text-8xl font-extrabold font-mono bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent leading-none">
-            {formatDollars(seasonInfo.totalPrizeCents)}
-          </span>
-          <span className="text-white/50 text-sm font-semibold uppercase tracking-widest mt-3">
-            Prize Pool
-          </span>
-        </div>
-      )}
-
-      {/* Install card */}
-      <div className="w-full max-w-sm bg-white/10 backdrop-blur-lg rounded-2xl p-6 space-y-4 animate-fade-up" style={{ animationDelay: "0.3s" }}>
+      {/* Install card — first */}
+      <div className="w-full max-w-sm bg-white/10 backdrop-blur-lg rounded-2xl p-6 space-y-4 mb-8 animate-fade-up" style={{ animationDelay: "0.2s" }}>
         <h2 className="font-bold text-lg text-center flex items-center justify-center gap-2">
           <DownloadSimple className="h-5 w-5" weight="bold" />
           Install the App
@@ -107,6 +95,18 @@ export function WebInstallPage({ seasonInfo }: WebInstallPageProps) {
           </button>
         )}
       </div>
+
+      {/* Prize pool — below install */}
+      {seasonInfo && seasonInfo.totalPrizeCents > 0 && (
+        <div className="flex flex-col items-center animate-fade-up" style={{ animationDelay: "0.3s" }}>
+          <span className="text-7xl sm:text-8xl font-extrabold font-mono bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent leading-none">
+            {formatDollars(seasonInfo.totalPrizeCents)}
+          </span>
+          <span className="text-white/50 text-sm font-semibold uppercase tracking-widest mt-3">
+            Prize Pool
+          </span>
+        </div>
+      )}
     </div>
   );
 }
