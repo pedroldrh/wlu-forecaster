@@ -23,11 +23,17 @@ export function WebInstallPage({ seasonInfo }: WebInstallPageProps) {
   const platform = useMemo(detectPlatform, []);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
-  // Set theme-color to match the page so iOS status bar blends in
+  // Set theme-color and body background to match the page so iOS status bar blends in
   useEffect(() => {
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", "#303f9f");
-    return () => { if (meta) meta.setAttribute("content", "#000000"); };
+    const origTheme = meta?.getAttribute("content");
+    const origBg = document.body.style.backgroundColor;
+    if (meta) meta.setAttribute("content", "#1a1a4e");
+    document.body.style.backgroundColor = "#1a1a4e";
+    return () => {
+      if (meta) meta.setAttribute("content", origTheme || "#000000");
+      document.body.style.backgroundColor = origBg;
+    };
   }, []);
 
   useEffect(() => {
@@ -47,7 +53,7 @@ export function WebInstallPage({ seasonInfo }: WebInstallPageProps) {
   }
 
   return (
-    <div className="fixed -inset-1 bg-[#303f9f] flex flex-col items-center justify-center px-6 text-white z-50" style={{ background: "linear-gradient(to bottom, #303f9f 0%, #3b5fc0 30%, #303f9f 100%)" }}>
+    <div className="fixed -inset-1 flex flex-col items-center justify-center px-6 text-white z-50" style={{ background: "linear-gradient(to bottom, #1a1a4e 0%, #2d3a8c 25%, #3b5fc0 50%, #2d3a8c 75%, #1a1a4e 100%)" }}>
       {/* Install card — top */}
       <div className="w-full max-w-sm bg-white/10 backdrop-blur-lg rounded-2xl p-6 space-y-4 mb-8 animate-fade-up">
         <h2 className="font-bold text-lg text-center flex items-center justify-center gap-2">
