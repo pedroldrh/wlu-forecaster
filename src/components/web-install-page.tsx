@@ -23,6 +23,13 @@ export function WebInstallPage({ seasonInfo }: WebInstallPageProps) {
   const platform = useMemo(detectPlatform, []);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
+  // Set theme-color to match the page so iOS status bar blends in
+  useEffect(() => {
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", "#303f9f");
+    return () => { if (meta) meta.setAttribute("content", "#000000"); };
+  }, []);
+
   useEffect(() => {
     function handleBeforeInstall(e: Event) {
       e.preventDefault();
@@ -40,7 +47,7 @@ export function WebInstallPage({ seasonInfo }: WebInstallPageProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-b from-indigo-700 via-blue-600 to-indigo-700 flex flex-col items-center justify-center px-6 text-white z-50">
+    <div className="fixed -inset-1 bg-[#303f9f] flex flex-col items-center justify-center px-6 text-white z-50" style={{ background: "linear-gradient(to bottom, #303f9f 0%, #3b5fc0 30%, #303f9f 100%)" }}>
       {/* Install card — top */}
       <div className="w-full max-w-sm bg-white/10 backdrop-blur-lg rounded-2xl p-6 space-y-4 mb-8 animate-fade-up">
         <h2 className="font-bold text-lg text-center flex items-center justify-center gap-2">
