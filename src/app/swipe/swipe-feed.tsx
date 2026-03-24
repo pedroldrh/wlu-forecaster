@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { submitForecast } from "@/actions/forecasts";
 import { CATEGORY_LABELS, getQuestionEmoji } from "@/lib/constants";
-import { Trophy, Info, X, CheckCircle, Fire, Lightbulb } from "@phosphor-icons/react";
+import { Trophy, Info, X, CheckCircle, Fire, Question } from "@phosphor-icons/react";
 import { openSuggestDialog } from "@/components/suggest-question";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -395,11 +395,11 @@ export function SwipeFeed() {
       <SwipePeek label={peekLabel} />
 
       {/* Top bar — prize + suggest button */}
-      <div className="fixed top-0 left-0 right-0 z-[5] flex items-center justify-center gap-2 pt-[env(safe-area-inset-top,12px)]" style={swipeStyle}>
+      <div className="fixed top-0 left-0 right-0 z-[5] flex items-center justify-center gap-2 pt-[calc(env(safe-area-inset-top,4px)+2px)]" style={swipeStyle}>
         {seasonInfo && seasonInfo.totalPrizeCents > 0 && (
           <Link
             href="/leaderboard"
-            className="flex items-center gap-1.5 bg-black/40 backdrop-blur-sm rounded-full px-4 py-2 mt-2 active:scale-[0.93] transition-all duration-150"
+            className="flex items-center gap-1.5 bg-black/40 backdrop-blur-sm rounded-full px-4 py-2 active:scale-[0.93] transition-all duration-150"
           >
             <Trophy className="h-4 w-4 text-amber-300" weight="fill" />
             <span className="text-white font-bold text-sm font-mono">
@@ -409,9 +409,9 @@ export function SwipeFeed() {
         )}
         <button
           onClick={openSuggestDialog}
-          className="flex items-center justify-center h-9 w-9 bg-black/40 backdrop-blur-sm rounded-full mt-2 active:scale-[0.85] transition-all duration-150"
+          className="flex items-center justify-center h-9 w-9 bg-black/40 backdrop-blur-sm rounded-full active:scale-[0.85] transition-all duration-150"
         >
-          <Lightbulb className="h-4.5 w-4.5 text-amber-300" weight="fill" />
+          <Question className="h-5 w-5 text-white/70" weight="bold" />
         </button>
       </div>
 
