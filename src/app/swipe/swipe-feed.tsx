@@ -55,6 +55,7 @@ export function SwipeFeed() {
   const [votedIds, setVotedIds] = useState<Set<string>>(cachedVotedIds);
   const [confirmedVote, setConfirmedVote] = useState<{ marketId: string; vote: boolean } | null>(null);
   const [consensus, setConsensus] = useState<{ marketId: string; yesPct: number; vote: boolean } | null>(null);
+  const [sessionVotes, setSessionVotes] = useState<Map<string, { vote: boolean; yesPct: number }>>(new Map());
   const [showResolution, setShowResolution] = useState<string | null>(null);
   const [streakToast, setStreakToast] = useState<number | null>(null);
   const [activity, setActivity] = useState(cachedActivity);
@@ -76,9 +77,9 @@ export function SwipeFeed() {
   const feed = useMemo(() => {
     const userType = getCachedUserType();
     return markets.filter((m) => {
+      // Filter out cards voted BEFORE this session (loaded as voted)
       if (votedIds.has(m.id)) return false;
       if (categoryFilter && m.category !== categoryFilter) return false;
-      // User type filtering: LAW sees only LAW_SCHOOL, UNDERGRAD sees everything except LAW_SCHOOL
       if (userType === "LAW" && m.category !== "LAW_SCHOOL") return false;
       if (userType === "UNDERGRAD" && m.category === "LAW_SCHOOL") return false;
       return true;
@@ -327,14 +328,14 @@ export function SwipeFeed() {
     }, 500);
 
     setTimeout(() => {
+      // Save the vote result so the card shows "voted" state permanently
+      setSessionVotes((prev) => new Map(prev).set(marketId, { vote, yesPct }));
       setConsensus(null);
       setStreakToast(null);
-      setVotedIds((prev) => {
-        const next = new Set(prev).add(marketId);
-        cachedVotedIds = next;
-        return next;
-      });
       setSubmittingId(null);
+
+      // Mark as voted but keep in feed — user scrolls away manually
+      cachedVotedIds = new Set(cachedVotedIds).add(marketId);
 
       // Preload next card's image
       if (nextCard?.imageUrl) {
@@ -470,7 +471,33 @@ export function SwipeFeed() {
                   {market.title}
                 </h1>
 
-                {consensus?.marketId === market.id ? (
+                {sessionVotes.has(market.id) && consensus?.marketId !== market.id ? (
+                  /* ── Already voted this session — show static result ── */
+                  (() => {
+                    const sv = sessionVotes.get(market.id)!;
+                    return (
+                      <div className="space-y-3">
+                        <div className="relative h-14 rounded-2xl overflow-hidden backdrop-blur-sm bg-white/5">
+                          {sv.vote ? (
+                            <div className="absolute inset-y-0 left-0 rounded-2xl" style={{ width: `${sv.yesPct}%`, background: "linear-gradient(90deg, rgba(74, 222, 128, 0.5), rgba(74, 222, 128, 0.2))" }} />
+                          ) : (
+                            <div className="absolute inset-y-0 right-0 rounded-2xl" style={{ width: `${100 - sv.yesPct}%`, background: "linear-gradient(270deg, rgba(248, 113, 113, 0.5), rgba(248, 113, 113, 0.2))" }} />
+                          )}
+                          <div className="relative h-full flex items-center justify-between px-4">
+                            <div className="flex items-center gap-2">
+                              {sv.vote && <CheckCircle className="h-5 w-5 text-green-400" weight="fill" />}
+                              <span className={`font-bold text-lg ${sv.vote ? "text-green-400" : "text-white/40"}`}>YES {sv.yesPct}%</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className={`font-bold text-lg ${!sv.vote ? "text-red-400" : "text-white/40"}`}>{100 - sv.yesPct}% NO</span>
+                              {!sv.vote && <CheckCircle className="h-5 w-5 text-red-400" weight="fill" />}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()
+                ) : consensus?.marketId === market.id ? (
                   /* ── Consensus reveal ── */
                   <div className="space-y-3 animate-[fade-up_400ms_ease-out]">
                     <div className="relative h-14 rounded-2xl overflow-hidden backdrop-blur-sm bg-white/5">
