@@ -10,25 +10,47 @@ function isPWA() {
   );
 }
 
+// Global signal — other components call splashReady() when they've loaded
+let readyCount = 0;
+const requiredCount = 1;
+let resolveAllReady: (() => void) | null = null;
+const allReadyPromise = new Promise<void>((resolve) => {
+  resolveAllReady = resolve;
+});
+
+export function splashReady() {
+  readyCount++;
+  if (readyCount >= requiredCount && resolveAllReady) {
+    resolveAllReady();
+    resolveAllReady = null;
+  }
+}
+
 export function SplashScreen() {
-  const [visible, setVisible] = useState(true);
+  const [state, setState] = useState<"visible" | "exiting" | "gone">("visible");
 
   useEffect(() => {
     if (!isPWA() || sessionStorage.getItem("splash-shown")) {
-      setVisible(false);
+      setState("gone");
       return;
     }
-    const timer = setTimeout(() => {
+
+    const minTime = new Promise<void>((r) => setTimeout(r, 800));
+    const maxTime = new Promise<void>((r) => setTimeout(r, 2500));
+
+    // Wait for both: minimum display time AND data ready (with max timeout)
+    Promise.all([minTime, Promise.race([allReadyPromise, maxTime])]).then(() => {
       sessionStorage.setItem("splash-shown", "1");
-      setVisible(false);
-    }, 1400);
-    return () => clearTimeout(timer);
+      setState("exiting");
+      // Remove from DOM after exit animation
+      setTimeout(() => setState("gone"), 400);
+    });
   }, []);
 
-  if (!visible) return null;
+  if (state === "gone") return null;
 
   return (
-    <div className="splash-overlay">
+    <div className={`splash-overlay ${state === "exiting" ? "splash-exiting" : ""}`}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"

@@ -286,7 +286,10 @@
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #3b82f6, #2563eb);
-  animation: splash-exit 300ms ease-out 1100ms both;
+}
+
+.splash-overlay.splash-exiting {
+  animation: splash-exit 350ms ease-out both;
 }
 
 .splash-logo {

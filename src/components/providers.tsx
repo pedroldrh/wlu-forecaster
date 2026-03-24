@@ -8,11 +8,20 @@ import { PushPrompt } from "@/components/push-prompt";
 import { SplashScreen } from "@/components/splash-screen";
 import { InstallPrompt } from "@/components/install-prompt";
 import { UserTypeGate } from "@/components/user-type-gate";
+import { createClient } from "@/lib/supabase/client";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   // Clear the inline blue background set on <body> for PWA splash continuity
+  // and prefetch all page data during splash
   useEffect(() => {
     document.body.style.backgroundColor = "";
+
+    // Prefetch all page data in parallel so everything is cached when splash ends
+    fetch("/api/feed", { cache: "no-store" }).catch(() => {});
+    fetch("/api/leaderboard", { cache: "no-store" }).catch(() => {});
+    createClient().auth.getUser().then(({ data: { user } }) => {
+      if (user) fetch(`/api/profile/${user.id}`, { cache: "no-store" }).catch(() => {});
+    });
   }, []);
 
   return (
