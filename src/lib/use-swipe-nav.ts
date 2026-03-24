@@ -93,10 +93,10 @@ export function useSwipeNav(options: SwipeNavOptions) {
         const direction = dx > 0 ? 1 : -1;
         const href = direction > 0 ? rightHref : leftHref;
         if (href) {
-          setSwipeX(direction * window.innerWidth);
           setNavigating(true);
           onNavigate?.();
-          setTimeout(() => router.push(href), 150);
+          // Navigate immediately — prefetched pages load near-instantly
+          router.push(href);
         } else {
           setSwipeX(0);
         }
@@ -116,8 +116,8 @@ export function useSwipeNav(options: SwipeNavOptions) {
   }, [navigating, router, rightHref, leftHref, onNavigate]);
 
   const swipeStyle = {
-    transform: `translateX(${swipeX}px)`,
-    transition: swiping ? "none" : "transform 180ms cubic-bezier(0.2, 0, 0, 1)",
+    transform: navigating ? "none" : `translateX(${swipeX}px)`,
+    transition: swiping || navigating ? "none" : "transform 150ms cubic-bezier(0.2, 0, 0, 1)",
   };
 
   const peekDirection = swipeX > 20 ? "right" : swipeX < -20 ? "left" : null;

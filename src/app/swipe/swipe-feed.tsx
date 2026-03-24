@@ -9,7 +9,6 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { formatDollars } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
-import { hideFeed, showFeed } from "@/lib/feed-visibility";
 import { useSwipeNav } from "@/lib/use-swipe-nav";
 import { SwipePeek } from "@/components/swipe-peek";
 import { computeStreak } from "@/lib/streaks";
@@ -160,12 +159,10 @@ export function SwipeFeed() {
     return () => container.removeEventListener("scroll", onScroll);
   }, [feed]);
 
-  // Restore feed visibility and scroll position when returning to /
+  // Reset swipe state and restore scroll position when returning to /
   useEffect(() => {
     if (pathname === "/") {
-      showFeed();
       resetSwipe();
-      // Restore scroll to the card user was viewing
       if (cachedScrollMarketId) {
         requestAnimationFrame(() => {
           const el = cardRefs.current.get(cachedScrollMarketId!);
