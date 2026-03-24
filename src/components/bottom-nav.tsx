@@ -131,7 +131,13 @@ export function BottomNav() {
           <Link
             href="/"
             ref={(el) => { if (el) tabRefs.current.set("home", el); }}
-            onClick={() => handleTap("home")}
+            onClick={(e) => {
+              handleTap("home");
+              if (active === "home") {
+                e.preventDefault();
+                window.dispatchEvent(new Event("reshuffle-feed"));
+              }
+            }}
             className="relative flex flex-col items-center justify-center w-16 h-12 group"
           >
             <div

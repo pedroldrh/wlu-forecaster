@@ -88,13 +88,38 @@ export function SwipeFeed() {
 
   // Categories that have unvoted markets (for showing chip counts)
   const availableCategories = useMemo(() => {
-    const unvoted = markets.filter((m) => !votedIds.has(m.id));
+    const userType = getCachedUserType();
+    const unvoted = markets.filter((m) => {
+      if (votedIds.has(m.id)) return false;
+      if (userType === "LAW" && m.category !== "LAW_SCHOOL") return false;
+      if (userType === "UNDERGRAD" && m.category === "LAW_SCHOOL") return false;
+      return true;
+    });
     const counts = new Map<string, number>();
     for (const m of unvoted) {
       counts.set(m.category, (counts.get(m.category) || 0) + 1);
     }
     return counts;
   }, [markets, votedIds]);
+
+  // Listen for reshuffle event (triggered by tapping feed icon while on feed)
+  useEffect(() => {
+    const handleReshuffle = () => {
+      if (!cachedMarkets || cachedMarkets.length === 0) return;
+      // Fisher-Yates shuffle
+      const shuffled = [...cachedMarkets];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      cachedMarkets = shuffled;
+      cachedScrollMarketId = null;
+      setMarkets(shuffled);
+      scrollContainerRef.current?.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+    };
+    window.addEventListener("reshuffle-feed", handleReshuffle);
+    return () => window.removeEventListener("reshuffle-feed", handleReshuffle);
+  }, []);
 
   const handleCategoryChange = (cat: string | null) => {
     cachedCategoryFilter = cat;
@@ -442,24 +467,9 @@ export function SwipeFeed() {
                   </span>
                 </div>
 
-                <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight mb-2">
+                <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight mb-4">
                   {market.title}
                 </h1>
-
-                <div className="flex items-center gap-3 mb-5">
-                  <span className="text-sm text-white/50">
-                    {market.voteCount} vote{market.voteCount !== 1 ? "s" : ""}
-                  </span>
-                  {market.description && (
-                    <button
-                      onClick={() => setShowResolution(market.id)}
-                      className="flex items-center gap-1 text-xs text-white/40 active:scale-[0.93] transition-all duration-150"
-                    >
-                      <Info className="h-3.5 w-3.5" />
-                      Resolution
-                    </button>
-                  )}
-                </div>
 
                 {consensus?.marketId === market.id ? (
                   /* ── Consensus reveal ── */
@@ -548,6 +558,21 @@ export function SwipeFeed() {
                     </button>
                   </div>
                 )}
+
+                <div className="flex items-center gap-3 mt-3">
+                  <span className="text-sm text-white/50">
+                    {market.voteCount} vote{market.voteCount !== 1 ? "s" : ""}
+                  </span>
+                  {market.description && (
+                    <button
+                      onClick={() => setShowResolution(market.id)}
+                      className="flex items-center gap-1 text-xs text-white/40 active:scale-[0.93] transition-all duration-150"
+                    >
+                      <Info className="h-3.5 w-3.5" />
+                      Resolution
+                    </button>
+                  )}
+                </div>
               </div>
 
               {showResolution === market.id && market.description && (
