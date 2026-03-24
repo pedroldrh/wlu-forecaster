@@ -246,25 +246,41 @@ export function SwipeFeed() {
     } catch (e) {
       console.error("Feed load error:", e);
     }
-    // Don't show feed until first image is loaded
-    const allMarkets = cachedMarkets ?? [];
-    const firstUnvoted = allMarkets.find((m) => !cachedVotedIds.has(m.id));
-    if (firstUnvoted?.imageUrl) {
-      await new Promise<void>((resolve) => {
-        const img = new Image();
-        img.onload = () => resolve();
-        img.onerror = () => resolve();
-        img.src = firstUnvoted.imageUrl!;
-      });
-    }
-    // Preload next few images in background
-    const unvoted = allMarkets.filter((m) => !cachedVotedIds.has(m.id));
-    unvoted.slice(1, 4).forEach((m) => {
-      if (m.imageUrl) {
-        const img = new Image();
-        img.src = m.imageUrl;
-      }
+    // Build the visible feed (same filter as the memo) to preload correctly
+    const userType = getCachedUserType();
+    const visibleFeed = (cachedMarkets ?? []).filter((m) => {
+      if (cachedVotedIds.has(m.id)) return false;
+      if (userType === "LAW" && m.category !== "LAW_SCHOOL") return false;
+      if (userType === "UNDERGRAD" && m.category === "LAW_SCHOOL") return false;
+      return true;
     });
+
+    // Preload first 6 images — wait for the first 3 before showing feed
+    const toPreload = visibleFeed.slice(0, 6).filter((m) => m.imageUrl);
+    const criticalImages = toPreload.slice(0, 3);
+    const bgImages = toPreload.slice(3);
+
+    // Wait for first 3 images (or whichever load)
+    if (criticalImages.length > 0) {
+      await Promise.all(
+        criticalImages.map(
+          (m) =>
+            new Promise<void>((resolve) => {
+              const img = new Image();
+              img.onload = () => resolve();
+              img.onerror = () => resolve();
+              img.src = m.imageUrl!;
+            })
+        )
+      );
+    }
+
+    // Preload rest in background
+    bgImages.forEach((m) => {
+      const img = new Image();
+      img.src = m.imageUrl!;
+    });
+
     setLoading(false);
     splashReady();
 
