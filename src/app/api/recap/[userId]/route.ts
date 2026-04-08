@@ -7,6 +7,7 @@ import { TIMEZONE } from "@/lib/constants";
 export const dynamic = "force-dynamic";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ userId: string }> }) {
+  try {
   const { userId } = await params;
   const supabase = await createAdminClient();
 
@@ -145,4 +146,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ userId:
     streak,
     questionsPlayed: resolvedForecasts.length,
   });
+  } catch (e) {
+    console.error("[api/recap]", e);
+    return NextResponse.json({ error: "internal error" }, { status: 500 });
+  }
 }

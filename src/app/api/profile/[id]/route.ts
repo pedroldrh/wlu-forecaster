@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
   const { id } = await params;
   const supabase = await createAdminClient();
 
@@ -107,4 +108,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     seasonCount: entries.length, referrals, badges, streak,
     resolvedForecasts, allForecasts,
   });
+  } catch (e) {
+    console.error("[api/profile]", e);
+    return NextResponse.json({ error: "internal error" }, { status: 500 });
+  }
 }

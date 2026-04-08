@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  try {
   const supabase = await createAdminClient();
 
   const { data: season } = await supabase
@@ -117,4 +118,8 @@ export async function GET() {
     seasonInfo: { name: season.name, totalPrizeCents },
     recentActivity,
   });
+  } catch (e) {
+    console.error("[api/feed]", e);
+    return NextResponse.json({ markets: [], seasonInfo: null, recentActivity: [] }, { status: 500 });
+  }
 }

@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  try {
   const supabase = await createAdminClient();
 
   const { data: season } = await supabase
@@ -117,4 +118,8 @@ export async function GET() {
     participantIds: ranked.map((u) => u.userId),
     resolvedCount,
   });
+  } catch (e) {
+    console.error("[api/leaderboard]", e);
+    return NextResponse.json({ season: null, entries: [], resolvedCount: 0 }, { status: 500 });
+  }
 }

@@ -33,29 +33,53 @@ export default async function QuestionsPage() {
     .order("close_time", { ascending: true });
 
   const allQuestions = questions || [];
+  const questionIds = allQuestions.map((q) => q.id);
 
-  // Get forecast counts and user forecasts
-  const enriched = await Promise.all(
-    allQuestions.map(async (q) => {
-      const { count } = await supabase
-        .from("forecasts")
-        .select("*", { count: "exact", head: true })
-        .eq("question_id", q.id);
-
-      let userProb = null;
-      if (user) {
-        const { data: forecast } = await supabase
-          .from("forecasts")
-          .select("probability")
-          .eq("user_id", user.id)
-          .eq("question_id", q.id)
-          .single();
-        userProb = forecast?.probability ?? null;
+  // Batch fetch forecast counts and user forecasts (avoids N+1)
+  const [forecastCountMap, userForecastMap] = await Promise.all([
+    (async () => {
+      if (questionIds.length === 0) return new Map<string, number>();
+      const counts = new Map<string, number>();
+      const BATCH = 25;
+      for (let i = 0; i < questionIds.length; i += BATCH) {
+        const batch = questionIds.slice(i, i + BATCH);
+        let offset = 0;
+        while (true) {
+          const { data } = await supabase
+            .from("forecasts")
+            .select("question_id")
+            .in("question_id", batch)
+            .range(offset, offset + 999);
+          if (!data || data.length === 0) break;
+          for (const f of data) {
+            counts.set(f.question_id, (counts.get(f.question_id) || 0) + 1);
+          }
+          if (data.length < 1000) break;
+          offset += 1000;
+        }
       }
+      return counts;
+    })(),
+    (async () => {
+      if (!user || questionIds.length === 0) return new Map<string, number>();
+      const probs = new Map<string, number>();
+      const { data } = await supabase
+        .from("forecasts")
+        .select("question_id, probability")
+        .eq("user_id", user.id)
+        .in("question_id", questionIds);
+      for (const f of data ?? []) {
+        probs.set(f.question_id, f.probability);
+      }
+      return probs;
+    })(),
+  ]);
 
-      return { ...q, forecast_count: count || 0, user_probability: userProb };
-    })
-  );
+  const enriched = allQuestions.map((q) => ({
+    ...q,
+    forecast_count: forecastCountMap.get(q.id) || 0,
+    user_probability: userForecastMap.get(q.id) ?? null,
+  }));
 
   const sortByVoted = <T extends { user_probability: number | null }>(arr: T[]) =>
     [...arr].sort((a, b) => (a.user_probability !== null ? 1 : 0) - (b.user_probability !== null ? 1 : 0));
