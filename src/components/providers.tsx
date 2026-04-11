@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { VoteReminder } from "@/components/vote-reminder";
 import { ServiceWorkerRegister } from "@/components/sw-register";
 import { PushPrompt } from "@/components/push-prompt";
-import { SplashScreen } from "@/components/splash-screen";
+
 import { InstallPrompt } from "@/components/install-prompt";
 import { UserTypeGate } from "@/components/user-type-gate";
 import { createClient } from "@/lib/supabase/client";
@@ -40,7 +40,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <SplashScreen />
       <UserTypeGate>
       {children}
       </UserTypeGate>

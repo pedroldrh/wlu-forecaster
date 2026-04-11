@@ -11,7 +11,7 @@ import Link from "next/link";
 import { formatDollars } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { useSwipeNav } from "@/lib/use-swipe-nav";
-import { splashReady } from "@/components/splash-screen";
+
 import { SwipePeek } from "@/components/swipe-peek";
 import { computeStreak } from "@/lib/streaks";
 import { ActivityTicker } from "@/components/activity-ticker";
@@ -282,7 +282,6 @@ export function SwipeFeed() {
     });
 
     setLoading(false);
-    splashReady();
 
     // Restore scroll position after render
     if (cachedScrollMarketId) {
